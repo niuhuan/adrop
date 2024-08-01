@@ -1,5 +1,6 @@
 import 'package:adrop/components/content_builder.dart';
 import 'package:flutter/material.dart';
+import '../components/alipan_folder_chooser.dart';
 import '../src/rust/api/space.dart';
 
 class SpaceChooseScreen extends StatefulWidget {
@@ -42,6 +43,7 @@ class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
         },
         successBuilder: (BuildContext context, AsyncSnapshot<String> snapshot) {
           return AlipanFolderChooser(
+            key: const Key("AlipanFolderChooser"),
             deriveId: snapshot.requireData,
           );
         },
