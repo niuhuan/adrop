@@ -42,7 +42,7 @@ pub async fn save_property(k: String, v: String) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn load_property(k: String) -> anyhow::Result<String> {
+pub async fn load_property(k: &str) -> anyhow::Result<String> {
     let in_db = Entity::find_by_id(k)
         .one(PROPERTIES_DATABASE.get().unwrap().lock().await.deref())
         .await?;

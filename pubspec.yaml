@@ -39,6 +39,7 @@ dependencies:
     path: rust_builder
   flutter_rust_bridge: 2.1.0
   url_launcher: ^6.3.0
+  flutter_inappwebview: ^6.0.0
 
 dev_dependencies:
   flutter_test:

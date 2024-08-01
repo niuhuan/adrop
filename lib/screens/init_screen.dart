@@ -1,7 +1,10 @@
 import 'package:adrop/components/a_drop_icon.dart';
 import 'package:adrop/cross.dart';
 import 'package:adrop/src/rust/api/init.dart';
+import 'package:adrop/src/rust/api/user.dart';
+import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:flutter/material.dart';
+import 'login_screen.dart';
 
 class InitScreen extends StatefulWidget {
   const InitScreen({super.key});
@@ -35,7 +38,16 @@ class _InitScreenState extends State<InitScreen> {
   }
 
   Future<dynamic> _init() async {
+    var navigator = Navigator.of(context);
     var root = await cross.root();
     initPath(localPath: root);
+    var li = await loginInfo();
+    switch (li.state) {
+      case LoginState.set_:
+        return root;
+      case LoginState.unset:
+        navigator.pushReplacement(
+            MaterialPageRoute(builder: (context) => const LoginScreen()));
+    }
   }
 }

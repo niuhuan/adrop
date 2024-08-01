@@ -1,7 +1,7 @@
 pub mod enums;
 
 use serde_derive::{Deserialize, Serialize};
-use alipan::{AccessToken, OauthUsersInfo};
+use alipan::AccessToken;
 use crate::data_obj::enums::LoginState;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -19,7 +19,6 @@ pub struct AppConfig {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct LoginInfo {
     pub state: LoginState,
-    pub user_info: Option<OauthUsersInfo>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

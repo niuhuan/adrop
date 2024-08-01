@@ -1,6 +1,3 @@
-use chrono::Utc;
-use serde_derive::{Deserialize, Serialize};
-use std::ops::{Deref, DerefMut};
 
 macro_rules! enum_str {
     ($name:ident { $($variant:ident($str:expr), )* }) => {
@@ -71,6 +68,7 @@ macro_rules! enum_str {
 
 enum_str!(LoginState {
     Unset("unset"),
+    Set("set"),
 });
 
 

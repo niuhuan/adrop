@@ -4,3 +4,5 @@ mod database;
 mod utils;
 mod define;
 mod data_obj;
+
+pub use alipan::OauthUsersInfo;
