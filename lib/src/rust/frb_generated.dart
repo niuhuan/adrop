@@ -6,7 +6,9 @@
 import 'api/fs.dart';
 import 'api/init.dart';
 import 'api/simple.dart';
+import 'api/system.dart';
 import 'api/user.dart';
+import 'api/user_setting.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'data_obj.dart';
@@ -63,7 +65,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.1.0';
 
   @override
-  int get rustContentHash => 1570038916;
+  int get rustContentHash => -1081704459;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -82,7 +84,13 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiSimpleInitApp();
 
+  Future<void> crateApiSystemOpenByBrowser({required String url});
+
   Future<LoginInfo> crateApiUserLoginInfo();
+
+  Future<void> crateApiUserSettingStartLoginService();
+
+  Future<void> crateApiUserSettingStopLoginService();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -187,12 +195,37 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiSystemOpenByBrowser({required String url}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(url, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 5, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSystemOpenByBrowserConstMeta,
+      argValues: [url],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSystemOpenByBrowserConstMeta =>
+      const TaskConstMeta(
+        debugName: "open_by_browser",
+        argNames: ["url"],
+      );
+
+  @override
   Future<LoginInfo> crateApiUserLoginInfo() {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 5, port: port_);
+            funcId: 6, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_login_info,
@@ -206,6 +239,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiUserLoginInfoConstMeta => const TaskConstMeta(
         debugName: "login_info",
+        argNames: [],
+      );
+
+  @override
+  Future<void> crateApiUserSettingStartLoginService() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 7, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiUserSettingStartLoginServiceConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiUserSettingStartLoginServiceConstMeta =>
+      const TaskConstMeta(
+        debugName: "start_login_service",
+        argNames: [],
+      );
+
+  @override
+  Future<void> crateApiUserSettingStopLoginService() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 8, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiUserSettingStopLoginServiceConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiUserSettingStopLoginServiceConstMeta =>
+      const TaskConstMeta(
+        debugName: "stop_login_service",
         argNames: [],
       );
 

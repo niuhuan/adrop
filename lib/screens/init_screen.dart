@@ -10,7 +10,7 @@ class InitScreen extends StatefulWidget {
   const InitScreen({super.key});
 
   @override
-  _InitScreenState createState() => _InitScreenState();
+  State<InitScreen> createState() => _InitScreenState();
 }
 
 class _InitScreenState extends State<InitScreen> {
@@ -40,14 +40,17 @@ class _InitScreenState extends State<InitScreen> {
   Future<dynamic> _init() async {
     var navigator = Navigator.of(context);
     var root = await cross.root();
-    initPath(localPath: root);
+    await initPath(localPath: root);
     var li = await loginInfo();
     switch (li.state) {
       case LoginState.set_:
         return root;
       case LoginState.unset:
         navigator.pushReplacement(
-            MaterialPageRoute(builder: (context) => const LoginScreen()));
+          MaterialPageRoute(
+            builder: (context) => const LoginScreen(),
+          ),
+        );
     }
   }
 }

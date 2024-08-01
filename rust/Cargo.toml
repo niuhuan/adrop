@@ -7,16 +7,23 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-alipan = { version = "0.0.16", default-features = false, features = ["rustls-tls"] }
+alipan = { version = "0.0.16", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots"] }
 async-recursion = "1.1.1"
 async-trait = "0.1.81"
 flutter_rust_bridge = { version = "=2.1.0", features = ["uuid", "chrono", "backtrace", "log"] }
 lazy_static = "1.5.0"
 once_cell = "1.19.0"
-reqwest = { version = "0.12.5", default-features = false, features = ["rustls-tls"] }
+reqwest = { version = "0.12.5", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots"] }
 sea-orm = { version = "0.12", features = ["sqlx-sqlite", "runtime-tokio-rustls", "macros", "with-chrono"] }
 tokio = { version = "1", features = ["full"] }
 toml = "0.8.17"
 serde = { version = "1.0.204", features = ["derive"] }
 serde_derive = "1.0.204"
 serde_json = "1.0.121"
+warp = "0.3.7"
+anyhow = "1.0.75"
+base64 = "0.22.1"
+md5 = "0.7.0"
+aes-gcm = { version = "0.10.3", features = ["stream"] }
+hex = "0.4.3"
+opener = "0.7.1"

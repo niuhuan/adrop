@@ -1,0 +1,80 @@
+<html>
+<!-- utf8 -->
+<meta charset="utf-8">
+<title align="center">Aliyun Pan</title>
+<!-- Import style -->
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css"
+/>
+<!-- Import Vue 3 -->
+<script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+<!-- Import component library -->
+<script src="https://cdn.jsdelivr.net/npm/element-plus"></script>
+<!-- -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<style>
+    .central {
+        width: 400px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>
+<body>
+<div id="app">
+    <div class="central">
+        <el-form :model="info" label-width="80px" :disable="disable_form">
+            <el-form-item label="tips">
+                请在您的阿里云盘开发者中心配置重定向网址为:
+                http://localhost:23767/oauth_authorize
+            </el-form-item>
+            <el-form-item label="client_id">
+                <el-input v-model="info.client_id"></el-input>
+            </el-form-item>
+            <el-form-item label="client_secret">
+                <el-input v-model="info.client_secret"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="submit">Submit</el-button>
+            </el-form-item>
+        </el-form>
+    </div>
+</div>
+
+<script>
+    const {createApp} = Vue
+
+    createApp({
+        data() {
+            return {
+                disable_form: false,
+                info: {
+                    client_id: '',
+                    client_secret: '',
+                },
+            }
+        },
+        mounted() {
+            this.init_client_info()
+        },
+        methods: {
+            async init_client_info() {
+                this.info.client_id = ""
+                this.info.client_secret = ""
+            },
+            async submit() {
+                await axios.post('/api/url_by_app_config', this.info).then(response => {
+                    console.log(response)
+                    let redirect_url = response.data.url;
+                    if (redirect_url) {
+                        window.location.href = redirect_url;
+                    }
+                })
+            },
+        }
+    }).use(ElementPlus).mount('#app')
+</script>
+</body>
+</html>
