@@ -44,7 +44,7 @@ async fn set_alipan_client() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn do_set_client_after() -> anyhow::Result<()> {
+pub(crate) async fn do_set_client_after() -> anyhow::Result<()> {
     let client = get_alipan_client();
     let account_config = load_property("account_config").await?;
     if account_config.is_empty() {

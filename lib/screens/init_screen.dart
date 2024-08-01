@@ -1,8 +1,10 @@
 import 'package:adrop/components/a_drop_icon.dart';
 import 'package:adrop/cross.dart';
+import 'package:adrop/screens/space_choose_screen.dart';
 import 'package:adrop/src/rust/api/init.dart';
 import 'package:adrop/src/rust/api/user.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
+import 'package:adrop/src/rust/api/space.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 
@@ -44,7 +46,16 @@ class _InitScreenState extends State<InitScreen> {
     var li = await loginInfo();
     switch (li.state) {
       case LoginState.set_:
-        return root;
+        var sp = await spaceInfo();
+        if (sp == null) {
+          navigator.pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const SpaceChooseScreen(),
+            ),
+          );
+        } else {
+          return root;
+        }
       case LoginState.unset:
         navigator.pushReplacement(
           MaterialPageRoute(

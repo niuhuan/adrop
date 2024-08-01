@@ -6,6 +6,7 @@
 import 'api/fs.dart';
 import 'api/init.dart';
 import 'api/simple.dart';
+import 'api/space.dart';
 import 'api/system.dart';
 import 'api/user.dart';
 import 'api/user_setting.dart';
@@ -32,6 +33,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
+  AdriveUserGetDriveInfo dco_decode_adrive_user_get_drive_info(dynamic raw);
+
+  @protected
+  SpaceInfo dco_decode_box_autoadd_space_info(dynamic raw);
+
+  @protected
   int dco_decode_i_32(dynamic raw);
 
   @protected
@@ -42,6 +49,15 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LoginState dco_decode_login_state(dynamic raw);
+
+  @protected
+  String? dco_decode_opt_String(dynamic raw);
+
+  @protected
+  SpaceInfo? dco_decode_opt_box_autoadd_space_info(dynamic raw);
+
+  @protected
+  SpaceInfo dco_decode_space_info(dynamic raw);
 
   @protected
   int dco_decode_u_8(dynamic raw);
@@ -56,6 +72,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
+  AdriveUserGetDriveInfo sse_decode_adrive_user_get_drive_info(
+      SseDeserializer deserializer);
+
+  @protected
+  SpaceInfo sse_decode_box_autoadd_space_info(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
@@ -66,6 +89,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   LoginState sse_decode_login_state(SseDeserializer deserializer);
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer);
+
+  @protected
+  SpaceInfo? sse_decode_opt_box_autoadd_space_info(
+      SseDeserializer deserializer);
+
+  @protected
+  SpaceInfo sse_decode_space_info(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_8(SseDeserializer deserializer);
@@ -84,6 +117,14 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
+  void sse_encode_adrive_user_get_drive_info(
+      AdriveUserGetDriveInfo self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_space_info(
+      SpaceInfo self, SseSerializer serializer);
+
+  @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
 
   @protected
@@ -95,6 +136,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_login_state(LoginState self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_info(
+      SpaceInfo? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_space_info(SpaceInfo self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_8(int self, SseSerializer serializer);

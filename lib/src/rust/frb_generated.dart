@@ -6,6 +6,7 @@
 import 'api/fs.dart';
 import 'api/init.dart';
 import 'api/simple.dart';
+import 'api/space.dart';
 import 'api/system.dart';
 import 'api/user.dart';
 import 'api/user_setting.dart';
@@ -65,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.1.0';
 
   @override
-  int get rustContentHash => -1081704459;
+  int get rustContentHash => 510544427;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -83,6 +84,12 @@ abstract class RustLibApi extends BaseApi {
   String crateApiSimpleGreet({required String name});
 
   Future<void> crateApiSimpleInitApp();
+
+  Future<AdriveUserGetDriveInfo> crateApiSpaceAdriveUserGetDriveInfoDefault();
+
+  Future<AdriveUserGetDriveInfo> crateApiSpaceOauthDeriveInfo();
+
+  Future<SpaceInfo?> crateApiSpaceSpaceInfo();
 
   Future<void> crateApiSystemOpenByBrowser({required String url});
 
@@ -195,13 +202,84 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<AdriveUserGetDriveInfo> crateApiSpaceAdriveUserGetDriveInfoDefault() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 5, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_adrive_user_get_drive_info,
+        decodeErrorData: null,
+      ),
+      constMeta: kCrateApiSpaceAdriveUserGetDriveInfoDefaultConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceAdriveUserGetDriveInfoDefaultConstMeta =>
+      const TaskConstMeta(
+        debugName: "adrive_user_get_drive_info_default",
+        argNames: [],
+      );
+
+  @override
+  Future<AdriveUserGetDriveInfo> crateApiSpaceOauthDeriveInfo() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 6, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_adrive_user_get_drive_info,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSpaceOauthDeriveInfoConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceOauthDeriveInfoConstMeta =>
+      const TaskConstMeta(
+        debugName: "oauth_derive_info",
+        argNames: [],
+      );
+
+  @override
+  Future<SpaceInfo?> crateApiSpaceSpaceInfo() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 7, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_opt_box_autoadd_space_info,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSpaceSpaceInfoConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceSpaceInfoConstMeta => const TaskConstMeta(
+        debugName: "space_info",
+        argNames: [],
+      );
+
+  @override
   Future<void> crateApiSystemOpenByBrowser({required String url}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(url, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 5, port: port_);
+            funcId: 8, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -225,7 +303,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 6, port: port_);
+            funcId: 9, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_login_info,
@@ -248,7 +326,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 7, port: port_);
+            funcId: 10, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -272,7 +350,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 8, port: port_);
+            funcId: 11, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -300,6 +378,28 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as String;
+  }
+
+  @protected
+  AdriveUserGetDriveInfo dco_decode_adrive_user_get_drive_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    return AdriveUserGetDriveInfo(
+      userId: dco_decode_String(arr[0]),
+      name: dco_decode_String(arr[1]),
+      avatar: dco_decode_String(arr[2]),
+      defaultDriveId: dco_decode_String(arr[3]),
+      resourceDriveId: dco_decode_opt_String(arr[4]),
+      backupDriveId: dco_decode_opt_String(arr[5]),
+    );
+  }
+
+  @protected
+  SpaceInfo dco_decode_box_autoadd_space_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_space_info(raw);
   }
 
   @protected
@@ -332,6 +432,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  String? dco_decode_opt_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
+  SpaceInfo? dco_decode_opt_box_autoadd_space_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_space_info(raw);
+  }
+
+  @protected
+  SpaceInfo dco_decode_space_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return SpaceInfo(
+      driveId: dco_decode_String(arr[0]),
+      devicesRootFolderFileId: dco_decode_String(arr[1]),
+      thisDeviceFolderFileId: dco_decode_String(arr[2]),
+    );
+  }
+
+  @protected
   int dco_decode_u_8(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -355,6 +480,31 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
     return utf8.decoder.convert(inner);
+  }
+
+  @protected
+  AdriveUserGetDriveInfo sse_decode_adrive_user_get_drive_info(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_userId = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_avatar = sse_decode_String(deserializer);
+    var var_defaultDriveId = sse_decode_String(deserializer);
+    var var_resourceDriveId = sse_decode_opt_String(deserializer);
+    var var_backupDriveId = sse_decode_opt_String(deserializer);
+    return AdriveUserGetDriveInfo(
+        userId: var_userId,
+        name: var_name,
+        avatar: var_avatar,
+        defaultDriveId: var_defaultDriveId,
+        resourceDriveId: var_resourceDriveId,
+        backupDriveId: var_backupDriveId);
+  }
+
+  @protected
+  SpaceInfo sse_decode_box_autoadd_space_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_space_info(deserializer));
   }
 
   @protected
@@ -382,6 +532,41 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return LoginState.values[inner];
+  }
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceInfo? sse_decode_opt_box_autoadd_space_info(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_space_info(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  SpaceInfo sse_decode_space_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_driveId = sse_decode_String(deserializer);
+    var var_devicesRootFolderFileId = sse_decode_String(deserializer);
+    var var_thisDeviceFolderFileId = sse_decode_String(deserializer);
+    return SpaceInfo(
+        driveId: var_driveId,
+        devicesRootFolderFileId: var_devicesRootFolderFileId,
+        thisDeviceFolderFileId: var_thisDeviceFolderFileId);
   }
 
   @protected
@@ -415,6 +600,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_adrive_user_get_drive_info(
+      AdriveUserGetDriveInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.userId, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.avatar, serializer);
+    sse_encode_String(self.defaultDriveId, serializer);
+    sse_encode_opt_String(self.resourceDriveId, serializer);
+    sse_encode_opt_String(self.backupDriveId, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_space_info(
+      SpaceInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_space_info(self, serializer);
+  }
+
+  @protected
   void sse_encode_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putInt32(self);
@@ -438,6 +642,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_login_state(LoginState self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_String(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_space_info(
+      SpaceInfo? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_space_info(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_space_info(SpaceInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.driveId, serializer);
+    sse_encode_String(self.devicesRootFolderFileId, serializer);
+    sse_encode_String(self.thisDeviceFolderFileId, serializer);
   }
 
   @protected

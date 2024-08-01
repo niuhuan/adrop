@@ -11,6 +11,7 @@ use tokio::sync::Mutex;
 use tokio::sync::oneshot::Sender;
 use crate::data_obj::AppConfig;
 use crate::database::properties::property::save_property;
+use crate::define::do_set_client_after;
 
 lazy_static! {
     static ref SHUTDOWN: Mutex<Option<Sender<()>>> = Mutex::new(None);
@@ -176,6 +177,7 @@ async fn oauth_authorize_body_inner(
     };
 
     save_property("account_config".to_owned(), serde_json::to_string(&config)?).await?;
+    do_set_client_after().await;
 
     Ok(warp::reply::html(include_str!("../../html/success.html")).into_response())
 }

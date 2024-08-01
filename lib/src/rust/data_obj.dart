@@ -24,3 +24,30 @@ class LoginInfo {
           runtimeType == other.runtimeType &&
           state == other.state;
 }
+
+class SpaceInfo {
+  final String driveId;
+  final String devicesRootFolderFileId;
+  final String thisDeviceFolderFileId;
+
+  const SpaceInfo({
+    required this.driveId,
+    required this.devicesRootFolderFileId,
+    required this.thisDeviceFolderFileId,
+  });
+
+  @override
+  int get hashCode =>
+      driveId.hashCode ^
+      devicesRootFolderFileId.hashCode ^
+      thisDeviceFolderFileId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SpaceInfo &&
+          runtimeType == other.runtimeType &&
+          driveId == other.driveId &&
+          devicesRootFolderFileId == other.devicesRootFolderFileId &&
+          thisDeviceFolderFileId == other.thisDeviceFolderFileId;
+}
