@@ -1,3 +1,4 @@
+import 'package:adrop/components/common.dart';
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/components/folder_info.dart';
 import 'package:adrop/src/rust/api/space.dart';
@@ -20,6 +21,7 @@ class AlipanFolderChooser extends StatefulWidget {
 }
 
 class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
+  final ItemListController _itemListController = ItemListController();
   List<FileItem> _current = [];
 
   @override
@@ -60,6 +62,7 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
               ),
               GestureDetector(
                 onTap: () {
+                  showCreateFolderDialog();
                 },
                 child: const Icon(Icons.create_new_folder),
               ),
@@ -132,6 +135,7 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
         Expanded(
           key: Key("AFC:$ffi"),
           child: ItemList(
+            controller: _itemListController,
             driveId: widget.deriveId,
             folderFileId: ffi,
             onChooseFolder: (item) {
@@ -145,16 +149,75 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
       ],
     );
   }
+
+  showCreateFolderDialog() async {
+    var path = "根文件夹/${_current.map((e) => e.fileName).join("/")}";
+    var textController = TextEditingController(text: "");
+    bool? confirm = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("在云盘中新建文夹"),
+          content: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("当前路径: $path"),
+              TextField(
+                controller: textController,
+                decoration: const InputDecoration(
+                  hintText: "文件夹名称",
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("取消"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text("确定"),
+            ),
+          ],
+        );
+      },
+    );
+    var text = textController.text;
+    textController.dispose();
+    if (confirm == true && text.isNotEmpty) {
+      try {
+        await createFolder(
+          deviceId: widget.deriveId,
+          parentFolderFileId: lastFolderFileId(_current),
+          folderName: text,
+        );
+        _itemListController.refresh();
+        defaultToast(context, "成功");
+      } catch (e, s) {
+        print("$e\n$s");
+        defaultToast(context, "$e");
+      }
+    }
+  }
 }
 
 class ItemList extends StatefulWidget {
   const ItemList({
     super.key,
+    required this.controller,
     required this.folderFileId,
     required this.driveId,
     required this.onChooseFolder,
   });
 
+  final ItemListController controller;
   final String driveId;
   final String folderFileId;
   final void Function(FileItem item) onChooseFolder;
@@ -173,11 +236,15 @@ class _ItemListState extends State<ItemList> {
   @override
   void initState() {
     super.initState();
+    widget.controller._state = this;
   }
 
   @override
   void dispose() {
     super.dispose();
+    if (widget.controller._state == this) {
+      widget.controller._state = null;
+    }
   }
 
   @override
@@ -185,17 +252,11 @@ class _ItemListState extends State<ItemList> {
     return ContentBuilder(
       key: _key,
       future: _itemsFuture,
-      onRefresh: () async {
-        setState(() {
-          _itemsFuture = listFolder(
-            deviceId: widget.driveId,
-            parentFolderFileId: widget.folderFileId,
-          );
-          _key = UniqueKey();
-        });
-      },
-      successBuilder: (BuildContext context,
-          AsyncSnapshot<List<FileItem>> snapshot,) {
+      onRefresh: _refresh,
+      successBuilder: (
+        BuildContext context,
+        AsyncSnapshot<List<FileItem>> snapshot,
+      ) {
         return ListView.builder(
           itemCount: snapshot.requireData.length,
           itemBuilder: (BuildContext context, int index) {
@@ -211,5 +272,23 @@ class _ItemListState extends State<ItemList> {
         );
       },
     );
+  }
+
+  Future<dynamic> _refresh() async {
+    setState(() {
+      _itemsFuture = listFolder(
+        deviceId: widget.driveId,
+        parentFolderFileId: widget.folderFileId,
+      );
+      _key = UniqueKey();
+    });
+  }
+}
+
+class ItemListController {
+  _ItemListState? _state;
+
+  void refresh() {
+    _state?._refresh();
   }
 }

@@ -20,6 +20,15 @@ Future<List<FileItem>> listFolder(
     RustLib.instance.api.crateApiSpaceListFolder(
         deviceId: deviceId, parentFolderFileId: parentFolderFileId);
 
+Future<void> createFolder(
+        {required String deviceId,
+        required String parentFolderFileId,
+        required String folderName}) =>
+    RustLib.instance.api.crateApiSpaceCreateFolder(
+        deviceId: deviceId,
+        parentFolderFileId: parentFolderFileId,
+        folderName: folderName);
+
 class AdriveUserGetDriveInfo {
   final String userId;
   final String name;

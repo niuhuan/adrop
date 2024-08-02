@@ -1,4 +1,4 @@
-use alipan::AdriveOpenFileType;
+use alipan::{AdriveOpenFileType, CheckNameMode};
 use alipan::response::AdriveOpenFile;
 use serde_derive::{Deserialize, Serialize};
 use crate::data_obj::{Config, SpaceInfo};
@@ -63,6 +63,23 @@ fn put_folders(folders: &mut Vec<FileItem>, items: Vec<AdriveOpenFile>) {
             file_name: item.name,
         });
     }
+}
+
+pub async fn create_folder(device_id: String, parent_folder_file_id: String, folder_name: String) -> anyhow::Result<()> {
+    let client = get_alipan_client();
+    let result = client.adrive_open_file_create()
+        .await
+        .drive_id(device_id.as_str())
+        .parent_file_id(parent_folder_file_id.as_str())
+        .name(folder_name.as_str())
+        .r#type(AdriveOpenFileType::Folder)
+        .check_name_mode(CheckNameMode::Refuse)
+        .request()
+        .await?;
+    if result.exist {
+        return Err(anyhow::anyhow!("Folder already exists"));
+    }
+    Ok(())
 }
 
 
