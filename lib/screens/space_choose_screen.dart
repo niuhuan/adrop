@@ -48,6 +48,7 @@ class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
             key: const Key("AlipanFolderChooser"),
             deriveId: snapshot.requireData,
             onFolderChange: _onFolderChange,
+            onFolderCheck: _onFolderCheck,
           );
         },
       ),
@@ -63,6 +64,12 @@ class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
   }
 
   void _onFolderChange(List<FileItem> items) {
+    setState(() {
+      _folderId = lastFolderFileId(items);
+    });
+  }
+
+  void _onFolderCheck(List<FileItem> items) {
     setState(() {
       _folderId = lastFolderFileId(items);
     });

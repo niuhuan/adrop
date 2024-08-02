@@ -1,7 +1,6 @@
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/components/folder_info.dart';
 import 'package:adrop/src/rust/api/space.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AlipanFolderChooser extends StatefulWidget {
@@ -9,10 +8,12 @@ class AlipanFolderChooser extends StatefulWidget {
     super.key,
     required this.deriveId,
     required this.onFolderChange,
+    required this.onFolderCheck,
   });
 
   final String deriveId;
   final void Function(List<FileItem> items) onFolderChange;
+  final void Function(List<FileItem> items) onFolderCheck;
 
   @override
   State<StatefulWidget> createState() => _AlipanFolderChooserState();
@@ -41,15 +42,31 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
           child: Row(
             children: [
               Container(
-                width: 50,
+                width: 18,
               ),
-              const Icon(
-                Icons.folder,
+              GestureDetector(
+                onTap: () {
+                  if (_current.isNotEmpty) {
+                    setState(() {
+                      _current.removeLast();
+                    });
+                    widget.onFolderChange(_current);
+                  }
+                },
+                child: const Icon(Icons.reply),
               ),
               Container(
-                width: 8,
+                width: 10,
               ),
-              const Text("PATH : "),
+              GestureDetector(
+                onTap: () {
+                },
+                child: const Icon(Icons.create_new_folder),
+              ),
+              Container(
+                width: 25,
+              ),
+              const Text("路径 : "),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.only(
@@ -67,7 +84,7 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
                           widget.onFolderChange(_current);
                         },
                         child: const Text(
-                          "ROOT",
+                          "根文件夹",
                           style: TextStyle(
                             decoration: TextDecoration.underline,
                           ),
@@ -95,6 +112,18 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
                     ]
                   ],
                 ),
+              ),
+              Container(
+                width: 25,
+              ),
+              GestureDetector(
+                onTap: () {
+                  widget.onFolderCheck(_current);
+                },
+                child: const Icon(Icons.check),
+              ),
+              Container(
+                width: 18,
               ),
             ],
           ),
@@ -165,10 +194,8 @@ class _ItemListState extends State<ItemList> {
           _key = UniqueKey();
         });
       },
-      successBuilder: (
-        BuildContext context,
-        AsyncSnapshot<List<FileItem>> snapshot,
-      ) {
+      successBuilder: (BuildContext context,
+          AsyncSnapshot<List<FileItem>> snapshot,) {
         return ListView.builder(
           itemCount: snapshot.requireData.length,
           itemBuilder: (BuildContext context, int index) {
