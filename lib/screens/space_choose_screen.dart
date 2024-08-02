@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:adrop/components/content_builder.dart';
+import 'package:adrop/screens/space_config_screen.dart';
 import 'package:flutter/material.dart';
 import '../components/alipan_folder_chooser.dart';
 import '../components/folder_info.dart';
@@ -15,9 +18,11 @@ class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
   late Future<String> _defaultDriveFuture = _loadDefaultDerive();
   late Key _driveKey = UniqueKey();
   String _folderId = "root";
+  late String _defaultDriveId;
 
   Future<String> _loadDefaultDerive() async {
     var di = await oauthDeriveInfo();
+    _defaultDriveId = di.defaultDriveId;
     return di.defaultDriveId;
   }
 
@@ -69,9 +74,47 @@ class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
     });
   }
 
-  void _onFolderCheck(List<FileItem> items) {
+  void _onFolderCheck(List<FileItem> items) async {
+    log("message");
     setState(() {
       _folderId = lastFolderFileId(items);
     });
+    bool? conf = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('选择传输文件夹'),
+          content: SingleChildScrollView(
+            child: Text(lastFolderName(items)),
+          ),
+          actions: <Widget>[
+            MaterialButton(
+              child: const Text('返回'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            MaterialButton(
+              child: const Text('确认'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+    if (conf == true) {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+        builder: (context) => SpaceConfigScreen(
+          deriveId: _defaultDriveId,
+          folderId: _folderId,
+        ),
+      ));
+    }
   }
+}
+
+String lastFolderName(List<FileItem> items) {
+  return "根文件夹/${items.map((e) => e.fileName).join("/")}";
 }

@@ -22,7 +22,7 @@ class AlipanFolderChooser extends StatefulWidget {
 
 class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
   final ItemListController _itemListController = ItemListController();
-  List<FileItem> _current = [];
+  final List<FileItem> _current = [];
 
   @override
   void initState() {
