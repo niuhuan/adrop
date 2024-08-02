@@ -7,13 +7,18 @@ import '../data_obj.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `clear`, `map`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `clone`, `eq`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `clear`, `map`, `put_folders`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`
 
 Future<SpaceInfo?> spaceInfo() => RustLib.instance.api.crateApiSpaceSpaceInfo();
 
 Future<AdriveUserGetDriveInfo> oauthDeriveInfo() =>
     RustLib.instance.api.crateApiSpaceOauthDeriveInfo();
+
+Future<List<FileItem>> listFolder(
+        {required String deviceId, required String parentFolderFileId}) =>
+    RustLib.instance.api.crateApiSpaceListFolder(
+        deviceId: deviceId, parentFolderFileId: parentFolderFileId);
 
 class AdriveUserGetDriveInfo {
   final String userId;
@@ -55,4 +60,28 @@ class AdriveUserGetDriveInfo {
           defaultDriveId == other.defaultDriveId &&
           resourceDriveId == other.resourceDriveId &&
           backupDriveId == other.backupDriveId;
+}
+
+class FileItem {
+  final String fileId;
+  final String fileName;
+
+  const FileItem({
+    required this.fileId,
+    required this.fileName,
+  });
+
+  static Future<FileItem> default_() =>
+      RustLib.instance.api.crateApiSpaceFileItemDefault();
+
+  @override
+  int get hashCode => fileId.hashCode ^ fileName.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FileItem &&
+          runtimeType == other.runtimeType &&
+          fileId == other.fileId &&
+          fileName == other.fileName;
 }

@@ -1,6 +1,7 @@
 import 'package:adrop/components/content_builder.dart';
 import 'package:flutter/material.dart';
 import '../components/alipan_folder_chooser.dart';
+import '../components/folder_info.dart';
 import '../src/rust/api/space.dart';
 
 class SpaceChooseScreen extends StatefulWidget {
@@ -11,8 +12,9 @@ class SpaceChooseScreen extends StatefulWidget {
 }
 
 class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
-  late Future<String> _defaultDeriveFuture = _loadDefaultDerive();
-  late Key _derviceKey = UniqueKey();
+  late Future<String> _defaultDriveFuture = _loadDefaultDerive();
+  late Key _driveKey = UniqueKey();
+  String _folderId = "root";
 
   Future<String> _loadDefaultDerive() async {
     var di = await oauthDeriveInfo();
@@ -33,18 +35,19 @@ class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ContentBuilder(
-        key: _derviceKey,
-        future: _defaultDeriveFuture,
+        key: _driveKey,
+        future: _defaultDriveFuture,
         onRefresh: () async {
           setState(() {
-            _defaultDeriveFuture = _loadDefaultDerive();
-            _derviceKey = UniqueKey();
+            _defaultDriveFuture = _loadDefaultDerive();
+            _driveKey = UniqueKey();
           });
         },
         successBuilder: (BuildContext context, AsyncSnapshot<String> snapshot) {
           return AlipanFolderChooser(
             key: const Key("AlipanFolderChooser"),
             deriveId: snapshot.requireData,
+            onFolderChange: _onFolderChange,
           );
         },
       ),
@@ -57,5 +60,11 @@ class _SpaceChooseScreenState extends State<SpaceChooseScreen> {
         title: const Text('Space Set'),
       ),
     );
+  }
+
+  void _onFolderChange(List<FileItem> items) {
+    setState(() {
+      _folderId = lastFolderFileId(items);
+    });
   }
 }

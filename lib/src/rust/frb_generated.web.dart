@@ -41,7 +41,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceInfo dco_decode_box_autoadd_space_info(dynamic raw);
 
   @protected
+  FileItem dco_decode_file_item(dynamic raw);
+
+  @protected
   int dco_decode_i_32(dynamic raw);
+
+  @protected
+  List<FileItem> dco_decode_list_file_item(dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
@@ -81,7 +87,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceInfo sse_decode_box_autoadd_space_info(SseDeserializer deserializer);
 
   @protected
+  FileItem sse_decode_file_item(SseDeserializer deserializer);
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  List<FileItem> sse_decode_list_file_item(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
@@ -127,7 +139,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       SpaceInfo self, SseSerializer serializer);
 
   @protected
+  void sse_encode_file_item(FileItem self, SseSerializer serializer);
+
+  @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_file_item(List<FileItem> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(
