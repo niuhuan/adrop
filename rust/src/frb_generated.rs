@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.1.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 465908647;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -387090301;
 
 // Section: executor
 
@@ -357,6 +357,49 @@ fn wire__crate__api__space__has_set_password_impl(
                         let output_ok = crate::api::space::has_set_password(
                             api_drive_id,
                             api_parent_folder_file_id,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__space__list_devices_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "list_devices",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_drive_id = <String>::sse_decode(&mut deserializer);
+            let api_parent_folder_file_id = <String>::sse_decode(&mut deserializer);
+            let api_true_pass_base64 = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::space::list_devices(
+                            api_drive_id,
+                            api_parent_folder_file_id,
+                            api_true_pass_base64,
                         )
                         .await?;
                         Ok(output_ok)
@@ -698,6 +741,18 @@ impl SseDecode for crate::api::space::AdriveUserGetDriveInfo {
     }
 }
 
+impl SseDecode for crate::data_obj::Device {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_name = <String>::sse_decode(deserializer);
+        let mut var_folderFileId = <String>::sse_decode(deserializer);
+        return crate::data_obj::Device {
+            name: var_name,
+            folder_file_id: var_folderFileId,
+        };
+    }
+}
+
 impl SseDecode for crate::api::space::FileItem {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -714,6 +769,18 @@ impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_i32::<NativeEndian>().unwrap()
+    }
+}
+
+impl SseDecode for Vec<crate::data_obj::Device> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::data_obj::Device>::sse_decode(deserializer));
+        }
+        return ans_;
     }
 }
 
@@ -838,19 +905,20 @@ fn pde_ffi_dispatcher_primary_impl(
         7 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
         8 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
         9 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__user_setting__start_login_service_impl(
+        10 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__user_setting__start_login_service_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__user_setting__stop_login_service_impl(
+        18 => wire__crate__api__user_setting__stop_login_service_impl(
             port,
             ptr,
             rust_vec_len,
@@ -897,6 +965,22 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::space::AdriveUserGetDriveInfo
     for crate::api::space::AdriveUserGetDriveInfo
 {
     fn into_into_dart(self) -> crate::api::space::AdriveUserGetDriveInfo {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::data_obj::Device {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.name.into_into_dart().into_dart(),
+            self.folder_file_id.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::data_obj::Device {}
+impl flutter_rust_bridge::IntoIntoDart<crate::data_obj::Device> for crate::data_obj::Device {
+    fn into_into_dart(self) -> crate::data_obj::Device {
         self
     }
 }
@@ -997,6 +1081,14 @@ impl SseEncode for crate::api::space::AdriveUserGetDriveInfo {
     }
 }
 
+impl SseEncode for crate::data_obj::Device {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.name, serializer);
+        <String>::sse_encode(self.folder_file_id, serializer);
+    }
+}
+
 impl SseEncode for crate::api::space::FileItem {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1009,6 +1101,16 @@ impl SseEncode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
+    }
+}
+
+impl SseEncode for Vec<crate::data_obj::Device> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::data_obj::Device>::sse_encode(item, serializer);
+        }
     }
 }
 

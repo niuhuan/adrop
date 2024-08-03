@@ -1,9 +1,10 @@
 use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
 use alipan::response::AdriveOpenFile;
+use base64::Engine;
 use reqwest::Body;
 use serde_derive::{Deserialize, Serialize};
-use crate::custom_crypto::{decrypt_base64, encrypt_buff_to_base64};
-use crate::data_obj::{Config, SpaceInfo};
+use crate::custom_crypto::{decrypt_base64, decrypt_file_name, encrypt_buff_to_base64};
+use crate::data_obj::{Config, Device, SpaceInfo};
 use crate::database::properties::property::load_property;
 use crate::define::get_alipan_client;
 
@@ -129,7 +130,7 @@ pub async fn set_new_password(
     drive_id: String,
     parent_folder_file_id: String,
     password: String,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<String> {
     let key = random_string(64);
     let passbook = encrypt_buff_to_base64(key.as_slice(), password.as_bytes())?;
     let client = get_alipan_client();
@@ -162,15 +163,61 @@ pub async fn set_new_password(
         .upload_id(file.upload_id.clone())
         .request()
         .await?;
-    Ok(())
+    Ok(base64::prelude::BASE64_URL_SAFE.encode(key.as_slice()))
 }
 
 pub async fn check_old_password(
     password_enc: String,
     password: String,
-) -> anyhow::Result<()> {
-    decrypt_base64(password_enc.as_str(), password.as_bytes())?;
-    Ok(())
+) -> anyhow::Result<String> {
+    let buff = decrypt_base64(password_enc.as_str(), password.as_bytes())?;
+    Ok(base64::prelude::BASE64_URL_SAFE.encode(buff.as_slice()))
+}
+
+pub async fn list_devices(
+    drive_id: String,
+    parent_folder_file_id: String,
+    true_pass_base64: String,
+) -> anyhow::Result<Vec<Device>> {
+    let true_pass = base64::prelude::BASE64_URL_SAFE.decode(true_pass_base64.as_bytes())?;
+    let mut files = vec![];
+    let client = get_alipan_client();
+    let mut rsp = client.adrive_open_file_list()
+        .await
+        .drive_id(drive_id.as_str())
+        .parent_file_id(parent_folder_file_id.as_str())
+        .r#type(AdriveOpenFileType::Folder)
+        .request()
+        .await?;
+    for x in rsp.items.into_iter() {
+        files.push(x);
+    }
+    while rsp.next_marker.is_some() && !rsp.next_marker.as_deref().unwrap().is_empty() {
+        rsp = client.adrive_open_file_list()
+            .await
+            .drive_id(&drive_id)
+            .parent_file_id(&parent_folder_file_id)
+            .r#type(AdriveOpenFileType::Folder)
+            .marker(rsp.next_marker.as_deref().unwrap())
+            .request()
+            .await?;
+        for x in rsp.items.into_iter() {
+            files.push(x);
+        }
+    }
+    let mut devices = vec![];
+    for file in files {
+        if file.name.ends_with(".device") {
+            let enc_device_name = file.name.strip_suffix(".device").unwrap();
+            if let Ok(device_name) = decrypt_file_name(enc_device_name, true_pass.as_slice()) {
+                devices.push(Device {
+                    name: device_name,
+                    folder_file_id: file.file_id,
+                });
+            }
+        }
+    }
+    Ok(devices)
 }
 
 fn random_string(len: usize) -> Vec<u8> {

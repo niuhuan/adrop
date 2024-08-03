@@ -39,10 +39,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceInfo dco_decode_box_autoadd_space_info(dynamic raw);
 
   @protected
+  Device dco_decode_device(dynamic raw);
+
+  @protected
   FileItem dco_decode_file_item(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
+
+  @protected
+  List<Device> dco_decode_list_device(dynamic raw);
 
   @protected
   List<FileItem> dco_decode_list_file_item(dynamic raw);
@@ -85,10 +91,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceInfo sse_decode_box_autoadd_space_info(SseDeserializer deserializer);
 
   @protected
+  Device sse_decode_device(SseDeserializer deserializer);
+
+  @protected
   FileItem sse_decode_file_item(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
+  List<Device> sse_decode_list_device(SseDeserializer deserializer);
 
   @protected
   List<FileItem> sse_decode_list_file_item(SseDeserializer deserializer);
@@ -137,10 +149,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       SpaceInfo self, SseSerializer serializer);
 
   @protected
+  void sse_encode_device(Device self, SseSerializer serializer);
+
+  @protected
   void sse_encode_file_item(FileItem self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_device(List<Device> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_file_item(List<FileItem> self, SseSerializer serializer);

@@ -117,7 +117,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
         ElevatedButton(
           onPressed: () async {
             try {
-              await setNewPassword(
+              var truePass = await setNewPassword(
                 driveId: widget.deriveId,
                 parentFolderFileId: widget.folderId,
                 password: _inputPassword,
@@ -128,7 +128,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
                   builder: (context) => ChooseDeviceScreen(
                     deriveId: widget.deriveId,
                     folderId: widget.folderId,
-                    password: _inputPassword,
+                    password: truePass,
                   ),
                 ),
               );
@@ -163,7 +163,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
         ElevatedButton(
           onPressed: () async {
             try {
-              await checkOldPassword(
+              var truePass = await checkOldPassword(
                 passwordEnc: _passwordEnc!,
                 password: _inputPassword,
               );
@@ -172,7 +172,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
                   builder: (context) => ChooseDeviceScreen(
                     deriveId: widget.deriveId,
                     folderId: widget.folderId,
-                    password: _inputPassword,
+                    password: truePass,
                   ),
                 ),
               );

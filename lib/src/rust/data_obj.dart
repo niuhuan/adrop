@@ -7,6 +7,27 @@ import 'data_obj/enums.dart';
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+class Device {
+  final String name;
+  final String folderFileId;
+
+  const Device({
+    required this.name,
+    required this.folderFileId,
+  });
+
+  @override
+  int get hashCode => name.hashCode ^ folderFileId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Device &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          folderFileId == other.folderFileId;
+}
+
 class LoginInfo {
   final LoginState state;
 

@@ -66,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.1.0';
 
   @override
-  int get rustContentHash => 465908647;
+  int get rustContentHash => -387090301;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -87,7 +87,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<AdriveUserGetDriveInfo> crateApiSpaceAdriveUserGetDriveInfoDefault();
 
-  Future<void> crateApiSpaceCheckOldPassword(
+  Future<String> crateApiSpaceCheckOldPassword(
       {required String passwordEnc, required String password});
 
   Future<void> crateApiSpaceCreateFolder(
@@ -100,12 +100,17 @@ abstract class RustLibApi extends BaseApi {
   Future<String?> crateApiSpaceHasSetPassword(
       {required String driveId, required String parentFolderFileId});
 
+  Future<List<Device>> crateApiSpaceListDevices(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String truePassBase64});
+
   Future<List<FileItem>> crateApiSpaceListFolder(
       {required String driveId, required String parentFolderFileId});
 
   Future<AdriveUserGetDriveInfo> crateApiSpaceOauthDeriveInfo();
 
-  Future<void> crateApiSpaceSetNewPassword(
+  Future<String> crateApiSpaceSetNewPassword(
       {required String driveId,
       required String parentFolderFileId,
       required String password});
@@ -247,7 +252,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiSpaceCheckOldPassword(
+  Future<String> crateApiSpaceCheckOldPassword(
       {required String passwordEnc, required String password}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
@@ -258,7 +263,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             funcId: 6, port: port_);
       },
       codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
+        decodeSuccessData: sse_decode_String,
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiSpaceCheckOldPasswordConstMeta,
@@ -354,6 +359,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<List<Device>> crateApiSpaceListDevices(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String truePassBase64}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(driveId, serializer);
+        sse_encode_String(parentFolderFileId, serializer);
+        sse_encode_String(truePassBase64, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 10, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_device,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSpaceListDevicesConstMeta,
+      argValues: [driveId, parentFolderFileId, truePassBase64],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceListDevicesConstMeta => const TaskConstMeta(
+        debugName: "list_devices",
+        argNames: ["driveId", "parentFolderFileId", "truePassBase64"],
+      );
+
+  @override
   Future<List<FileItem>> crateApiSpaceListFolder(
       {required String driveId, required String parentFolderFileId}) {
     return handler.executeNormal(NormalTask(
@@ -362,7 +396,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(driveId, serializer);
         sse_encode_String(parentFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 10, port: port_);
+            funcId: 11, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_file_item,
@@ -385,7 +419,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 11, port: port_);
+            funcId: 12, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_adrive_user_get_drive_info,
@@ -404,7 +438,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiSpaceSetNewPassword(
+  Future<String> crateApiSpaceSetNewPassword(
       {required String driveId,
       required String parentFolderFileId,
       required String password}) {
@@ -415,10 +449,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(password, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 12, port: port_);
+            funcId: 13, port: port_);
       },
       codec: SseCodec(
-        decodeSuccessData: sse_decode_unit,
+        decodeSuccessData: sse_decode_String,
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiSpaceSetNewPasswordConstMeta,
@@ -439,7 +473,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 13, port: port_);
+            funcId: 14, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_opt_box_autoadd_space_info,
@@ -463,7 +497,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(url, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 14, port: port_);
+            funcId: 15, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -487,7 +521,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 15, port: port_);
+            funcId: 16, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_login_info,
@@ -510,7 +544,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 16, port: port_);
+            funcId: 17, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -534,7 +568,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 17, port: port_);
+            funcId: 18, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -587,6 +621,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Device dco_decode_device(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return Device(
+      name: dco_decode_String(arr[0]),
+      folderFileId: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
   FileItem dco_decode_file_item(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
@@ -602,6 +648,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int dco_decode_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
+  }
+
+  @protected
+  List<Device> dco_decode_list_device(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_device).toList();
   }
 
   @protected
@@ -710,6 +762,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Device sse_decode_device(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_name = sse_decode_String(deserializer);
+    var var_folderFileId = sse_decode_String(deserializer);
+    return Device(name: var_name, folderFileId: var_folderFileId);
+  }
+
+  @protected
   FileItem sse_decode_file_item(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_fileId = sse_decode_String(deserializer);
@@ -721,6 +781,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int sse_decode_i_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getInt32();
+  }
+
+  @protected
+  List<Device> sse_decode_list_device(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <Device>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_device(deserializer));
+    }
+    return ans_;
   }
 
   @protected
@@ -841,6 +913,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_device(Device self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.name, serializer);
+    sse_encode_String(self.folderFileId, serializer);
+  }
+
+  @protected
   void sse_encode_file_item(FileItem self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.fileId, serializer);
@@ -851,6 +930,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putInt32(self);
+  }
+
+  @protected
+  void sse_encode_list_device(List<Device> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_device(item, serializer);
+    }
   }
 
   @protected

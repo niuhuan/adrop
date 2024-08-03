@@ -7,7 +7,7 @@ import '../data_obj.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `clear`, `map`, `put_items`
+// These functions are ignored because they are not marked as `pub`: `clear`, `map`, `put_items`, `random_string`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`
 
 Future<SpaceInfo?> spaceInfo() => RustLib.instance.api.crateApiSpaceSpaceInfo();
@@ -34,7 +34,7 @@ Future<String?> hasSetPassword(
     RustLib.instance.api.crateApiSpaceHasSetPassword(
         driveId: driveId, parentFolderFileId: parentFolderFileId);
 
-Future<void> setNewPassword(
+Future<String> setNewPassword(
         {required String driveId,
         required String parentFolderFileId,
         required String password}) =>
@@ -43,10 +43,19 @@ Future<void> setNewPassword(
         parentFolderFileId: parentFolderFileId,
         password: password);
 
-Future<void> checkOldPassword(
+Future<String> checkOldPassword(
         {required String passwordEnc, required String password}) =>
     RustLib.instance.api.crateApiSpaceCheckOldPassword(
         passwordEnc: passwordEnc, password: password);
+
+Future<List<Device>> listDevices(
+        {required String driveId,
+        required String parentFolderFileId,
+        required String truePassBase64}) =>
+    RustLib.instance.api.crateApiSpaceListDevices(
+        driveId: driveId,
+        parentFolderFileId: parentFolderFileId,
+        truePassBase64: truePassBase64);
 
 class AdriveUserGetDriveInfo {
   final String userId;
