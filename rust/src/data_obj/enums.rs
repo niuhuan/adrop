@@ -1,4 +1,3 @@
-
 macro_rules! enum_str {
     ($name:ident { $($variant:ident($str:expr), )* }) => {
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -71,9 +70,19 @@ enum_str!(LoginState {
     Set("set"),
 });
 
-
 impl Default for LoginState {
     fn default() -> Self {
         Self::Unset
+    }
+}
+
+enum_str!(AfterDownload {
+    MoveToTrash("move_to_trash"),
+    Delete("delete"),
+});
+
+impl Default for AfterDownload {
+    fn default() -> Self {
+        Self::MoveToTrash
     }
 }

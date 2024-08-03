@@ -98,7 +98,7 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
           );
           Navigator.of(context)
               .pushReplacement(MaterialPageRoute(builder: (context) {
-            return AppScreen();
+            return const AppScreen();
           }));
         } catch (e, s) {
           defaultToast(context, "选择失败\n$e");
