@@ -1,6 +1,6 @@
 import 'package:adrop/components/common.dart';
 import 'package:adrop/components/content_error.dart';
-import 'package:adrop/screens/choose_device_screen.dart';
+import 'package:adrop/screens/space_device_screen.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:flutter/material.dart';
 
@@ -125,7 +125,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
               defaultToast(context, "设置密码成功");
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => ChooseDeviceScreen(
+                  builder: (context) => SpaceDeviceScreen(
                     deriveId: widget.deriveId,
                     folderId: widget.folderId,
                     password: truePass,
@@ -169,7 +169,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
               );
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => ChooseDeviceScreen(
+                  builder: (context) => SpaceDeviceScreen(
                     deriveId: widget.deriveId,
                     folderId: widget.folderId,
                     password: truePass,

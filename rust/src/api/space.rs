@@ -1,12 +1,13 @@
-use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
-use alipan::response::AdriveOpenFile;
-use base64::Engine;
-use reqwest::Body;
-use serde_derive::{Deserialize, Serialize};
 use crate::custom_crypto::{decrypt_base64, decrypt_file_name, encrypt_buff_to_base64};
 use crate::data_obj::{Config, Device, SpaceInfo};
 use crate::database::properties::property::{load_property, save_property};
 use crate::define::get_alipan_client;
+use alipan::response::AdriveOpenFile;
+use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
+use base64::Engine;
+use reqwest::Body;
+use sea_orm::ColIdx;
+use serde_derive::{Deserialize, Serialize};
 
 pub async fn space_info() -> anyhow::Result<Option<SpaceInfo>> {
     let space_config = load_property("space_config").await?;
@@ -26,16 +27,23 @@ async fn clear() -> anyhow::Result<()> {
 }
 
 pub async fn oauth_derive_info() -> anyhow::Result<AdriveUserGetDriveInfo> {
-    let data = get_alipan_client().adrive_user_get_drive_info()
-        .await.request().await?;
+    let data = get_alipan_client()
+        .adrive_user_get_drive_info()
+        .await
+        .request()
+        .await?;
     map(data)
 }
 
-pub async fn list_folder(drive_id: String, parent_folder_file_id: String) -> anyhow::Result<Vec<FileItem>> {
+pub async fn list_folder(
+    drive_id: String,
+    parent_folder_file_id: String,
+) -> anyhow::Result<Vec<FileItem>> {
     let client = get_alipan_client();
 
     let mut folders = vec![];
-    let mut rsp = client.adrive_open_file_list()
+    let mut rsp = client
+        .adrive_open_file_list()
         .await
         .drive_id(&drive_id)
         .parent_file_id(&parent_folder_file_id)
@@ -44,7 +52,8 @@ pub async fn list_folder(drive_id: String, parent_folder_file_id: String) -> any
         .await?;
     put_items(&mut folders, rsp.items);
     while rsp.next_marker.is_some() && !rsp.next_marker.as_deref().unwrap().is_empty() {
-        rsp = client.adrive_open_file_list()
+        rsp = client
+            .adrive_open_file_list()
             .await
             .drive_id(&drive_id)
             .parent_file_id(&parent_folder_file_id)
@@ -67,9 +76,14 @@ fn put_items(folders: &mut Vec<FileItem>, items: Vec<AdriveOpenFile>) {
     }
 }
 
-pub async fn create_folder(drive_id: String, parent_folder_file_id: String, folder_name: String) -> anyhow::Result<()> {
+pub async fn create_folder(
+    drive_id: String,
+    parent_folder_file_id: String,
+    folder_name: String,
+) -> anyhow::Result<()> {
     let client = get_alipan_client();
-    let result = client.adrive_open_file_create()
+    let result = client
+        .adrive_open_file_create()
         .await
         .drive_id(drive_id.as_str())
         .parent_file_id(parent_folder_file_id.as_str())
@@ -84,11 +98,15 @@ pub async fn create_folder(drive_id: String, parent_folder_file_id: String, fold
     Ok(())
 }
 
-pub async fn has_set_password(drive_id: String, parent_folder_file_id: String) -> anyhow::Result<Option<String>> {
+pub async fn has_set_password(
+    drive_id: String,
+    parent_folder_file_id: String,
+) -> anyhow::Result<Option<String>> {
     let client = get_alipan_client();
     //
     let mut files = vec![];
-    let mut rsp = client.adrive_open_file_list()
+    let mut rsp = client
+        .adrive_open_file_list()
         .await
         .drive_id(&drive_id)
         .parent_file_id(&parent_folder_file_id)
@@ -97,7 +115,8 @@ pub async fn has_set_password(drive_id: String, parent_folder_file_id: String) -
         .await?;
     put_items(&mut files, rsp.items);
     while rsp.next_marker.is_some() && !rsp.next_marker.as_deref().unwrap().is_empty() {
-        rsp = client.adrive_open_file_list()
+        rsp = client
+            .adrive_open_file_list()
             .await
             .drive_id(&drive_id)
             .parent_file_id(&parent_folder_file_id)
@@ -107,9 +126,13 @@ pub async fn has_set_password(drive_id: String, parent_folder_file_id: String) -
             .await?;
         put_items(&mut files, rsp.items);
     }
-    let last = files.iter().filter(|item| item.file_name == "password.txt").last();
+    let last = files
+        .iter()
+        .filter(|item| item.file_name == "password.txt")
+        .last();
     if let Some(last) = last {
-        let url = client.adrive_open_file_get_download_url()
+        let url = client
+            .adrive_open_file_get_download_url()
             .await
             .drive_id(drive_id.as_str())
             .file_id(last.file_id.as_str())
@@ -118,7 +141,13 @@ pub async fn has_set_password(drive_id: String, parent_folder_file_id: String) -
         let lock = client.agent.lock().await;
         let agent = lock.clone();
         drop(lock);
-        let password_enc = agent.get(url.url.as_str()).send().await?.error_for_status()?.text().await?;
+        let password_enc = agent
+            .get(url.url.as_str())
+            .send()
+            .await?
+            .error_for_status()?
+            .text()
+            .await?;
         Ok(Some(password_enc))
     } else {
         Ok(None)
@@ -165,10 +194,7 @@ pub async fn set_new_password(
     Ok(base64::prelude::BASE64_URL_SAFE.encode(key.as_slice()))
 }
 
-pub async fn check_old_password(
-    password_enc: String,
-    password: String,
-) -> anyhow::Result<String> {
+pub async fn check_old_password(password_enc: String, password: String) -> anyhow::Result<String> {
     let buff = decrypt_base64(password_enc.as_str(), password.as_bytes())?;
     Ok(base64::prelude::BASE64_URL_SAFE.encode(buff.as_slice()))
 }
@@ -181,7 +207,8 @@ pub async fn list_devices(
     let true_pass = base64::prelude::BASE64_URL_SAFE.decode(true_pass_base64.as_bytes())?;
     let mut files = vec![];
     let client = get_alipan_client();
-    let mut rsp = client.adrive_open_file_list()
+    let mut rsp = client
+        .adrive_open_file_list()
         .await
         .drive_id(drive_id.as_str())
         .parent_file_id(parent_folder_file_id.as_str())
@@ -192,7 +219,8 @@ pub async fn list_devices(
         files.push(x);
     }
     while rsp.next_marker.is_some() && !rsp.next_marker.as_deref().unwrap().is_empty() {
-        rsp = client.adrive_open_file_list()
+        rsp = client
+            .adrive_open_file_list()
             .await
             .drive_id(&drive_id)
             .parent_file_id(&parent_folder_file_id)
@@ -207,11 +235,18 @@ pub async fn list_devices(
     let mut devices = vec![];
     for file in files {
         if file.name.ends_with(".device") {
-            let enc_device_name = file.name.strip_suffix(".device").unwrap();
+            let device_pattern = regex::Regex::new(r"^(.+)\.(\d+)\.device$").unwrap();
+            if !device_pattern.is_match(file.name.as_str()) {
+                continue;
+            }
+            let cap = device_pattern.captures(file.name.as_str()).unwrap();
+            let enc_device_name = cap.get(1).unwrap().as_str();
+            let device_type = cap.get(2).unwrap().as_str().parse::<i32>().unwrap();
             if let Ok(device_name) = decrypt_file_name(enc_device_name, true_pass.as_slice()) {
                 devices.push(Device {
                     name: device_name,
                     folder_file_id: file.file_id,
+                    device_type,
                 });
             }
         }
@@ -224,6 +259,7 @@ pub async fn create_new_device(
     parent_folder_file_id: String,
     true_pass_base64: String,
     device_name: String,
+    device_type: i32, // device_icon
 ) -> anyhow::Result<()> {
     let true_pass = base64::prelude::BASE64_URL_SAFE.decode(true_pass_base64.as_bytes())?;
     let enc_device_name = encrypt_buff_to_base64(true_pass.as_slice(), device_name.as_bytes())?;
@@ -235,8 +271,7 @@ pub async fn create_new_device(
         .drive_id(drive_id.clone())
         .parent_file_id(parent_folder_file_id.clone())
         .r#type(AdriveOpenFileType::Folder)
-        .name(format!("{}.device", device_name).as_str())
-        .size(enc_device_name.len() as i64)
+        .name(format!("{}.{}.device", enc_device_name, device_type).as_str())
         .request()
         .await?;
     if file.exist {
@@ -278,7 +313,6 @@ fn random_string(len: usize) -> Vec<u8> {
     buff
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, Default)]
 pub struct AdriveUserGetDriveInfo {
     pub user_id: String,
@@ -295,9 +329,7 @@ pub struct FileItem {
     pub file_name: String,
 }
 
-fn map<T: serde::Serialize, R: for<'a> serde::Deserialize<'a>>(
-    t: T,
-) -> anyhow::Result<R> {
+fn map<T: serde::Serialize, R: for<'a> serde::Deserialize<'a>>(t: T) -> anyhow::Result<R> {
     let string = serde_json::to_string(&t)?;
     let r: R = serde_json::from_str(&string)?;
     Ok(r)

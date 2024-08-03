@@ -61,12 +61,14 @@ Future<void> createNewDevice(
         {required String driveId,
         required String parentFolderFileId,
         required String truePassBase64,
-        required String deviceName}) =>
+        required String deviceName,
+        required int deviceType}) =>
     RustLib.instance.api.crateApiSpaceCreateNewDevice(
         driveId: driveId,
         parentFolderFileId: parentFolderFileId,
         truePassBase64: truePassBase64,
-        deviceName: deviceName);
+        deviceName: deviceName,
+        deviceType: deviceType);
 
 Future<void> chooseOldDevice(
         {required String driveId,

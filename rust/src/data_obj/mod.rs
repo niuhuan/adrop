@@ -1,8 +1,8 @@
 pub mod enums;
 
-use serde_derive::{Deserialize, Serialize};
-use alipan::AccessToken;
 use crate::data_obj::enums::LoginState;
+use alipan::AccessToken;
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Config {
@@ -33,4 +33,5 @@ pub struct SpaceInfo {
 pub struct Device {
     pub name: String,
     pub folder_file_id: String,
+    pub device_type: i32,
 }

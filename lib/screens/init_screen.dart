@@ -1,5 +1,6 @@
 import 'package:adrop/components/a_drop_icon.dart';
 import 'package:adrop/cross.dart';
+import 'package:adrop/screens/app_screen.dart';
 import 'package:adrop/screens/space_choose_screen.dart';
 import 'package:adrop/src/rust/api/init.dart';
 import 'package:adrop/src/rust/api/user.dart';
@@ -54,7 +55,11 @@ class _InitScreenState extends State<InitScreen> {
             ),
           );
         } else {
-          return root;
+          navigator.pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const AppScreen(),
+            ),
+          );
         }
       case LoginState.unset:
         navigator.pushReplacement(

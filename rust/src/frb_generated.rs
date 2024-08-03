@@ -365,6 +365,7 @@ fn wire__crate__api__space__create_new_device_impl(
             let api_parent_folder_file_id = <String>::sse_decode(&mut deserializer);
             let api_true_pass_base64 = <String>::sse_decode(&mut deserializer);
             let api_device_name = <String>::sse_decode(&mut deserializer);
+            let api_device_type = <i32>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -374,6 +375,7 @@ fn wire__crate__api__space__create_new_device_impl(
                             api_parent_folder_file_id,
                             api_true_pass_base64,
                             api_device_name,
+                            api_device_type,
                         )
                         .await?;
                         Ok(output_ok)
@@ -836,9 +838,11 @@ impl SseDecode for crate::data_obj::Device {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_name = <String>::sse_decode(deserializer);
         let mut var_folderFileId = <String>::sse_decode(deserializer);
+        let mut var_deviceType = <i32>::sse_decode(deserializer);
         return crate::data_obj::Device {
             name: var_name,
             folder_file_id: var_folderFileId,
+            device_type: var_deviceType,
         };
     }
 }
@@ -1068,6 +1072,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::Device {
         [
             self.name.into_into_dart().into_dart(),
             self.folder_file_id.into_into_dart().into_dart(),
+            self.device_type.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1181,6 +1186,7 @@ impl SseEncode for crate::data_obj::Device {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.name, serializer);
         <String>::sse_encode(self.folder_file_id, serializer);
+        <i32>::sse_encode(self.device_type, serializer);
     }
 }
 

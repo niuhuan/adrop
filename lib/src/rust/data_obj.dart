@@ -10,14 +10,17 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 class Device {
   final String name;
   final String folderFileId;
+  final int deviceType;
 
   const Device({
     required this.name,
     required this.folderFileId,
+    required this.deviceType,
   });
 
   @override
-  int get hashCode => name.hashCode ^ folderFileId.hashCode;
+  int get hashCode =>
+      name.hashCode ^ folderFileId.hashCode ^ deviceType.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -25,7 +28,8 @@ class Device {
       other is Device &&
           runtimeType == other.runtimeType &&
           name == other.name &&
-          folderFileId == other.folderFileId;
+          folderFileId == other.folderFileId &&
+          deviceType == other.deviceType;
 }
 
 class LoginInfo {
