@@ -27,3 +27,4 @@ md5 = "0.7.0"
 aes-gcm = { version = "0.10.3", features = ["stream"] }
 hex = "0.4.3"
 opener = "0.7.1"
+rand = "0.8.5"

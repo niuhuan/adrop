@@ -1,6 +1,8 @@
-use alipan::{AdriveOpenFileType, CheckNameMode};
+use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
 use alipan::response::AdriveOpenFile;
+use reqwest::Body;
 use serde_derive::{Deserialize, Serialize};
+use crate::custom_crypto::{decrypt_base64, encrypt_buff_to_base64};
 use crate::data_obj::{Config, SpaceInfo};
 use crate::database::properties::property::load_property;
 use crate::define::get_alipan_client;
@@ -29,34 +31,34 @@ pub async fn oauth_derive_info() -> anyhow::Result<AdriveUserGetDriveInfo> {
     map(data)
 }
 
-pub async fn list_folder(device_id: String, parent_folder_file_id: String) -> anyhow::Result<Vec<FileItem>> {
+pub async fn list_folder(drive_id: String, parent_folder_file_id: String) -> anyhow::Result<Vec<FileItem>> {
     let client = get_alipan_client();
 
     let mut folders = vec![];
     let mut rsp = client.adrive_open_file_list()
         .await
-        .drive_id(&device_id)
+        .drive_id(&drive_id)
         .parent_file_id(&parent_folder_file_id)
         .r#type(AdriveOpenFileType::Folder)
         .request()
         .await?;
-    put_folders(&mut folders, rsp.items);
+    put_items(&mut folders, rsp.items);
     while rsp.next_marker.is_some() && !rsp.next_marker.as_deref().unwrap().is_empty() {
         rsp = client.adrive_open_file_list()
             .await
-            .drive_id(&device_id)
+            .drive_id(&drive_id)
             .parent_file_id(&parent_folder_file_id)
             .r#type(AdriveOpenFileType::Folder)
             .marker(rsp.next_marker.as_deref().unwrap())
             .request()
             .await?;
-        put_folders(&mut folders, rsp.items);
+        put_items(&mut folders, rsp.items);
     }
 
     Ok(folders)
 }
 
-fn put_folders(folders: &mut Vec<FileItem>, items: Vec<AdriveOpenFile>) {
+fn put_items(folders: &mut Vec<FileItem>, items: Vec<AdriveOpenFile>) {
     for item in items {
         folders.push(FileItem {
             file_id: item.file_id,
@@ -65,11 +67,11 @@ fn put_folders(folders: &mut Vec<FileItem>, items: Vec<AdriveOpenFile>) {
     }
 }
 
-pub async fn create_folder(device_id: String, parent_folder_file_id: String, folder_name: String) -> anyhow::Result<()> {
+pub async fn create_folder(drive_id: String, parent_folder_file_id: String, folder_name: String) -> anyhow::Result<()> {
     let client = get_alipan_client();
     let result = client.adrive_open_file_create()
         .await
-        .drive_id(device_id.as_str())
+        .drive_id(drive_id.as_str())
         .parent_file_id(parent_folder_file_id.as_str())
         .name(folder_name.as_str())
         .r#type(AdriveOpenFileType::Folder)
@@ -80,6 +82,105 @@ pub async fn create_folder(device_id: String, parent_folder_file_id: String, fol
         return Err(anyhow::anyhow!("Folder already exists"));
     }
     Ok(())
+}
+
+pub async fn has_set_password(drive_id: String, parent_folder_file_id: String) -> anyhow::Result<Option<String>> {
+    let client = get_alipan_client();
+    //
+    let mut files = vec![];
+    let mut rsp = client.adrive_open_file_list()
+        .await
+        .drive_id(&drive_id)
+        .parent_file_id(&parent_folder_file_id)
+        .r#type(AdriveOpenFileType::File)
+        .request()
+        .await?;
+    put_items(&mut files, rsp.items);
+    while rsp.next_marker.is_some() && !rsp.next_marker.as_deref().unwrap().is_empty() {
+        rsp = client.adrive_open_file_list()
+            .await
+            .drive_id(&drive_id)
+            .parent_file_id(&parent_folder_file_id)
+            .r#type(AdriveOpenFileType::File)
+            .marker(rsp.next_marker.as_deref().unwrap())
+            .request()
+            .await?;
+        put_items(&mut files, rsp.items);
+    }
+    let last = files.iter().filter(|item| item.file_name == "password.txt").last();
+    if let Some(last) = last {
+        let url = client.adrive_open_file_get_download_url()
+            .await
+            .drive_id(drive_id.as_str())
+            .file_id(last.file_id.as_str())
+            .request()
+            .await?;
+        let lock = client.agent.lock().await;
+        let agent = lock.clone();
+        drop(lock);
+        let password_enc = agent.get(url.url.as_str()).send().await?.error_for_status()?.text().await?;
+        Ok(Some(password_enc))
+    } else {
+        Ok(None)
+    }
+}
+
+pub async fn set_new_password(
+    drive_id: String,
+    parent_folder_file_id: String,
+    password: String,
+) -> anyhow::Result<()> {
+    let key = random_string(64);
+    let passbook = encrypt_buff_to_base64(key.as_slice(), password.as_bytes())?;
+    let client = get_alipan_client();
+    let parts = vec![AdriveOpenFilePartInfoCreate { part_number: 1 }];
+    let file = client
+        .adrive_open_file_create()
+        .await
+        .check_name_mode(CheckNameMode::Refuse)
+        .drive_id(drive_id.clone())
+        .parent_file_id(parent_folder_file_id.clone())
+        .r#type(AdriveOpenFileType::File)
+        .name("password.txt")
+        .size(passbook.len() as i64)
+        .part_info_list(parts)
+        .request()
+        .await?;
+    reqwest::Client::new()
+        .put(file.part_info_list[0].upload_url.as_str())
+        .body(Body::from(passbook))
+        .send()
+        .await?
+        .error_for_status()?
+        .text()
+        .await?;
+    client
+        .adrive_open_file_complete()
+        .await
+        .drive_id(file.drive_id.clone())
+        .file_id(file.file_id.clone())
+        .upload_id(file.upload_id.clone())
+        .request()
+        .await?;
+    Ok(())
+}
+
+pub async fn check_old_password(
+    password_enc: String,
+    password: String,
+) -> anyhow::Result<()> {
+    decrypt_base64(password_enc.as_str(), password.as_bytes())?;
+    Ok(())
+}
+
+fn random_string(len: usize) -> Vec<u8> {
+    use rand::distributions::Alphanumeric;
+    use rand::{thread_rng, Rng};
+    let buff = thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(len)
+        .collect::<Vec<u8>>();
+    buff
 }
 
 

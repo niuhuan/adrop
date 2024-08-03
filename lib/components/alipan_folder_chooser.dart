@@ -194,7 +194,7 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
     if (confirm == true && text.isNotEmpty) {
       try {
         await createFolder(
-          deviceId: widget.deriveId,
+          driveId: widget.deriveId,
           parentFolderFileId: lastFolderFileId(_current),
           folderName: text,
         );
@@ -228,7 +228,7 @@ class ItemList extends StatefulWidget {
 
 class _ItemListState extends State<ItemList> {
   late Future<List<FileItem>> _itemsFuture = listFolder(
-    deviceId: widget.driveId,
+    driveId: widget.driveId,
     parentFolderFileId: widget.folderFileId,
   );
   late Key _key = UniqueKey();
@@ -277,7 +277,7 @@ class _ItemListState extends State<ItemList> {
   Future<dynamic> _refresh() async {
     setState(() {
       _itemsFuture = listFolder(
-        deviceId: widget.driveId,
+        driveId: widget.driveId,
         parentFolderFileId: widget.folderFileId,
       );
       _key = UniqueKey();

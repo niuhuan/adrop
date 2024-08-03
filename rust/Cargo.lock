@@ -2074,6 +2074,7 @@ dependencies = [
  "md5",
  "once_cell",
  "opener",
+ "rand",
  "reqwest",
  "sea-orm",
  "serde",

@@ -66,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.1.0';
 
   @override
-  int get rustContentHash => -1937632700;
+  int get rustContentHash => 465908647;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -87,17 +87,28 @@ abstract class RustLibApi extends BaseApi {
 
   Future<AdriveUserGetDriveInfo> crateApiSpaceAdriveUserGetDriveInfoDefault();
 
+  Future<void> crateApiSpaceCheckOldPassword(
+      {required String passwordEnc, required String password});
+
   Future<void> crateApiSpaceCreateFolder(
-      {required String deviceId,
+      {required String driveId,
       required String parentFolderFileId,
       required String folderName});
 
   Future<FileItem> crateApiSpaceFileItemDefault();
 
+  Future<String?> crateApiSpaceHasSetPassword(
+      {required String driveId, required String parentFolderFileId});
+
   Future<List<FileItem>> crateApiSpaceListFolder(
-      {required String deviceId, required String parentFolderFileId});
+      {required String driveId, required String parentFolderFileId});
 
   Future<AdriveUserGetDriveInfo> crateApiSpaceOauthDeriveInfo();
+
+  Future<void> crateApiSpaceSetNewPassword(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String password});
 
   Future<SpaceInfo?> crateApiSpaceSpaceInfo();
 
@@ -236,16 +247,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiSpaceCreateFolder(
-      {required String deviceId,
-      required String parentFolderFileId,
-      required String folderName}) {
+  Future<void> crateApiSpaceCheckOldPassword(
+      {required String passwordEnc, required String password}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_String(deviceId, serializer);
-        sse_encode_String(parentFolderFileId, serializer);
-        sse_encode_String(folderName, serializer);
+        sse_encode_String(passwordEnc, serializer);
+        sse_encode_String(password, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 6, port: port_);
       },
@@ -253,15 +261,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeSuccessData: sse_decode_unit,
         decodeErrorData: sse_decode_AnyhowException,
       ),
+      constMeta: kCrateApiSpaceCheckOldPasswordConstMeta,
+      argValues: [passwordEnc, password],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceCheckOldPasswordConstMeta =>
+      const TaskConstMeta(
+        debugName: "check_old_password",
+        argNames: ["passwordEnc", "password"],
+      );
+
+  @override
+  Future<void> crateApiSpaceCreateFolder(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String folderName}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(driveId, serializer);
+        sse_encode_String(parentFolderFileId, serializer);
+        sse_encode_String(folderName, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 7, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
       constMeta: kCrateApiSpaceCreateFolderConstMeta,
-      argValues: [deviceId, parentFolderFileId, folderName],
+      argValues: [driveId, parentFolderFileId, folderName],
       apiImpl: this,
     ));
   }
 
   TaskConstMeta get kCrateApiSpaceCreateFolderConstMeta => const TaskConstMeta(
         debugName: "create_folder",
-        argNames: ["deviceId", "parentFolderFileId", "folderName"],
+        argNames: ["driveId", "parentFolderFileId", "folderName"],
       );
 
   @override
@@ -270,7 +308,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 7, port: port_);
+            funcId: 8, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_file_item,
@@ -289,29 +327,56 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<List<FileItem>> crateApiSpaceListFolder(
-      {required String deviceId, required String parentFolderFileId}) {
+  Future<String?> crateApiSpaceHasSetPassword(
+      {required String driveId, required String parentFolderFileId}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_String(deviceId, serializer);
+        sse_encode_String(driveId, serializer);
         sse_encode_String(parentFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 8, port: port_);
+            funcId: 9, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_opt_String,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSpaceHasSetPasswordConstMeta,
+      argValues: [driveId, parentFolderFileId],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceHasSetPasswordConstMeta =>
+      const TaskConstMeta(
+        debugName: "has_set_password",
+        argNames: ["driveId", "parentFolderFileId"],
+      );
+
+  @override
+  Future<List<FileItem>> crateApiSpaceListFolder(
+      {required String driveId, required String parentFolderFileId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(driveId, serializer);
+        sse_encode_String(parentFolderFileId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 10, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_file_item,
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiSpaceListFolderConstMeta,
-      argValues: [deviceId, parentFolderFileId],
+      argValues: [driveId, parentFolderFileId],
       apiImpl: this,
     ));
   }
 
   TaskConstMeta get kCrateApiSpaceListFolderConstMeta => const TaskConstMeta(
         debugName: "list_folder",
-        argNames: ["deviceId", "parentFolderFileId"],
+        argNames: ["driveId", "parentFolderFileId"],
       );
 
   @override
@@ -320,7 +385,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 9, port: port_);
+            funcId: 11, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_adrive_user_get_drive_info,
@@ -339,12 +404,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiSpaceSetNewPassword(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String password}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(driveId, serializer);
+        sse_encode_String(parentFolderFileId, serializer);
+        sse_encode_String(password, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 12, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSpaceSetNewPasswordConstMeta,
+      argValues: [driveId, parentFolderFileId, password],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceSetNewPasswordConstMeta =>
+      const TaskConstMeta(
+        debugName: "set_new_password",
+        argNames: ["driveId", "parentFolderFileId", "password"],
+      );
+
+  @override
   Future<SpaceInfo?> crateApiSpaceSpaceInfo() {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 10, port: port_);
+            funcId: 13, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_opt_box_autoadd_space_info,
@@ -368,7 +463,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(url, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 11, port: port_);
+            funcId: 14, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -392,7 +487,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 12, port: port_);
+            funcId: 15, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_login_info,
@@ -415,7 +510,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 13, port: port_);
+            funcId: 16, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -439,7 +534,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 14, port: port_);
+            funcId: 17, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,

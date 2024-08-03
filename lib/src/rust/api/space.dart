@@ -7,7 +7,7 @@ import '../data_obj.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `clear`, `map`, `put_folders`
+// These functions are ignored because they are not marked as `pub`: `clear`, `map`, `put_items`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_receiver_is_total_eq`, `assert_receiver_is_total_eq`, `clone`, `clone`, `eq`, `eq`, `fmt`, `fmt`
 
 Future<SpaceInfo?> spaceInfo() => RustLib.instance.api.crateApiSpaceSpaceInfo();
@@ -16,18 +16,37 @@ Future<AdriveUserGetDriveInfo> oauthDeriveInfo() =>
     RustLib.instance.api.crateApiSpaceOauthDeriveInfo();
 
 Future<List<FileItem>> listFolder(
-        {required String deviceId, required String parentFolderFileId}) =>
+        {required String driveId, required String parentFolderFileId}) =>
     RustLib.instance.api.crateApiSpaceListFolder(
-        deviceId: deviceId, parentFolderFileId: parentFolderFileId);
+        driveId: driveId, parentFolderFileId: parentFolderFileId);
 
 Future<void> createFolder(
-        {required String deviceId,
+        {required String driveId,
         required String parentFolderFileId,
         required String folderName}) =>
     RustLib.instance.api.crateApiSpaceCreateFolder(
-        deviceId: deviceId,
+        driveId: driveId,
         parentFolderFileId: parentFolderFileId,
         folderName: folderName);
+
+Future<String?> hasSetPassword(
+        {required String driveId, required String parentFolderFileId}) =>
+    RustLib.instance.api.crateApiSpaceHasSetPassword(
+        driveId: driveId, parentFolderFileId: parentFolderFileId);
+
+Future<void> setNewPassword(
+        {required String driveId,
+        required String parentFolderFileId,
+        required String password}) =>
+    RustLib.instance.api.crateApiSpaceSetNewPassword(
+        driveId: driveId,
+        parentFolderFileId: parentFolderFileId,
+        password: password);
+
+Future<void> checkOldPassword(
+        {required String passwordEnc, required String password}) =>
+    RustLib.instance.api.crateApiSpaceCheckOldPassword(
+        passwordEnc: passwordEnc, password: password);
 
 class AdriveUserGetDriveInfo {
   final String userId;
