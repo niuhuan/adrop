@@ -232,23 +232,24 @@ pub async fn list_devices(
             files.push(x);
         }
     }
+    let device_pattern = regex::Regex::new(r"^(.+)\.(\d+)\.device$").unwrap();
     let mut devices = vec![];
     for file in files {
-        if file.name.ends_with(".device") {
-            let device_pattern = regex::Regex::new(r"^(.+)\.(\d+)\.device$").unwrap();
-            if !device_pattern.is_match(file.name.as_str()) {
-                continue;
-            }
-            let cap = device_pattern.captures(file.name.as_str()).unwrap();
-            let enc_device_name = cap.get(1).unwrap().as_str();
-            let device_type = cap.get(2).unwrap().as_str().parse::<i32>().unwrap();
-            if let Ok(device_name) = decrypt_file_name(enc_device_name, true_pass.as_slice()) {
-                devices.push(Device {
-                    name: device_name,
-                    folder_file_id: file.file_id,
-                    device_type,
-                });
-            }
+        if !device_pattern.is_match(file.name.as_str()) {
+            println!("skip file by not match: {}", file.name);
+            continue;
+        }
+        let cap = device_pattern.captures(file.name.as_str()).unwrap();
+        let enc_device_name = cap.get(1).unwrap().as_str();
+        let device_type = cap.get(2).unwrap().as_str().parse::<i32>().unwrap();
+        if let Ok(device_name) = decrypt_file_name(enc_device_name, true_pass.as_slice()) {
+            devices.push(Device {
+                name: device_name,
+                folder_file_id: file.file_id,
+                device_type,
+            });
+        } else {
+            println!("skip file by decrypt error: {}", enc_device_name);
         }
     }
     Ok(devices)
@@ -262,7 +263,7 @@ pub async fn create_new_device(
     device_type: i32, // device_icon
 ) -> anyhow::Result<()> {
     let true_pass = base64::prelude::BASE64_URL_SAFE.decode(true_pass_base64.as_bytes())?;
-    let enc_device_name = encrypt_buff_to_base64(true_pass.as_slice(), device_name.as_bytes())?;
+    let enc_device_name = encrypt_buff_to_base64(device_name.as_bytes(), true_pass.as_slice())?;
     let client = get_alipan_client();
     let file = client
         .adrive_open_file_create()

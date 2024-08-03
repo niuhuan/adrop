@@ -1,16 +1,18 @@
+import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/src/rust/api/space.dart';
+import 'package:adrop/src/rust/data_obj.dart';
 import 'package:flutter/material.dart';
 
 import '../components/common.dart';
 import 'app_screen.dart';
 
 class SpaceDeviceScreen extends StatefulWidget {
-  final String deriveId;
+  final String driveId;
   final String folderId;
   final String password;
 
   const SpaceDeviceScreen({
-    required this.deriveId,
+    required this.driveId,
     required this.folderId,
     required this.password,
     super.key,
@@ -56,14 +58,51 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
   }
 
   Widget _chooseOld() {
-    return ListView.builder(
-      itemCount: 3,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: const Text("设备名称"),
-          subtitle: const Text("设备描述"),
-          onTap: () {},
+    return DeviceChooser(
+      driveId: widget.driveId,
+      folderId: widget.folderId,
+      password: widget.password,
+      onChoose: (device) async {
+        // confirm
+        bool? ok = await showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text("确认选择设备"),
+              content: Text("设备名称: ${device.name}"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(false);
+                  },
+                  child: const Text("取消"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(true);
+                  },
+                  child: const Text("确认"),
+                ),
+              ],
+            );
+          },
         );
+        if (ok != true) {
+          return;
+        }
+        try {
+          await chooseOldDevice(driveId: widget.driveId,
+            parentFolderFileId: widget.folderId,
+            truePassBase64: widget.password,
+            thisDeviceFolderFileId: device.folderFileId,
+          );
+          Navigator.of(context)
+              .pushReplacement(MaterialPageRoute(builder: (context) {
+            return AppScreen();
+          }));
+        } catch (e, s) {
+          defaultToast(context, "选择失败\n$e");
+        }
       },
     );
   }
@@ -117,7 +156,7 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
           }
           try {
             await createNewDevice(
-              driveId: widget.deriveId,
+              driveId: widget.driveId,
               parentFolderFileId: widget.folderId,
               truePassBase64: widget.password,
               deviceName: _inputName,
@@ -134,5 +173,77 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
         child: const Text("创建"),
       ),
     ]);
+  }
+}
+
+class DeviceChooser extends StatefulWidget {
+  final String driveId;
+  final String folderId;
+  final String password;
+  final Function(Device) onChoose;
+
+  const DeviceChooser({
+    required this.driveId,
+    required this.folderId,
+    required this.password,
+    required this.onChoose,
+    super.key,
+  });
+
+  @override
+  State<DeviceChooser> createState() => _DeviceChooserState();
+}
+
+class _DeviceChooserState extends State<DeviceChooser> {
+  late Future<List<Device>> _future;
+  late Key _key;
+
+  Future _onRefresh() async {
+    setState(() {
+      _future = listDevices(
+        driveId: widget.driveId,
+        parentFolderFileId: widget.folderId,
+        truePassBase64: widget.password,
+      );
+      _key = UniqueKey();
+    });
+  }
+
+  @override
+  void initState() {
+    _onRefresh();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ContentBuilder<List<Device>>(
+      key: _key,
+      future: _future,
+      onRefresh: _onRefresh,
+      successBuilder: (context, s) {
+        var data = s.requireData;
+        if (data.isEmpty) {
+          return const Center(child: Text("没有设备"));
+        }
+        return ListView.builder(
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            var item = data[index];
+            return ListTile(
+              onTap: () {
+                widget.onChoose(item);
+              },
+              title: Text(item.name),
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -126,7 +126,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => SpaceDeviceScreen(
-                    deriveId: widget.deriveId,
+                    driveId: widget.deriveId,
                     folderId: widget.folderId,
                     password: truePass,
                   ),
@@ -170,7 +170,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => SpaceDeviceScreen(
-                    deriveId: widget.deriveId,
+                    driveId: widget.deriveId,
                     folderId: widget.folderId,
                     password: truePass,
                   ),
