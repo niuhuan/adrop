@@ -57,6 +57,28 @@ Future<List<Device>> listDevices(
         parentFolderFileId: parentFolderFileId,
         truePassBase64: truePassBase64);
 
+Future<void> createNewDevice(
+        {required String driveId,
+        required String parentFolderFileId,
+        required String truePassBase64,
+        required String deviceName}) =>
+    RustLib.instance.api.crateApiSpaceCreateNewDevice(
+        driveId: driveId,
+        parentFolderFileId: parentFolderFileId,
+        truePassBase64: truePassBase64,
+        deviceName: deviceName);
+
+Future<void> chooseOldDevice(
+        {required String driveId,
+        required String parentFolderFileId,
+        required String truePassBase64,
+        required String thisDeviceFolderFileId}) =>
+    RustLib.instance.api.crateApiSpaceChooseOldDevice(
+        driveId: driveId,
+        parentFolderFileId: parentFolderFileId,
+        truePassBase64: truePassBase64,
+        thisDeviceFolderFileId: thisDeviceFolderFileId);
+
 class AdriveUserGetDriveInfo {
   final String userId;
   final String name;

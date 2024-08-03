@@ -5,7 +5,7 @@ use reqwest::Body;
 use serde_derive::{Deserialize, Serialize};
 use crate::custom_crypto::{decrypt_base64, decrypt_file_name, encrypt_buff_to_base64};
 use crate::data_obj::{Config, Device, SpaceInfo};
-use crate::database::properties::property::load_property;
+use crate::database::properties::property::{load_property, save_property};
 use crate::define::get_alipan_client;
 
 pub async fn space_info() -> anyhow::Result<Option<SpaceInfo>> {
@@ -13,13 +13,12 @@ pub async fn space_info() -> anyhow::Result<Option<SpaceInfo>> {
     if space_config.is_empty() {
         return Ok(None);
     }
-    let _space_config: Config = if let Ok(space_config) = serde_json::from_str(&space_config) {
-        space_config
+    if let Ok(space_config) = serde_json::from_str(&space_config) {
+        Ok(Some(space_config))
     } else {
         clear().await?;
-        return Ok(None);
-    };
-    Ok(None)
+        Ok(None)
+    }
 }
 
 async fn clear() -> anyhow::Result<()> {
@@ -218,6 +217,55 @@ pub async fn list_devices(
         }
     }
     Ok(devices)
+}
+
+pub async fn create_new_device(
+    drive_id: String,
+    parent_folder_file_id: String,
+    true_pass_base64: String,
+    device_name: String,
+) -> anyhow::Result<()> {
+    let true_pass = base64::prelude::BASE64_URL_SAFE.decode(true_pass_base64.as_bytes())?;
+    let enc_device_name = encrypt_buff_to_base64(true_pass.as_slice(), device_name.as_bytes())?;
+    let client = get_alipan_client();
+    let file = client
+        .adrive_open_file_create()
+        .await
+        .check_name_mode(CheckNameMode::Refuse)
+        .drive_id(drive_id.clone())
+        .parent_file_id(parent_folder_file_id.clone())
+        .r#type(AdriveOpenFileType::Folder)
+        .name(format!("{}.device", device_name).as_str())
+        .size(enc_device_name.len() as i64)
+        .request()
+        .await?;
+    if file.exist {
+        return Err(anyhow::anyhow!("Device already exists"));
+    }
+    let info = SpaceInfo {
+        drive_id,
+        devices_root_folder_file_id: parent_folder_file_id,
+        this_device_folder_file_id: file.file_id,
+        true_pass_base64,
+    };
+    save_property("space_config".to_owned(), serde_json::to_string(&info)?).await?;
+    Ok(())
+}
+
+pub async fn choose_old_device(
+    drive_id: String,
+    parent_folder_file_id: String,
+    true_pass_base64: String,
+    this_device_folder_file_id: String,
+) -> anyhow::Result<()> {
+    let info = SpaceInfo {
+        drive_id,
+        devices_root_folder_file_id: parent_folder_file_id,
+        this_device_folder_file_id,
+        true_pass_base64,
+    };
+    save_property("space_config".to_owned(), serde_json::to_string(&info)?).await?;
+    Ok(())
 }
 
 fn random_string(len: usize) -> Vec<u8> {

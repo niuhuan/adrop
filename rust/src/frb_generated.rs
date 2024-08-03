@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.1.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -387090301;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 209350148;
 
 // Section: executor
 
@@ -251,6 +251,51 @@ fn wire__crate__api__space__check_old_password_impl(
         },
     )
 }
+fn wire__crate__api__space__choose_old_device_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "choose_old_device",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_drive_id = <String>::sse_decode(&mut deserializer);
+            let api_parent_folder_file_id = <String>::sse_decode(&mut deserializer);
+            let api_true_pass_base64 = <String>::sse_decode(&mut deserializer);
+            let api_this_device_folder_file_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::space::choose_old_device(
+                            api_drive_id,
+                            api_parent_folder_file_id,
+                            api_true_pass_base64,
+                            api_this_device_folder_file_id,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__space__create_folder_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -284,6 +329,51 @@ fn wire__crate__api__space__create_folder_impl(
                             api_drive_id,
                             api_parent_folder_file_id,
                             api_folder_name,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__space__create_new_device_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "create_new_device",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_drive_id = <String>::sse_decode(&mut deserializer);
+            let api_parent_folder_file_id = <String>::sse_decode(&mut deserializer);
+            let api_true_pass_base64 = <String>::sse_decode(&mut deserializer);
+            let api_device_name = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::space::create_new_device(
+                            api_drive_id,
+                            api_parent_folder_file_id,
+                            api_true_pass_base64,
+                            api_device_name,
                         )
                         .await?;
                         Ok(output_ok)
@@ -856,10 +946,12 @@ impl SseDecode for crate::data_obj::SpaceInfo {
         let mut var_driveId = <String>::sse_decode(deserializer);
         let mut var_devicesRootFolderFileId = <String>::sse_decode(deserializer);
         let mut var_thisDeviceFolderFileId = <String>::sse_decode(deserializer);
+        let mut var_truePassBase64 = <String>::sse_decode(deserializer);
         return crate::data_obj::SpaceInfo {
             drive_id: var_driveId,
             devices_root_folder_file_id: var_devicesRootFolderFileId,
             this_device_folder_file_id: var_thisDeviceFolderFileId,
+            true_pass_base64: var_truePassBase64,
         };
     }
 }
@@ -902,23 +994,25 @@ fn pde_ffi_dispatcher_primary_impl(
             data_len,
         ),
         6 => wire__crate__api__space__check_old_password_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
-        10 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
-        14 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__user_setting__start_login_service_impl(
+        7 => wire__crate__api__space__choose_old_device_impl(port, ptr, rust_vec_len, data_len),
+        8 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
+        9 => wire__crate__api__space__create_new_device_impl(port, ptr, rust_vec_len, data_len),
+        10 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
+        13 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
+        17 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__user_setting__start_login_service_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__user_setting__stop_login_service_impl(
+        20 => wire__crate__api__user_setting__stop_login_service_impl(
             port,
             ptr,
             rust_vec_len,
@@ -1044,6 +1138,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SpaceInfo {
                 .into_into_dart()
                 .into_dart(),
             self.this_device_folder_file_id.into_into_dart().into_dart(),
+            self.true_pass_base64.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1183,6 +1278,7 @@ impl SseEncode for crate::data_obj::SpaceInfo {
         <String>::sse_encode(self.drive_id, serializer);
         <String>::sse_encode(self.devices_root_folder_file_id, serializer);
         <String>::sse_encode(self.this_device_folder_file_id, serializer);
+        <String>::sse_encode(self.true_pass_base64, serializer);
     }
 }
 

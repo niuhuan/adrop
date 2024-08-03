@@ -66,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.1.0';
 
   @override
-  int get rustContentHash => -387090301;
+  int get rustContentHash => 209350148;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -90,10 +90,22 @@ abstract class RustLibApi extends BaseApi {
   Future<String> crateApiSpaceCheckOldPassword(
       {required String passwordEnc, required String password});
 
+  Future<void> crateApiSpaceChooseOldDevice(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String truePassBase64,
+      required String thisDeviceFolderFileId});
+
   Future<void> crateApiSpaceCreateFolder(
       {required String driveId,
       required String parentFolderFileId,
       required String folderName});
+
+  Future<void> crateApiSpaceCreateNewDevice(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String truePassBase64,
+      required String deviceName});
 
   Future<FileItem> crateApiSpaceFileItemDefault();
 
@@ -279,6 +291,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiSpaceChooseOldDevice(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String truePassBase64,
+      required String thisDeviceFolderFileId}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(driveId, serializer);
+        sse_encode_String(parentFolderFileId, serializer);
+        sse_encode_String(truePassBase64, serializer);
+        sse_encode_String(thisDeviceFolderFileId, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 7, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSpaceChooseOldDeviceConstMeta,
+      argValues: [
+        driveId,
+        parentFolderFileId,
+        truePassBase64,
+        thisDeviceFolderFileId
+      ],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceChooseOldDeviceConstMeta =>
+      const TaskConstMeta(
+        debugName: "choose_old_device",
+        argNames: [
+          "driveId",
+          "parentFolderFileId",
+          "truePassBase64",
+          "thisDeviceFolderFileId"
+        ],
+      );
+
+  @override
   Future<void> crateApiSpaceCreateFolder(
       {required String driveId,
       required String parentFolderFileId,
@@ -290,7 +344,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(folderName, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 7, port: port_);
+            funcId: 8, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -308,12 +362,49 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiSpaceCreateNewDevice(
+      {required String driveId,
+      required String parentFolderFileId,
+      required String truePassBase64,
+      required String deviceName}) {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_String(driveId, serializer);
+        sse_encode_String(parentFolderFileId, serializer);
+        sse_encode_String(truePassBase64, serializer);
+        sse_encode_String(deviceName, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 9, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiSpaceCreateNewDeviceConstMeta,
+      argValues: [driveId, parentFolderFileId, truePassBase64, deviceName],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiSpaceCreateNewDeviceConstMeta =>
+      const TaskConstMeta(
+        debugName: "create_new_device",
+        argNames: [
+          "driveId",
+          "parentFolderFileId",
+          "truePassBase64",
+          "deviceName"
+        ],
+      );
+
+  @override
   Future<FileItem> crateApiSpaceFileItemDefault() {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 8, port: port_);
+            funcId: 10, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_file_item,
@@ -340,7 +431,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(driveId, serializer);
         sse_encode_String(parentFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 9, port: port_);
+            funcId: 11, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_opt_String,
@@ -370,7 +461,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(truePassBase64, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 10, port: port_);
+            funcId: 12, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_device,
@@ -396,7 +487,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(driveId, serializer);
         sse_encode_String(parentFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 11, port: port_);
+            funcId: 13, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_file_item,
@@ -419,7 +510,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 12, port: port_);
+            funcId: 14, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_adrive_user_get_drive_info,
@@ -449,7 +540,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(password, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 13, port: port_);
+            funcId: 15, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -473,7 +564,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 14, port: port_);
+            funcId: 16, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_opt_box_autoadd_space_info,
@@ -497,7 +588,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(url, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 15, port: port_);
+            funcId: 17, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -521,7 +612,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 16, port: port_);
+            funcId: 18, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_login_info,
@@ -544,7 +635,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 17, port: port_);
+            funcId: 19, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -568,7 +659,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 18, port: port_);
+            funcId: 20, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -701,12 +792,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SpaceInfo dco_decode_space_info(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return SpaceInfo(
       driveId: dco_decode_String(arr[0]),
       devicesRootFolderFileId: dco_decode_String(arr[1]),
       thisDeviceFolderFileId: dco_decode_String(arr[2]),
+      truePassBase64: dco_decode_String(arr[3]),
     );
   }
 
@@ -857,10 +949,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_driveId = sse_decode_String(deserializer);
     var var_devicesRootFolderFileId = sse_decode_String(deserializer);
     var var_thisDeviceFolderFileId = sse_decode_String(deserializer);
+    var var_truePassBase64 = sse_decode_String(deserializer);
     return SpaceInfo(
         driveId: var_driveId,
         devicesRootFolderFileId: var_devicesRootFolderFileId,
-        thisDeviceFolderFileId: var_thisDeviceFolderFileId);
+        thisDeviceFolderFileId: var_thisDeviceFolderFileId,
+        truePassBase64: var_truePassBase64);
   }
 
   @protected
@@ -998,6 +1092,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.driveId, serializer);
     sse_encode_String(self.devicesRootFolderFileId, serializer);
     sse_encode_String(self.thisDeviceFolderFileId, serializer);
+    sse_encode_String(self.truePassBase64, serializer);
   }
 
   @protected

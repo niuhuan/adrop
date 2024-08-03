@@ -50,18 +50,21 @@ class SpaceInfo {
   final String driveId;
   final String devicesRootFolderFileId;
   final String thisDeviceFolderFileId;
+  final String truePassBase64;
 
   const SpaceInfo({
     required this.driveId,
     required this.devicesRootFolderFileId,
     required this.thisDeviceFolderFileId,
+    required this.truePassBase64,
   });
 
   @override
   int get hashCode =>
       driveId.hashCode ^
       devicesRootFolderFileId.hashCode ^
-      thisDeviceFolderFileId.hashCode;
+      thisDeviceFolderFileId.hashCode ^
+      truePassBase64.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -70,5 +73,6 @@ class SpaceInfo {
           runtimeType == other.runtimeType &&
           driveId == other.driveId &&
           devicesRootFolderFileId == other.devicesRootFolderFileId &&
-          thisDeviceFolderFileId == other.thisDeviceFolderFileId;
+          thisDeviceFolderFileId == other.thisDeviceFolderFileId &&
+          truePassBase64 == other.truePassBase64;
 }
