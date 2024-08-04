@@ -1,13 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 
 class AppScreen extends StatefulWidget {
-  const AppScreen({Key? key}) : super(key: key);
+  const AppScreen({super.key});
 
   @override
   State<AppScreen> createState() => _AppScreenState();
@@ -80,6 +82,8 @@ class _SendFileState extends State<SendFile> {
     });
   }
 
+  List<XFile> _list = [];
+
   @override
   void initState() {
     _refresh();
@@ -96,12 +100,24 @@ class _SendFileState extends State<SendFile> {
     return Scaffold(
       body: Column(
         children: [
-          _selectedFiles(),
+          _dropFile(_selectedFiles()),
           Expanded(
             child: _devices(),
           )
         ],
       ),
+    );
+  }
+
+  Widget _dropFile(Widget widget) {
+    return DropTarget(
+      onDragDone: (details) async {
+        var files = details.files;
+        setState(() {
+          _list.addAll(files);
+        });
+      },
+      child: widget,
     );
   }
 
@@ -117,33 +133,48 @@ class _SendFileState extends State<SendFile> {
       ),
       child: Row(
         children: [
-          Text("已选择 "),
+          MaterialButton(
+            onPressed: () async {
+              setState(() {
+                _list.clear();
+              });
+            },
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.clear,
+                ),
+                Text("清除"),
+              ],
+            ),
+          ),
           Container(
             width: 20,
           ),
-          Icon(Icons.file_copy_rounded),
-          Text(" 文件 0 个"),
-          Container(
-            width: 20,
+          MaterialButton(
+            onPressed: () {},
+            child: Row(
+              children: [
+                const Icon(Icons.file_copy_rounded),
+                Text(" 将发送 ${_list.length} 个文件(夹), 点击预览"),
+              ],
+            ),
           ),
-          Icon(
-            Icons.folder_copy,
-          ),
-          Text(" 文件夹 0 个"),
-          Expanded(
-              child: Container(
+          const Expanded(
             child: Text(
               "将文件拖动到此处",
               textAlign: TextAlign.center,
             ),
-          )),
-          Icon(Icons.remove_red_eye),
-          Text("预览"),
-          Container(
-            width: 20,
           ),
-          Icon(Icons.add),
-          Text("添加"),
+          MaterialButton(
+            onPressed: () {},
+            child: const Row(
+              children: [
+                Icon(Icons.add),
+                Text("添加"),
+              ],
+            ),
+          ),
         ],
       ),
     );
