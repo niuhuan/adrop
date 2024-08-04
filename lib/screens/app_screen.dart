@@ -74,6 +74,7 @@ class SendFile extends StatefulWidget {
 class _SendFileState extends State<SendFile> {
   late Future<List<Device>> _devicesFuture;
   late Key _key;
+  final List<XFile> _list = [];
 
   Future _refresh() async {
     setState(() {
@@ -81,8 +82,6 @@ class _SendFileState extends State<SendFile> {
       _key = UniqueKey();
     });
   }
-
-  List<XFile> _list = [];
 
   @override
   void initState() {
@@ -123,8 +122,8 @@ class _SendFileState extends State<SendFile> {
 
   Widget _selectedFiles() {
     return Container(
-      margin: EdgeInsets.all(1),
-      padding: EdgeInsets.all(30),
+      margin: const EdgeInsets.all(1),
+      padding: const EdgeInsets.all(30),
       decoration: BoxDecoration(
         border: Border.all(
           color: Colors.grey,
@@ -152,7 +151,7 @@ class _SendFileState extends State<SendFile> {
             width: 20,
           ),
           MaterialButton(
-            onPressed: () {},
+            onPressed: _showFilesDialog,
             child: Row(
               children: [
                 const Icon(Icons.file_copy_rounded),
@@ -195,7 +194,7 @@ class _SendFileState extends State<SendFile> {
           itemBuilder: (BuildContext context, int index) {
             if (index == devices.length) {
               return Container(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Text("共 ${devices.length} 台设备"),
               );
             }
@@ -203,9 +202,41 @@ class _SendFileState extends State<SendFile> {
             return ListTile(
               onTap: () {},
               title: Text(device.name),
-              leading: Icon(Icons.computer),
+              leading: const Icon(Icons.computer),
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showFilesDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("已选择的文件"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView(
+              children: [
+                ..._list.map((file) {
+                  return ListTile(
+                    title: Text(file.name),
+                    leading: const Icon(Icons.file_copy),
+                  );
+                }),
+              ],
+            ),
+          ),
+          actions: [
+            MaterialButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text("确定"),
+            ),
+          ],
         );
       },
     );
