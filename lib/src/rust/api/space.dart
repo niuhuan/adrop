@@ -48,6 +48,9 @@ Future<String> checkOldPassword(
     RustLib.instance.api.crateApiSpaceCheckOldPassword(
         passwordEnc: passwordEnc, password: password);
 
+Future<List<Device>> listDevicesByConfig() =>
+    RustLib.instance.api.crateApiSpaceListDevicesByConfig();
+
 Future<List<Device>> listDevices(
         {required String driveId,
         required String parentFolderFileId,

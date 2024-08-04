@@ -199,6 +199,20 @@ pub async fn check_old_password(password_enc: String, password: String) -> anyho
     Ok(base64::prelude::BASE64_URL_SAFE.encode(buff.as_slice()))
 }
 
+pub async fn list_devices_by_config() -> anyhow::Result<Vec<Device>> {
+    let space_info = space_info().await?;
+    if let Some(space_info) = space_info {
+        list_devices(
+            space_info.drive_id,
+            space_info.devices_root_folder_file_id,
+            space_info.true_pass_base64,
+        )
+        .await
+    } else {
+        Ok(vec![])
+    }
+}
+
 pub async fn list_devices(
     drive_id: String,
     parent_folder_file_id: String,
