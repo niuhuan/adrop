@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
+  filesystem_picker:
+    dependency: "direct main"
+    description:
+      name: filesystem_picker
+      sha256: cc2bfe7e5a4ce21afd5b1b03824c0e6e5386a981ed6cce7bda062b1af805cf62
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.1.0"
   flutter:
     dependency: "direct main"
     description: flutter

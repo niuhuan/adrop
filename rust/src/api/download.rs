@@ -23,7 +23,23 @@ pub async fn download_info() -> anyhow::Result<Option<DownloadConfig>> {
     }
 }
 
+pub async fn save_download_info(download_config: DownloadConfig) -> anyhow::Result<()> {
+    save_property(
+        "download_config".to_owned(),
+        serde_json::to_string(&download_config)?,
+    )
+    .await?;
+    Ok(())
+}
+
 async fn clear() -> anyhow::Result<()> {
     save_property("download_config".to_owned(), "".to_owned()).await?;
     Ok(())
+}
+
+pub async fn default_download_path() -> anyhow::Result<String> {
+    if let Some(dr) = dirs::download_dir() {
+        return Ok(dr.to_str().unwrap().to_owned());
+    }
+    Ok("/".to_owned())
 }

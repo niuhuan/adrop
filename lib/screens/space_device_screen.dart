@@ -1,4 +1,5 @@
 import 'package:adrop/components/content_builder.dart';
+import 'package:adrop/screens/download_settings_screen.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
 import 'package:flutter/material.dart';
@@ -91,14 +92,15 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
           return;
         }
         try {
-          await chooseOldDevice(driveId: widget.driveId,
+          await chooseOldDevice(
+            driveId: widget.driveId,
             parentFolderFileId: widget.folderId,
             truePassBase64: widget.password,
             thisDeviceFolderFileId: device.folderFileId,
           );
           Navigator.of(context)
               .pushReplacement(MaterialPageRoute(builder: (context) {
-            return const AppScreen();
+            return const DownloadSettingsScreen();
           }));
         } catch (e, s) {
           defaultToast(context, "选择失败\n$e");

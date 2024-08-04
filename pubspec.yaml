@@ -41,6 +41,7 @@ dependencies:
   url_launcher: ^6.3.0
   flutter_inappwebview: ^6.0.0
   flutter_styled_toast: ^2.2.1
+  filesystem_picker: ^4.1.0
 
 dev_dependencies:
   flutter_test:

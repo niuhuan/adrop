@@ -1,12 +1,14 @@
 import 'package:adrop/components/a_drop_icon.dart';
 import 'package:adrop/cross.dart';
 import 'package:adrop/screens/app_screen.dart';
+import 'package:adrop/screens/download_settings_screen.dart';
 import 'package:adrop/screens/space_choose_screen.dart';
 import 'package:adrop/src/rust/api/init.dart';
 import 'package:adrop/src/rust/api/user.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:flutter/material.dart';
+import '../src/rust/api/download.dart';
 import 'login_screen.dart';
 
 class InitScreen extends StatefulWidget {
@@ -55,11 +57,19 @@ class _InitScreenState extends State<InitScreen> {
             ),
           );
         } else {
-          navigator.pushReplacement(
-            MaterialPageRoute(
-              builder: (context) => const AppScreen(),
-            ),
-          );
+          if (null == await downloadInfo()) {
+            navigator.pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const DownloadSettingsScreen(),
+              ),
+            );
+          } else {
+            navigator.pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const AppScreen(),
+              ),
+            );
+          }
         }
       case LoginState.unset:
         navigator.pushReplacement(
