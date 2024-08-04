@@ -8,6 +8,8 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
 
+import '../components/common.dart';
+
 class AppScreen extends StatefulWidget {
   const AppScreen({super.key});
 
@@ -16,6 +18,21 @@ class AppScreen extends StatefulWidget {
 }
 
 class _AppScreenState extends State<AppScreen> {
+  final SendingController _sendingController = SendingController();
+  var _sending = false;
+  var _currentIndex = 0;
+
+  int _index() {
+    if (_currentIndex == 0) {
+      if (_sending) {
+        return 2;
+      } else {
+        return 0;
+      }
+    }
+    return _currentIndex;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -26,8 +43,6 @@ class _AppScreenState extends State<AppScreen> {
     super.dispose();
   }
 
-  var _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,10 +51,15 @@ class _AppScreenState extends State<AppScreen> {
         elevation: 1,
       ),
       body: IndexedStack(
-        index: _currentIndex,
-        children: const [
-          SendFile(),
-          ReceiveFile(),
+        index: _index(),
+        children: [
+          SendFile(
+            sendFiles: _sendFiles,
+          ),
+          const ReceiveFile(),
+          Sending(
+            controller: _sendingController,
+          ),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -62,10 +82,19 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
+  Future _sendFiles(Device device, List<XFile> files) async {
+    _sendingController.send(device, files);
+    setState(() {
+      _sending = true;
+    });
+  }
 }
 
 class SendFile extends StatefulWidget {
-  const SendFile({super.key});
+  final FutureOr<dynamic> Function(Device device, List<XFile> files) sendFiles;
+
+  const SendFile({required this.sendFiles, super.key});
 
   @override
   State<SendFile> createState() => _SendFileState();
@@ -200,7 +229,9 @@ class _SendFileState extends State<SendFile> {
             }
             var device = devices[index];
             return ListTile(
-              onTap: () {},
+              onTap: () {
+                _sendFiles(device);
+              },
               title: Text(device.name),
               leading: const Icon(Icons.computer),
             );
@@ -241,6 +272,17 @@ class _SendFileState extends State<SendFile> {
       },
     );
   }
+
+  Future _sendFiles(Device device) async {
+    if (_list.isEmpty) {
+      defaultToast(context, '请选择的文件');
+      return;
+    }
+    await widget.sendFiles(device, _list);
+    setState(() {
+      _list.clear();
+    });
+  }
 }
 
 class ReceiveFile extends StatefulWidget {
@@ -266,5 +308,49 @@ class _ReceiveFileState extends State<ReceiveFile> {
     return const Center(
       child: Text('Receive File'),
     );
+  }
+}
+
+class Sending extends StatefulWidget {
+  final SendingController controller;
+
+  const Sending({required this.controller, super.key});
+
+  @override
+  State<Sending> createState() => _SendingState();
+}
+
+class _SendingState extends State<Sending> {
+  @override
+  void initState() {
+    widget.controller._state = this;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    if (widget.controller._state == this) {
+      widget.controller._state = null;
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Text('Sending'),
+    );
+  }
+
+  _sendFiles(Device device, List<XFile> files) async {
+    // todo
+  }
+}
+
+class SendingController {
+  _SendingState? _state;
+
+  void send(Device device, List<XFile> files) {
+    _state?._sendFiles(device, files);
   }
 }
