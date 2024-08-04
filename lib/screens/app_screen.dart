@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
@@ -77,6 +75,10 @@ class _AppScreenState extends State<AppScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.call_received),
             label: '接收',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.upload),
+            label: '发送中',
           ),
         ],
       ),
@@ -321,6 +323,13 @@ class Sending extends StatefulWidget {
 }
 
 class _SendingState extends State<Sending> {
+  Device _device = const Device(
+    deviceType: 0,
+    name: '',
+    folderFileId: '',
+  );
+  final _tasks = <SendingTask>[];
+
   @override
   void initState() {
     widget.controller._state = this;
@@ -343,7 +352,18 @@ class _SendingState extends State<Sending> {
   }
 
   _sendFiles(Device device, List<XFile> files) async {
-    // todo
+    setState(() {
+      _device = device;
+      for (var value in files) {
+        _tasks.add(SendingTask(
+          device: device,
+          name: value.name,
+          path: value.path,
+          state: SendingState.init,
+          errorMsg: '',
+        ));
+      }
+    });
   }
 }
 
@@ -353,4 +373,28 @@ class SendingController {
   void send(Device device, List<XFile> files) {
     _state?._sendFiles(device, files);
   }
+}
+
+class SendingTask {
+  Device device;
+  String name;
+  String path;
+  SendingState state;
+  String errorMsg;
+
+  SendingTask({
+    required this.device,
+    required this.name,
+    required this.path,
+    required this.state,
+    required this.errorMsg,
+  });
+}
+
+enum SendingState {
+  init,
+  sending,
+  success,
+  fail,
+  cancel,
 }
