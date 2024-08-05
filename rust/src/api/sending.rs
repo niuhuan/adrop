@@ -10,7 +10,7 @@ use async_recursion::async_recursion;
 use base64::Engine;
 use flutter_rust_bridge::for_generated::futures::SinkExt;
 use lazy_static::lazy_static;
-use std::ops::DerefMut;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -83,11 +83,13 @@ pub(crate) async fn sending_job() {
                     break;
                 }
             }
-            let _ = sync_tasks_to_dart(lock.clone()).await;
+            let sync = lock.deref().clone();
             drop(lock);
-            println!("{:?}", need_sent);
+            let _ = sync_tasks_to_dart(sync).await;
             if let Some(need_sent) = need_sent {
+                println!("start send : {:?}", need_sent);
                 if let Err(e) = send_file(&need_sent).await {
+                    println!("send file failed: {:?} : {:?}", need_sent, e);
                     let mut lock = SENDING_TASKS.lock().await;
                     for x in lock.deref_mut() {
                         if x.task_id == need_sent.task_id {
@@ -96,9 +98,12 @@ pub(crate) async fn sending_job() {
                             break;
                         }
                     }
-                    let _ = sync_tasks_to_dart(lock.clone()).await;
+                    let sync = lock.deref().clone();
                     drop(lock);
+                    let _ = sync_tasks_to_dart(sync).await;
+                    println!("send file failed sync : {:?}", need_sent);
                 } else {
+                    println!("send file success: {:?}", need_sent);
                     let mut lock = SENDING_TASKS.lock().await;
                     for x in lock.deref_mut() {
                         if x.task_id == need_sent.task_id {
@@ -106,8 +111,10 @@ pub(crate) async fn sending_job() {
                             break;
                         }
                     }
-                    let _ = sync_tasks_to_dart(lock.clone()).await;
+                    let sync = lock.deref().clone();
                     drop(lock);
+                    let _ = sync_tasks_to_dart(sync).await;
+                    println!("send file success sync: {:?}", need_sent);
                 }
             } else {
                 break;
@@ -189,6 +196,7 @@ async fn upload_folder(
         .adrive_open_file_update()
         .await
         .drive_id(space_info.drive_id.as_str())
+        .file_id(folder_result.file_id.as_str())
         .name(alipan_file_name.as_str())
         .check_name_mode(CheckNameMode::Refuse)
         .starred(false)
@@ -222,6 +230,7 @@ async fn upload_file(
         .part_info_list(parts)
         .request()
         .await?;
+    println!("upload file result: {:?}", result);
     if result.rapid_upload {
         return Ok(());
     }

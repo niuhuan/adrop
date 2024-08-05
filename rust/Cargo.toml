@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-alipan = { version = "0.0.16", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots"] }
+alipan = { version = "0.0.16", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots", "backtrace"] }
 async-recursion = "1.1.1"
 async-trait = "0.1.81"
 flutter_rust_bridge = { version = "=2.1.0", features = ["uuid", "chrono", "backtrace", "log"] }
