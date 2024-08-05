@@ -17,3 +17,13 @@ enum LoginState {
   set_,
   ;
 }
+
+enum SendingTaskState {
+  init,
+  sending,
+  success,
+  fail,
+  canceling,
+  canceled,
+  ;
+}

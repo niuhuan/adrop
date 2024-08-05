@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'package:adrop/components/content_builder.dart';
+import 'package:adrop/src/rust/api/sending.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
+import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+import 'package:uuid/v4.dart';
 
 import '../components/common.dart';
 
@@ -346,24 +350,36 @@ class _SendingState extends State<Sending> {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Sending'),
+    return _tasksList();
+  }
+
+  Widget _tasksList() {
+    return ListView.builder(
+      itemCount: _tasks.length,
+      itemBuilder: (BuildContext context, int index) {
+        var task = _tasks[index];
+        return ListTile(
+          title: Text(task.fileName),
+          subtitle: Text(task.taskState.toString()),
+          leading: const Icon(Icons.file_copy),
+        );
+      },
     );
   }
 
   _sendFiles(Device device, List<XFile> files) async {
-    setState(() {
-      _device = device;
-      for (var value in files) {
-        _tasks.add(SendingTask(
-          device: device,
-          name: value.name,
-          path: value.path,
-          state: SendingState.init,
-          errorMsg: '',
-        ));
-      }
-    });
+    final addTasks = <SendingTask>[];
+    for (var value in files) {
+      addTasks.add(SendingTask(
+        taskId: const UuidV4().generate().toString(),
+        device: device,
+        fileName: value.name,
+        filePath: value.path,
+        taskState: SendingTaskState.init,
+        errorMsg: '',
+      ));
+    }
+    await addSendingTasks(tasks: addTasks);
   }
 }
 
@@ -373,28 +389,4 @@ class SendingController {
   void send(Device device, List<XFile> files) {
     _state?._sendFiles(device, files);
   }
-}
-
-class SendingTask {
-  Device device;
-  String name;
-  String path;
-  SendingState state;
-  String errorMsg;
-
-  SendingTask({
-    required this.device,
-    required this.name,
-    required this.path,
-    required this.state,
-    required this.errorMsg,
-  });
-}
-
-enum SendingState {
-  init,
-  sending,
-  success,
-  fail,
-  cancel,
 }

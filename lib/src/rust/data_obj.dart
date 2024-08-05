@@ -50,6 +50,45 @@ class LoginInfo {
           state == other.state;
 }
 
+class SendingTask {
+  final String taskId;
+  final Device device;
+  final String fileName;
+  final String filePath;
+  final SendingTaskState taskState;
+  final String errorMsg;
+
+  const SendingTask({
+    required this.taskId,
+    required this.device,
+    required this.fileName,
+    required this.filePath,
+    required this.taskState,
+    required this.errorMsg,
+  });
+
+  @override
+  int get hashCode =>
+      taskId.hashCode ^
+      device.hashCode ^
+      fileName.hashCode ^
+      filePath.hashCode ^
+      taskState.hashCode ^
+      errorMsg.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SendingTask &&
+          runtimeType == other.runtimeType &&
+          taskId == other.taskId &&
+          device == other.device &&
+          fileName == other.fileName &&
+          filePath == other.filePath &&
+          taskState == other.taskState &&
+          errorMsg == other.errorMsg;
+}
+
 class SpaceInfo {
   final String driveId;
   final String devicesRootFolderFileId;

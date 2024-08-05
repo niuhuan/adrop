@@ -9,6 +9,7 @@
 import 'api/download.dart';
 import 'api/fs.dart';
 import 'api/init.dart';
+import 'api/sending.dart';
 import 'api/simple.dart';
 import 'api/space.dart';
 import 'api/system.dart';
@@ -72,6 +73,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<SendingTask> dco_decode_list_sending_task(dynamic raw);
+
+  @protected
   LoginInfo dco_decode_login_info(dynamic raw);
 
   @protected
@@ -85,6 +89,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceInfo? dco_decode_opt_box_autoadd_space_info(dynamic raw);
+
+  @protected
+  SendingTask dco_decode_sending_task(dynamic raw);
+
+  @protected
+  SendingTaskState dco_decode_sending_task_state(dynamic raw);
 
   @protected
   SpaceInfo dco_decode_space_info(dynamic raw);
@@ -140,6 +150,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<SendingTask> sse_decode_list_sending_task(SseDeserializer deserializer);
+
+  @protected
   LoginInfo sse_decode_login_info(SseDeserializer deserializer);
 
   @protected
@@ -155,6 +168,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   SpaceInfo? sse_decode_opt_box_autoadd_space_info(
       SseDeserializer deserializer);
+
+  @protected
+  SendingTask sse_decode_sending_task(SseDeserializer deserializer);
+
+  @protected
+  SendingTaskState sse_decode_sending_task_state(SseDeserializer deserializer);
 
   @protected
   SpaceInfo sse_decode_space_info(SseDeserializer deserializer);
@@ -217,6 +236,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       Uint8List self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_sending_task(
+      List<SendingTask> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_login_info(LoginInfo self, SseSerializer serializer);
 
   @protected
@@ -232,6 +255,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_space_info(
       SpaceInfo? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sending_task(SendingTask self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sending_task_state(
+      SendingTaskState self, SseSerializer serializer);
 
   @protected
   void sse_encode_space_info(SpaceInfo self, SseSerializer serializer);

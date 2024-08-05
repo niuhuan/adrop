@@ -86,3 +86,18 @@ impl Default for AfterDownload {
         Self::MoveToTrash
     }
 }
+
+enum_str!(SendingTaskState {
+    Init("init"),
+    Sending("sending"),
+    Success("success"),
+    Fail("fail"),
+    Canceling("canceling"),
+    Canceled("canceled"),
+});
+
+impl Default for SendingTaskState {
+    fn default() -> Self {
+        Self::Init
+    }
+}

@@ -1,6 +1,7 @@
 pub mod download;
 pub mod fs;
 pub mod init;
+pub mod sending;
 pub mod simple;
 pub mod space;
 pub mod system;
