@@ -8,8 +8,14 @@ import '../data_obj/enums.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These types are ignored because they are not used by any `pub` functions: `SENDING_TASKS`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `deref`, `initialize`
+// These types are ignored because they are not used by any `pub` functions: `SENDING_CALL_BACKS`, `SENDING_TASKS`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `deref`, `deref`, `initialize`, `initialize`
+
+Stream<List<SendingTask>> registerSendingListener() =>
+    RustLib.instance.api.crateApiSendingRegisterSendingListener();
+
+Future<void> unregisterSendingListener() =>
+    RustLib.instance.api.crateApiSendingUnregisterSendingListener();
 
 Future<List<SendingTask>> listSendingTasks() =>
     RustLib.instance.api.crateApiSendingListSendingTasks();

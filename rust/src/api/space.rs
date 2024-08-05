@@ -6,7 +6,6 @@ use alipan::response::AdriveOpenFile;
 use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
 use base64::Engine;
 use reqwest::Body;
-use sea_orm::ColIdx;
 use serde_derive::{Deserialize, Serialize};
 
 pub async fn space_info() -> anyhow::Result<Option<SpaceInfo>> {

@@ -7,7 +7,6 @@ import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
 import 'package:uuid/v4.dart';
 
 import '../components/common.dart';
@@ -21,19 +20,7 @@ class AppScreen extends StatefulWidget {
 
 class _AppScreenState extends State<AppScreen> {
   final SendingController _sendingController = SendingController();
-  var _sending = false;
   var _currentIndex = 0;
-
-  int _index() {
-    if (_currentIndex == 0) {
-      if (_sending) {
-        return 2;
-      } else {
-        return 0;
-      }
-    }
-    return _currentIndex;
-  }
 
   @override
   void initState() {
@@ -53,7 +40,7 @@ class _AppScreenState extends State<AppScreen> {
         elevation: 1,
       ),
       body: IndexedStack(
-        index: _index(),
+        index: _currentIndex,
         children: [
           SendFile(
             sendFiles: _sendFiles,
@@ -92,7 +79,7 @@ class _AppScreenState extends State<AppScreen> {
   Future _sendFiles(Device device, List<XFile> files) async {
     _sendingController.send(device, files);
     setState(() {
-      _sending = true;
+      _currentIndex = 2;
     });
   }
 }
@@ -281,7 +268,7 @@ class _SendFileState extends State<SendFile> {
 
   Future _sendFiles(Device device) async {
     if (_list.isEmpty) {
-      defaultToast(context, '请选择的文件');
+      defaultToast(context, '请选择要发送的文件');
       return;
     }
     await widget.sendFiles(device, _list);
@@ -327,16 +314,18 @@ class Sending extends StatefulWidget {
 }
 
 class _SendingState extends State<Sending> {
-  Device _device = const Device(
-    deviceType: 0,
-    name: '',
-    folderFileId: '',
-  );
   final _tasks = <SendingTask>[];
+  final stream = registerSendingListener();
 
   @override
   void initState() {
     widget.controller._state = this;
+    stream.listen((tasks) {
+      setState(() {
+        _tasks.clear();
+        _tasks.addAll(tasks);
+      });
+    });
     super.initState();
   }
 
