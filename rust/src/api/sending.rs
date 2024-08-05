@@ -85,7 +85,8 @@ pub(crate) async fn sending_job() {
             }
             let _ = sync_tasks_to_dart(lock.clone()).await;
             drop(lock);
-            if let Some(mut need_sent) = need_sent {
+            println!("{:?}", need_sent);
+            if let Some(need_sent) = need_sent {
                 if let Err(e) = send_file(&need_sent).await {
                     let mut lock = SENDING_TASKS.lock().await;
                     for x in lock.deref_mut() {
@@ -114,6 +115,10 @@ pub(crate) async fn sending_job() {
         }
     }
 }
+
+/*
+
+*/
 
 async fn send_file(task: &SendingTask) -> anyhow::Result<()> {
     let file_state = tokio::fs::metadata(task.file_path.as_str()).await;
@@ -248,7 +253,8 @@ async fn password_sha1(file_path: &str, password: &[u8]) -> anyhow::Result<(Stri
     let mut hasher = sha1::Sha1::new();
     let mut encryptor = encryptor_from_key(password)?;
     let mut reader = tokio::io::BufReader::new(file);
-    let mut buffer = [0u8; 1 << 20];
+    let mut buffer_data = vec![0u8; 1 << 20];
+    let mut buffer = buffer_data.as_mut_slice();
     let mut size = 0;
     let mut position = 0;
     loop {
