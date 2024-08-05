@@ -1,14 +1,18 @@
-use std::sync::Arc;
-use alipan::{AccessToken, OAuthClient, OAuthClientAccessTokenManager, OAuthClientAccessTokenStore};
+use crate::api::sending::sending_job;
+use crate::api::space::space_info;
+use crate::data_obj::{Config, SpaceInfo};
+use crate::database::properties::property::{load_property, save_property};
+use crate::utils::{create_dir_if_not_exists, join_paths};
+use alipan::{
+    AccessToken, OAuthClient, OAuthClientAccessTokenManager, OAuthClientAccessTokenStore,
+};
 use async_trait::async_trait;
 use flutter_rust_bridge::for_generated::anyhow;
 use flutter_rust_bridge::for_generated::anyhow::anyhow;
 use lazy_static::lazy_static;
 use once_cell::sync::OnceCell;
+use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::data_obj::Config;
-use crate::database::properties::property::{load_property, save_property};
-use crate::utils::{create_dir_if_not_exists, join_paths};
 
 lazy_static! {
     static ref INIT_ED: Mutex<bool> = Mutex::new(false);
@@ -17,6 +21,8 @@ lazy_static! {
 static ROOT: OnceCell<String> = OnceCell::new();
 static DATABASE_DIR: OnceCell<String> = OnceCell::new();
 static ALIPAN_CLIENT: OnceCell<alipan::AdriveClient> = OnceCell::new();
+
+static SPACE_INFO: OnceCell<Mutex<SpaceInfo>> = OnceCell::new();
 
 pub(crate) async fn init_root(path: &str) -> anyhow::Result<()> {
     let mut lock = INIT_ED.lock().await;
@@ -34,6 +40,13 @@ pub(crate) async fn init_root(path: &str) -> anyhow::Result<()> {
     create_dir_if_not_exists(DATABASE_DIR.get().unwrap());
     crate::database::init_database().await?;
     set_alipan_client().await?;
+    let space_info = space_info().await?;
+    if let Some(si) = space_info {
+        SPACE_INFO.set(Mutex::new(si)).unwrap();
+    } else {
+        SPACE_INFO.set(Mutex::new(SpaceInfo::default())).unwrap();
+    }
+    let _ = tokio::spawn(sending_job());
     Ok(())
 }
 
@@ -74,7 +87,6 @@ pub(crate) async fn do_set_client_after() -> anyhow::Result<()> {
 #[derive(Debug)]
 pub struct DatabaseAccessTokenStore;
 
-
 #[async_trait]
 impl OAuthClientAccessTokenStore for DatabaseAccessTokenStore {
     async fn get_access_token(&self) -> anyhow::Result<Option<AccessToken>> {
@@ -110,4 +122,14 @@ pub(crate) fn get_database_dir() -> &'static String {
 
 pub(crate) fn get_alipan_client() -> &'static alipan::AdriveClient {
     ALIPAN_CLIENT.get().unwrap()
+}
+
+pub(crate) async fn ram_space_info() -> anyhow::Result<SpaceInfo> {
+    Ok(SPACE_INFO.get().unwrap().lock().await.clone())
+}
+
+pub(crate) async fn save_space_info_to_ram(space_info: SpaceInfo) {
+    let mut lock = SPACE_INFO.get().unwrap().lock().await;
+    *lock = space_info;
+    drop(lock);
 }

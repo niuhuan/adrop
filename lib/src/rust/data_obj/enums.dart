@@ -22,7 +22,7 @@ enum SendingTaskState {
   init,
   sending,
   success,
-  fail,
+  failed,
   canceling,
   canceled,
   ;

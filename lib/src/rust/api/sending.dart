@@ -8,6 +8,7 @@ import '../data_obj/enums.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// These functions are ignored because they are not marked as `pub`: `log_log`, `send_file`, `sending_job`, `sync_tasks_to_dart`
 // These types are ignored because they are not used by any `pub` functions: `SENDING_CALL_BACKS`, `SENDING_TASKS`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `deref`, `deref`, `initialize`, `initialize`
 

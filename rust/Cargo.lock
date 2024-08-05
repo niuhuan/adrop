@@ -2130,7 +2130,9 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "sha1",
  "tokio",
+ "tokio-stream",
  "toml",
  "warp",
 ]

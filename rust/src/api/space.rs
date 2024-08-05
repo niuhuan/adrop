@@ -1,7 +1,7 @@
 use crate::custom_crypto::{decrypt_base64, decrypt_file_name, encrypt_buff_to_base64};
 use crate::data_obj::{Config, Device, SpaceInfo};
 use crate::database::properties::property::{load_property, save_property};
-use crate::define::get_alipan_client;
+use crate::define::{get_alipan_client, ram_space_info, save_space_info_to_ram};
 use alipan::response::AdriveOpenFile;
 use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
 use base64::Engine;
@@ -199,17 +199,13 @@ pub async fn check_old_password(password_enc: String, password: String) -> anyho
 }
 
 pub async fn list_devices_by_config() -> anyhow::Result<Vec<Device>> {
-    let space_info = space_info().await?;
-    if let Some(space_info) = space_info {
-        list_devices(
-            space_info.drive_id,
-            space_info.devices_root_folder_file_id,
-            space_info.true_pass_base64,
-        )
-        .await
-    } else {
-        Ok(vec![])
-    }
+    let space_info = ram_space_info().await?;
+    list_devices(
+        space_info.drive_id,
+        space_info.devices_root_folder_file_id,
+        space_info.true_pass_base64,
+    )
+    .await
 }
 
 pub async fn list_devices(
@@ -298,6 +294,7 @@ pub async fn create_new_device(
         true_pass_base64,
     };
     save_property("space_config".to_owned(), serde_json::to_string(&info)?).await?;
+    save_space_info_to_ram(info).await;
     Ok(())
 }
 
@@ -314,6 +311,7 @@ pub async fn choose_old_device(
         true_pass_base64,
     };
     save_property("space_config".to_owned(), serde_json::to_string(&info)?).await?;
+    save_space_info_to_ram(info).await;
     Ok(())
 }
 

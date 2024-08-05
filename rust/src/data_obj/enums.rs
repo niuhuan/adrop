@@ -91,7 +91,7 @@ enum_str!(SendingTaskState {
     Init("init"),
     Sending("sending"),
     Success("success"),
-    Fail("fail"),
+    Failed("failed"),
     Canceling("canceling"),
     Canceled("canceled"),
 });
