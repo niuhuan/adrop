@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["cdylib", "staticlib", "lib"]
 
 [dependencies]
 alipan = { version = "0.0.16", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots", "backtrace"] }
