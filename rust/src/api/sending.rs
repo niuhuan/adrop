@@ -1,4 +1,4 @@
-use crate::api::space::create_folder;
+use crate::api::space::{create_folder, space_info};
 use crate::custom_crypto::{encrypt_file_name, encryptor_from_key};
 use crate::data_obj::enums::SendingTaskState;
 use crate::data_obj::SendingTask;
@@ -69,6 +69,14 @@ fn log_log<T>(r: anyhow::Result<T>) {
 pub(crate) async fn sending_job() {
     loop {
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+        if let Ok(space_info) = ram_space_info().await {
+            if space_info.drive_id.is_empty() {
+                continue;
+            }
+        } else {
+            println!("space info is failed");
+            break;
+        }
         loop {
             let mut lock = SENDING_TASKS.lock().await;
             if lock.is_empty() {
@@ -139,14 +147,14 @@ async fn send_file(task: &SendingTask) -> anyhow::Result<()> {
             task.file_path.as_str(),
             task.device.folder_file_id.as_str(),
         )
-        .await?;
+            .await?;
     } else if meta.is_file() {
         upload_file(
             task.file_name.as_str(),
             task.file_path.as_str(),
             task.device.folder_file_id.as_str(),
         )
-        .await?;
+            .await?;
     }
     Ok(())
 }
@@ -182,14 +190,14 @@ async fn upload_folder(
                 entry.path().to_str().unwrap(),
                 folder_result.file_id.as_str(),
             )
-            .await?;
+                .await?;
         } else if meta.is_file() {
             upload_file(
                 entry.file_name().to_str().unwrap(),
                 entry.path().to_str().unwrap(),
                 folder_result.file_id.as_str(),
             )
-            .await?;
+                .await?;
         }
     }
     let _ = client
