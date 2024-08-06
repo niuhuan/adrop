@@ -6,6 +6,7 @@
 import 'api/download.dart';
 import 'api/fs.dart';
 import 'api/init.dart';
+import 'api/receiving.dart';
 import 'api/sending.dart';
 import 'api/simple.dart';
 import 'api/space.dart';
@@ -68,7 +69,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.1.0';
 
   @override
-  int get rustContentHash => -1465469609;
+  int get rustContentHash => 954298233;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -91,6 +92,12 @@ abstract class RustLibApi extends BaseApi {
   Future<String> crateApiFsDesktopRoot();
 
   Future<void> crateApiInitInitPath({required String localPath});
+
+  Future<List<ReceivingTask>> crateApiReceivingListReceivingTasks();
+
+  Stream<List<ReceivingTask>> crateApiReceivingRegisterReceivingTask();
+
+  Future<void> crateApiReceivingUnregisterReceivingTask();
 
   Future<void> crateApiSendingAddSendingTasks(
       {required List<SendingTask> tasks});
@@ -315,6 +322,81 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<List<ReceivingTask>> crateApiReceivingListReceivingTasks() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 7, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_list_receiving_task,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiReceivingListReceivingTasksConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiReceivingListReceivingTasksConstMeta =>
+      const TaskConstMeta(
+        debugName: "list_receiving_tasks",
+        argNames: [],
+      );
+
+  @override
+  Stream<List<ReceivingTask>> crateApiReceivingRegisterReceivingTask() {
+    final listener = RustStreamSink<List<ReceivingTask>>();
+    unawaited(handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        sse_encode_StreamSink_list_receiving_task_Sse(listener, serializer);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 8, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiReceivingRegisterReceivingTaskConstMeta,
+      argValues: [listener],
+      apiImpl: this,
+    )));
+    return listener.stream;
+  }
+
+  TaskConstMeta get kCrateApiReceivingRegisterReceivingTaskConstMeta =>
+      const TaskConstMeta(
+        debugName: "register_receiving_task",
+        argNames: ["listener"],
+      );
+
+  @override
+  Future<void> crateApiReceivingUnregisterReceivingTask() {
+    return handler.executeNormal(NormalTask(
+      callFfi: (port_) {
+        final serializer = SseSerializer(generalizedFrbRustBinding);
+        pdeCallFfi(generalizedFrbRustBinding, serializer,
+            funcId: 9, port: port_);
+      },
+      codec: SseCodec(
+        decodeSuccessData: sse_decode_unit,
+        decodeErrorData: sse_decode_AnyhowException,
+      ),
+      constMeta: kCrateApiReceivingUnregisterReceivingTaskConstMeta,
+      argValues: [],
+      apiImpl: this,
+    ));
+  }
+
+  TaskConstMeta get kCrateApiReceivingUnregisterReceivingTaskConstMeta =>
+      const TaskConstMeta(
+        debugName: "unregister_receiving_task",
+        argNames: [],
+      );
+
+  @override
   Future<void> crateApiSendingAddSendingTasks(
       {required List<SendingTask> tasks}) {
     return handler.executeNormal(NormalTask(
@@ -322,7 +404,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_list_sending_task(tasks, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 7, port: port_);
+            funcId: 10, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -346,7 +428,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 8, port: port_);
+            funcId: 11, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_sending_task,
@@ -372,7 +454,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_StreamSink_list_sending_task_Sse(listener, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 9, port: port_);
+            funcId: 12, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -397,7 +479,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 10, port: port_);
+            funcId: 13, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -421,7 +503,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: () {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(name, serializer);
-        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
+        return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 14)!;
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -444,7 +526,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 12, port: port_);
+            funcId: 15, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -467,7 +549,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 13, port: port_);
+            funcId: 16, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_adrive_user_get_drive_info,
@@ -494,7 +576,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(passwordEnc, serializer);
         sse_encode_String(password, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 14, port: port_);
+            funcId: 17, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -526,7 +608,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(truePassBase64, serializer);
         sse_encode_String(thisDeviceFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 15, port: port_);
+            funcId: 18, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -566,7 +648,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(folderName, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 16, port: port_);
+            funcId: 19, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -599,7 +681,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(deviceName, serializer);
         sse_encode_i_32(deviceType, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 17, port: port_);
+            funcId: 20, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -635,7 +717,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 18, port: port_);
+            funcId: 21, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_file_item,
@@ -662,7 +744,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(driveId, serializer);
         sse_encode_String(parentFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 19, port: port_);
+            funcId: 22, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_opt_String,
@@ -692,7 +774,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(truePassBase64, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 20, port: port_);
+            funcId: 23, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_device,
@@ -715,7 +797,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 21, port: port_);
+            funcId: 24, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_device,
@@ -742,7 +824,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(driveId, serializer);
         sse_encode_String(parentFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 22, port: port_);
+            funcId: 25, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_list_file_item,
@@ -765,7 +847,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 23, port: port_);
+            funcId: 26, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_adrive_user_get_drive_info,
@@ -795,7 +877,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(password, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 24, port: port_);
+            funcId: 27, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_String,
@@ -819,7 +901,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 25, port: port_);
+            funcId: 28, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_opt_box_autoadd_space_info,
@@ -843,7 +925,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(url, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 26, port: port_);
+            funcId: 29, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -867,7 +949,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 27, port: port_);
+            funcId: 30, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_login_info,
@@ -890,7 +972,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 28, port: port_);
+            funcId: 31, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -914,7 +996,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
-            funcId: 29, port: port_);
+            funcId: 32, port: port_);
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_unit,
@@ -936,6 +1018,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   AnyhowException dco_decode_AnyhowException(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return AnyhowException(raw as String);
+  }
+
+  @protected
+  RustStreamSink<List<ReceivingTask>>
+      dco_decode_StreamSink_list_receiving_task_Sse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
   }
 
   @protected
@@ -1054,6 +1143,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<ReceivingTask> dco_decode_list_receiving_task(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_receiving_task).toList();
+  }
+
+  @protected
   List<SendingTask> dco_decode_list_sending_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_sending_task).toList();
@@ -1092,6 +1187,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SpaceInfo? dco_decode_opt_box_autoadd_space_info(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_space_info(raw);
+  }
+
+  @protected
+  ReceivingTask dco_decode_receiving_task(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return ReceivingTask(
+      taskId: dco_decode_String(arr[0]),
+      driveId: dco_decode_String(arr[1]),
+      fileId: dco_decode_String(arr[2]),
+      fileName: dco_decode_String(arr[3]),
+      filePath: dco_decode_String(arr[4]),
+      taskState: dco_decode_receiving_task_state(arr[5]),
+      errorMsg: dco_decode_String(arr[6]),
+    );
+  }
+
+  @protected
+  ReceivingTaskState dco_decode_receiving_task_state(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ReceivingTaskState.values[raw as int];
   }
 
   @protected
@@ -1147,6 +1265,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_String(deserializer);
     return AnyhowException(inner);
+  }
+
+  @protected
+  RustStreamSink<List<ReceivingTask>>
+      sse_decode_StreamSink_list_receiving_task_Sse(
+          SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
   }
 
   @protected
@@ -1278,6 +1404,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<ReceivingTask> sse_decode_list_receiving_task(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ReceivingTask>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_receiving_task(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   List<SendingTask> sse_decode_list_sending_task(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1336,6 +1475,34 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     } else {
       return null;
     }
+  }
+
+  @protected
+  ReceivingTask sse_decode_receiving_task(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_taskId = sse_decode_String(deserializer);
+    var var_driveId = sse_decode_String(deserializer);
+    var var_fileId = sse_decode_String(deserializer);
+    var var_fileName = sse_decode_String(deserializer);
+    var var_filePath = sse_decode_String(deserializer);
+    var var_taskState = sse_decode_receiving_task_state(deserializer);
+    var var_errorMsg = sse_decode_String(deserializer);
+    return ReceivingTask(
+        taskId: var_taskId,
+        driveId: var_driveId,
+        fileId: var_fileId,
+        fileName: var_fileName,
+        filePath: var_filePath,
+        taskState: var_taskState,
+        errorMsg: var_errorMsg);
+  }
+
+  @protected
+  ReceivingTaskState sse_decode_receiving_task_state(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ReceivingTaskState.values[inner];
   }
 
   @protected
@@ -1399,6 +1566,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       AnyhowException self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.message, serializer);
+  }
+
+  @protected
+  void sse_encode_StreamSink_list_receiving_task_Sse(
+      RustStreamSink<List<ReceivingTask>> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+        self.setupAndSerialize(
+            codec: SseCodec(
+          decodeSuccessData: sse_decode_list_receiving_task,
+          decodeErrorData: sse_decode_AnyhowException,
+        )),
+        serializer);
   }
 
   @protected
@@ -1516,6 +1696,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_receiving_task(
+      List<ReceivingTask> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_receiving_task(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_list_sending_task(
       List<SendingTask> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1567,6 +1757,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     if (self != null) {
       sse_encode_box_autoadd_space_info(self, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_receiving_task(ReceivingTask self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.taskId, serializer);
+    sse_encode_String(self.driveId, serializer);
+    sse_encode_String(self.fileId, serializer);
+    sse_encode_String(self.fileName, serializer);
+    sse_encode_String(self.filePath, serializer);
+    sse_encode_receiving_task_state(self.taskState, serializer);
+    sse_encode_String(self.errorMsg, serializer);
+  }
+
+  @protected
+  void sse_encode_receiving_task_state(
+      ReceivingTaskState self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected

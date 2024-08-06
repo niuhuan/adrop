@@ -18,6 +18,16 @@ enum LoginState {
   ;
 }
 
+enum ReceivingTaskState {
+  init,
+  receiving,
+  success,
+  failed,
+  canceling,
+  canceled,
+  ;
+}
+
 enum SendingTaskState {
   init,
   sending,

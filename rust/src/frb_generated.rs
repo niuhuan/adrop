@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.1.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1465469609;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 954298233;
 
 // Section: executor
 
@@ -248,6 +248,116 @@ fn wire__crate__api__init__init_path_impl(
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || async move {
                         let output_ok = crate::api::init::init_path(api_local_path).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__receiving__list_receiving_tasks_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "list_receiving_tasks",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::receiving::list_receiving_tasks().await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__receiving__register_receiving_task_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "register_receiving_task",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_listener = <StreamSink<
+                Vec<crate::data_obj::ReceivingTask>,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok =
+                            crate::api::receiving::register_receiving_task(api_listener).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__receiving__unregister_receiving_task_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "unregister_receiving_task",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::receiving::unregister_receiving_task().await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -1128,6 +1238,19 @@ impl SseDecode for flutter_rust_bridge::for_generated::anyhow::Error {
 }
 
 impl SseDecode
+    for StreamSink<
+        Vec<crate::data_obj::ReceivingTask>,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
+impl SseDecode
     for StreamSink<Vec<crate::data_obj::SendingTask>, flutter_rust_bridge::for_generated::SseCodec>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1268,6 +1391,18 @@ impl SseDecode for Vec<u8> {
     }
 }
 
+impl SseDecode for Vec<crate::data_obj::ReceivingTask> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::data_obj::ReceivingTask>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::data_obj::SendingTask> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1332,6 +1467,45 @@ impl SseDecode for Option<crate::data_obj::SpaceInfo> {
         } else {
             return None;
         }
+    }
+}
+
+impl SseDecode for crate::data_obj::ReceivingTask {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_taskId = <String>::sse_decode(deserializer);
+        let mut var_driveId = <String>::sse_decode(deserializer);
+        let mut var_fileId = <String>::sse_decode(deserializer);
+        let mut var_fileName = <String>::sse_decode(deserializer);
+        let mut var_filePath = <String>::sse_decode(deserializer);
+        let mut var_taskState =
+            <crate::data_obj::enums::ReceivingTaskState>::sse_decode(deserializer);
+        let mut var_errorMsg = <String>::sse_decode(deserializer);
+        return crate::data_obj::ReceivingTask {
+            task_id: var_taskId,
+            drive_id: var_driveId,
+            file_id: var_fileId,
+            file_name: var_fileName,
+            file_path: var_filePath,
+            task_state: var_taskState,
+            error_msg: var_errorMsg,
+        };
+    }
+}
+
+impl SseDecode for crate::data_obj::enums::ReceivingTaskState {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::data_obj::enums::ReceivingTaskState::Init,
+            1 => crate::data_obj::enums::ReceivingTaskState::Receiving,
+            2 => crate::data_obj::enums::ReceivingTaskState::Success,
+            3 => crate::data_obj::enums::ReceivingTaskState::Failed,
+            4 => crate::data_obj::enums::ReceivingTaskState::Canceling,
+            5 => crate::data_obj::enums::ReceivingTaskState::Canceled,
+            _ => unreachable!("Invalid variant for ReceivingTaskState: {}", inner),
+        };
     }
 }
 
@@ -1432,50 +1606,68 @@ fn pde_ffi_dispatcher_primary_impl(
         4 => wire__crate__api__download__save_download_info_impl(port, ptr, rust_vec_len, data_len),
         5 => wire__crate__api__fs__desktop_root_impl(port, ptr, rust_vec_len, data_len),
         6 => wire__crate__api__init__init_path_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__sending__add_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
-        8 => wire__crate__api__sending__list_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
-        9 => wire__crate__api__sending__register_sending_listener_impl(
+        7 => wire__crate__api__receiving__list_receiving_tasks_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        10 => wire__crate__api__sending__unregister_sending_listener_impl(
+        8 => wire__crate__api__receiving__register_receiving_task_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        12 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
-        13 => wire__crate__api__space__adrive_user_get_drive_info_default_impl(
+        9 => wire__crate__api__receiving__unregister_receiving_task_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__api__space__check_old_password_impl(port, ptr, rust_vec_len, data_len),
-        15 => wire__crate__api__space__choose_old_device_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__space__create_new_device_impl(port, ptr, rust_vec_len, data_len),
-        18 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
-        21 => {
+        10 => wire__crate__api__sending__add_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__sending__list_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__sending__register_sending_listener_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        13 => wire__crate__api__sending__unregister_sending_listener_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        15 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__space__adrive_user_get_drive_info_default_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        17 => wire__crate__api__space__check_old_password_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__space__choose_old_device_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__space__create_new_device_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
+        24 => {
             wire__crate__api__space__list_devices_by_config_impl(port, ptr, rust_vec_len, data_len)
         }
-        22 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__user_setting__start_login_service_impl(
+        25 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__user_setting__start_login_service_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        29 => wire__crate__api__user_setting__stop_login_service_impl(
+        32 => wire__crate__api__user_setting__stop_login_service_impl(
             port,
             ptr,
             rust_vec_len,
@@ -1493,7 +1685,7 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        11 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
+        14 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1637,6 +1829,57 @@ impl flutter_rust_bridge::IntoIntoDart<crate::data_obj::enums::LoginState>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::data_obj::ReceivingTask {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.task_id.into_into_dart().into_dart(),
+            self.drive_id.into_into_dart().into_dart(),
+            self.file_id.into_into_dart().into_dart(),
+            self.file_name.into_into_dart().into_dart(),
+            self.file_path.into_into_dart().into_dart(),
+            self.task_state.into_into_dart().into_dart(),
+            self.error_msg.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::data_obj::ReceivingTask
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::data_obj::ReceivingTask>
+    for crate::data_obj::ReceivingTask
+{
+    fn into_into_dart(self) -> crate::data_obj::ReceivingTask {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::data_obj::enums::ReceivingTaskState {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Init => 0.into_dart(),
+            Self::Receiving => 1.into_dart(),
+            Self::Success => 2.into_dart(),
+            Self::Failed => 3.into_dart(),
+            Self::Canceling => 4.into_dart(),
+            Self::Canceled => 5.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::data_obj::enums::ReceivingTaskState
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::data_obj::enums::ReceivingTaskState>
+    for crate::data_obj::enums::ReceivingTaskState
+{
+    fn into_into_dart(self) -> crate::data_obj::enums::ReceivingTaskState {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::data_obj::SendingTask {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
@@ -1708,6 +1951,18 @@ impl SseEncode for flutter_rust_bridge::for_generated::anyhow::Error {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(format!("{:?}", self), serializer);
+    }
+}
+
+impl SseEncode
+    for StreamSink<
+        Vec<crate::data_obj::ReceivingTask>,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
     }
 }
 
@@ -1825,6 +2080,16 @@ impl SseEncode for Vec<u8> {
     }
 }
 
+impl SseEncode for Vec<crate::data_obj::ReceivingTask> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::data_obj::ReceivingTask>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::data_obj::SendingTask> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1885,6 +2150,39 @@ impl SseEncode for Option<crate::data_obj::SpaceInfo> {
         if let Some(value) = self {
             <crate::data_obj::SpaceInfo>::sse_encode(value, serializer);
         }
+    }
+}
+
+impl SseEncode for crate::data_obj::ReceivingTask {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.task_id, serializer);
+        <String>::sse_encode(self.drive_id, serializer);
+        <String>::sse_encode(self.file_id, serializer);
+        <String>::sse_encode(self.file_name, serializer);
+        <String>::sse_encode(self.file_path, serializer);
+        <crate::data_obj::enums::ReceivingTaskState>::sse_encode(self.task_state, serializer);
+        <String>::sse_encode(self.error_msg, serializer);
+    }
+}
+
+impl SseEncode for crate::data_obj::enums::ReceivingTaskState {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::data_obj::enums::ReceivingTaskState::Init => 0,
+                crate::data_obj::enums::ReceivingTaskState::Receiving => 1,
+                crate::data_obj::enums::ReceivingTaskState::Success => 2,
+                crate::data_obj::enums::ReceivingTaskState::Failed => 3,
+                crate::data_obj::enums::ReceivingTaskState::Canceling => 4,
+                crate::data_obj::enums::ReceivingTaskState::Canceled => 5,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 

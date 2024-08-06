@@ -101,3 +101,18 @@ impl Default for SendingTaskState {
         Self::Init
     }
 }
+
+enum_str!(ReceivingTaskState {
+    Init("init"),
+    Receiving("receiving"),
+    Success("success"),
+    Failed("failed"),
+    Canceling("canceling"),
+    Canceled("canceled"),
+});
+
+impl Default for ReceivingTaskState {
+    fn default() -> Self {
+        Self::Init
+    }
+}

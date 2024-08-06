@@ -93,9 +93,7 @@ checksum = "250f629c0161ad8107cf89319e990051fae62832fd343083bea452d93e2205fd"
 
 [[package]]
 name = "alipan"
-version = "0.0.16"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1dcbcef546ada19302676c44acd5142f00bc2f8caf6dc543742204203066b7a1"
+version = "0.0.17"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2135,7 +2133,9 @@ dependencies = [
  "sha1",
  "tokio",
  "tokio-stream",
+ "tokio-util",
  "toml",
+ "uuid",
  "warp",
 ]
 
@@ -3257,6 +3257,7 @@ version = "1.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81dfa00651efa65069b0b6b651f4aaa31ba9e3c3ce0137aaad053604ee7e0314"
 dependencies = [
+ "getrandom",
  "serde",
 ]
 

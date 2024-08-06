@@ -6,6 +6,7 @@
 import 'api/download.dart';
 import 'api/fs.dart';
 import 'api/init.dart';
+import 'api/receiving.dart';
 import 'api/sending.dart';
 import 'api/simple.dart';
 import 'api/space.dart';
@@ -30,6 +31,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  RustStreamSink<List<ReceivingTask>>
+      dco_decode_StreamSink_list_receiving_task_Sse(dynamic raw);
 
   @protected
   RustStreamSink<List<SendingTask>> dco_decode_StreamSink_list_sending_task_Sse(
@@ -75,6 +80,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<ReceivingTask> dco_decode_list_receiving_task(dynamic raw);
+
+  @protected
   List<SendingTask> dco_decode_list_sending_task(dynamic raw);
 
   @protected
@@ -93,6 +101,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SpaceInfo? dco_decode_opt_box_autoadd_space_info(dynamic raw);
 
   @protected
+  ReceivingTask dco_decode_receiving_task(dynamic raw);
+
+  @protected
+  ReceivingTaskState dco_decode_receiving_task_state(dynamic raw);
+
+  @protected
   SendingTask dco_decode_sending_task(dynamic raw);
 
   @protected
@@ -109,6 +123,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<List<ReceivingTask>>
+      sse_decode_StreamSink_list_receiving_task_Sse(
+          SseDeserializer deserializer);
 
   @protected
   RustStreamSink<List<SendingTask>> sse_decode_StreamSink_list_sending_task_Sse(
@@ -156,6 +175,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<ReceivingTask> sse_decode_list_receiving_task(
+      SseDeserializer deserializer);
+
+  @protected
   List<SendingTask> sse_decode_list_sending_task(SseDeserializer deserializer);
 
   @protected
@@ -173,6 +196,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SpaceInfo? sse_decode_opt_box_autoadd_space_info(
+      SseDeserializer deserializer);
+
+  @protected
+  ReceivingTask sse_decode_receiving_task(SseDeserializer deserializer);
+
+  @protected
+  ReceivingTaskState sse_decode_receiving_task_state(
       SseDeserializer deserializer);
 
   @protected
@@ -196,6 +226,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_AnyhowException(
       AnyhowException self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_list_receiving_task_Sse(
+      RustStreamSink<List<ReceivingTask>> self, SseSerializer serializer);
 
   @protected
   void sse_encode_StreamSink_list_sending_task_Sse(
@@ -246,6 +280,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       Uint8List self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_receiving_task(
+      List<ReceivingTask> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_sending_task(
       List<SendingTask> self, SseSerializer serializer);
 
@@ -265,6 +303,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_opt_box_autoadd_space_info(
       SpaceInfo? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_receiving_task(ReceivingTask self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_receiving_task_state(
+      ReceivingTaskState self, SseSerializer serializer);
 
   @protected
   void sse_encode_sending_task(SendingTask self, SseSerializer serializer);

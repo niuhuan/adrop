@@ -11,7 +11,10 @@ use flutter_rust_bridge::for_generated::futures::SinkExt;
 use lazy_static::lazy_static;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
+use sha1::Digest;
+use tokio::io::AsyncReadExt;
 use tokio::sync::Mutex;
+use crate::common::PutResource;
 
 lazy_static! {
     static ref SENDING_TASKS: Mutex<Vec<SendingTask>> = Mutex::new(vec![]);
@@ -51,8 +54,8 @@ pub async fn add_sending_tasks(tasks: Vec<crate::data_obj::SendingTask>) -> anyh
 
 async fn sync_tasks_to_dart(tasks: Vec<crate::data_obj::SendingTask>) -> anyhow::Result<()> {
     let scb = SENDING_CALL_BACKS.lock().await;
-    if let Some(scb) = &*scb {
-        scb.add(SENDING_TASKS.lock().await.clone())
+    if let Some(scb) = scb.deref() {
+        scb.add(tasks)
             .map_err(|e| anyhow::anyhow!(e))?;
     }
     drop(scb);
@@ -77,12 +80,12 @@ pub(crate) async fn sending_job() {
             break;
         }
         loop {
+            let mut need_sent = None;
             let mut lock = SENDING_TASKS.lock().await;
             if lock.is_empty() {
                 drop(lock);
                 break;
             }
-            let mut need_sent = None;
             for x in lock.deref_mut() {
                 if x.task_state == SendingTaskState::Init {
                     x.task_state = SendingTaskState::Sending;
@@ -270,7 +273,7 @@ async fn password_sha1(file_path: &str, password: &[u8]) -> anyhow::Result<(Stri
     let mut encryptor = encryptor_from_key(password)?;
     let mut reader = tokio::io::BufReader::new(file);
     let mut buffer_data = vec![0u8; 1 << 20];
-    let mut buffer = buffer_data.as_mut_slice();
+    let buffer = buffer_data.as_mut_slice();
     let mut size = 0;
     let mut position = 0;
     loop {
@@ -352,47 +355,4 @@ async fn put_steam_with_password(
         }
     }
     Ok(())
-}
-
-use reqwest::Body;
-use sha1::Digest;
-use tokio::io::AsyncReadExt;
-use tokio::sync::mpsc::Sender;
-
-pub struct PutResource {
-    pub agent: Arc<reqwest::Client>,
-    pub url: String,
-    pub resource: Body,
-}
-
-impl PutResource {
-    pub async fn put(self) -> anyhow::Result<()> {
-        let _text = self
-            .agent
-            .request(reqwest::Method::PUT, self.url.as_str())
-            .body(self.resource)
-            .send()
-            .await?
-            .error_for_status()?
-            .text()
-            .await?;
-        Ok(())
-    }
-}
-
-impl PutResource {
-    pub async fn file_resource(path: &str) -> anyhow::Result<Body> {
-        let file = tokio::fs::read(path).await?;
-        Ok(Body::from(file))
-    }
-
-    pub fn channel_resource() -> (Sender<anyhow::Result<Vec<u8>>>, Body) {
-        let (sender, receiver) = tokio::sync::mpsc::channel::<anyhow::Result<Vec<u8>>>(16);
-        let body = Body::wrap_stream(tokio_stream::wrappers::ReceiverStream::new(receiver));
-        (sender, body)
-    }
-
-    pub fn bytes_body(bytes: Vec<u8>) -> Body {
-        Body::from(bytes)
-    }
 }

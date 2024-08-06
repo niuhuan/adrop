@@ -7,7 +7,7 @@ edition = "2021"
 crate-type = ["cdylib", "staticlib", "lib"]
 
 [dependencies]
-alipan = { version = "0.0.16", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots", "backtrace"] }
+alipan = { path = "../../alipan", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots", "backtrace"] }
 async-recursion = "1.1.1"
 async-trait = "0.1.81"
 flutter_rust_bridge = { version = "=2.1.0", features = ["uuid", "chrono", "backtrace", "log"] }
@@ -32,3 +32,5 @@ regex = "1.10.6"
 dirs = "5.0.1"
 tokio-stream = "0.1.15"
 sha1 = "0.10.6"
+uuid = { version = "1.10.0", features = ["v4"] }
+tokio-util = "0.7.11"

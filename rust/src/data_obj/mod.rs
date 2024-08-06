@@ -1,6 +1,6 @@
 pub mod enums;
 
-use crate::data_obj::enums::{LoginState, SendingTaskState};
+use crate::data_obj::enums::{LoginState, ReceivingTaskState, SendingTaskState};
 use alipan::AccessToken;
 use serde_derive::{Deserialize, Serialize};
 
@@ -49,10 +49,10 @@ pub struct SendingTask {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ReceivingTask {
     pub task_id: String,
-    pub device: Device,
+    pub drive_id: String,
     pub file_id: String,
     pub file_name: String,
     pub file_path: String,
-    pub task_state: SendingTaskState,
+    pub task_state: ReceivingTaskState,
     pub error_msg: String,
 }

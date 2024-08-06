@@ -13,6 +13,7 @@ use lazy_static::lazy_static;
 use once_cell::sync::OnceCell;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use crate::api::receiving::receiving_job;
 
 lazy_static! {
     static ref INIT_ED: Mutex<bool> = Mutex::new(false);
@@ -47,6 +48,7 @@ pub(crate) async fn init_root(path: &str) -> anyhow::Result<()> {
         SPACE_INFO.set(Mutex::new(SpaceInfo::default())).unwrap();
     }
     let _ = tokio::spawn(sending_job());
+    let _ = tokio::spawn(receiving_job());
     Ok(())
 }
 
