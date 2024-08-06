@@ -13,6 +13,7 @@ class W with WindowListener {
   @override
   Future<void> onWindowClose() async {
     await windowManager.hide();
+    await windowManager.setSkipTaskbar(true);
   }
 }
 
@@ -26,9 +27,10 @@ class T with TrayListener {
   }
 
   @override
-  void onTrayMenuItemClick(MenuItem menuItem) {
+  Future<void> onTrayMenuItemClick(MenuItem menuItem) async {
     if (menuItem.key == 'show_window') {
-      windowManager.show();
+      await windowManager.show();
+      await windowManager.setSkipTaskbar(false);
     } else if (menuItem.key == 'exit_app') {
       exit(0);
     }
