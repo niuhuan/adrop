@@ -10,6 +10,7 @@ import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/v4.dart';
+import 'package:window_manager/window_manager.dart';
 import '../components/common.dart';
 
 class AppScreen extends StatefulWidget {
@@ -19,7 +20,8 @@ class AppScreen extends StatefulWidget {
   State<AppScreen> createState() => _AppScreenState();
 }
 
-class _AppScreenState extends State<AppScreen> {
+class _AppScreenState extends State<AppScreen> with WindowListener {
+
   final SendingController _sendingController = SendingController();
   var _currentIndex = 0;
 
@@ -75,6 +77,11 @@ class _AppScreenState extends State<AppScreen> {
         ],
       ),
     );
+
+    @override
+    void onWindowClose() {
+      print("onWindowClose");
+    }
   }
 
   Future _sendFiles(Device device, List<SelectionFile> files) async {

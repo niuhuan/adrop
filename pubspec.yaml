@@ -45,6 +45,8 @@ dependencies:
   cross_file: ^0.3.4+2
   uuid: ^4.4.2
   file_picker: ^8.0.6
+  window_manager: ^0.3.9
+  tray_manager: ^0.2.3
 
 dev_dependencies:
   flutter_test:
@@ -71,7 +73,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - lib/assets/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
