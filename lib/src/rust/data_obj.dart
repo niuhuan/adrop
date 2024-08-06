@@ -93,6 +93,27 @@ class ReceivingTask {
           errorMsg == other.errorMsg;
 }
 
+class SelectionFile {
+  final String name;
+  final String path;
+
+  const SelectionFile({
+    required this.name,
+    required this.path,
+  });
+
+  @override
+  int get hashCode => name.hashCode ^ path.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SelectionFile &&
+          runtimeType == other.runtimeType &&
+          name == other.name &&
+          path == other.path;
+}
+
 class SendingTask {
   final String taskId;
   final Device device;

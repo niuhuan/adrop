@@ -6,6 +6,7 @@
 import 'api/download.dart';
 import 'api/fs.dart';
 import 'api/init.dart';
+import 'api/nope.dart';
 import 'api/receiving.dart';
 import 'api/sending.dart';
 import 'api/simple.dart';
@@ -107,6 +108,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ReceivingTaskState dco_decode_receiving_task_state(dynamic raw);
 
   @protected
+  SelectionFile dco_decode_selection_file(dynamic raw);
+
+  @protected
   SendingTask dco_decode_sending_task(dynamic raw);
 
   @protected
@@ -204,6 +208,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   ReceivingTaskState sse_decode_receiving_task_state(
       SseDeserializer deserializer);
+
+  @protected
+  SelectionFile sse_decode_selection_file(SseDeserializer deserializer);
 
   @protected
   SendingTask sse_decode_sending_task(SseDeserializer deserializer);
@@ -310,6 +317,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_receiving_task_state(
       ReceivingTaskState self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_selection_file(SelectionFile self, SseSerializer serializer);
 
   @protected
   void sse_encode_sending_task(SendingTask self, SseSerializer serializer);

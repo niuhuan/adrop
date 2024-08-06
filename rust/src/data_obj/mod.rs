@@ -56,3 +56,9 @@ pub struct ReceivingTask {
     pub task_state: ReceivingTaskState,
     pub error_msg: String,
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct SelectionFile {
+    pub name: String,
+    pub path: String,
+}

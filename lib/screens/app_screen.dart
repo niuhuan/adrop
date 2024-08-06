@@ -6,10 +6,9 @@ import 'package:adrop/src/rust/data_obj.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/receiving.dart';
 import 'package:desktop_drop/desktop_drop.dart';
-import 'package:cross_file/cross_file.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/v4.dart';
-
 import '../components/common.dart';
 
 class AppScreen extends StatefulWidget {
@@ -77,7 +76,7 @@ class _AppScreenState extends State<AppScreen> {
     );
   }
 
-  Future _sendFiles(Device device, List<XFile> files) async {
+  Future _sendFiles(Device device, List<SelectionFile> files) async {
     _sendingController.send(device, files);
     setState(() {
       _currentIndex = 2;
@@ -86,7 +85,8 @@ class _AppScreenState extends State<AppScreen> {
 }
 
 class SendFile extends StatefulWidget {
-  final FutureOr<dynamic> Function(Device device, List<XFile> files) sendFiles;
+  final FutureOr<dynamic> Function(Device device, List<SelectionFile> files)
+      sendFiles;
 
   const SendFile({required this.sendFiles, super.key});
 
@@ -97,7 +97,7 @@ class SendFile extends StatefulWidget {
 class _SendFileState extends State<SendFile> {
   late Future<List<Device>> _devicesFuture;
   late Key _key;
-  final List<XFile> _list = [];
+  final List<SelectionFile> _list = [];
 
   Future _refresh() async {
     setState(() {
@@ -136,7 +136,9 @@ class _SendFileState extends State<SendFile> {
       onDragDone: (details) async {
         var files = details.files;
         setState(() {
-          _list.addAll(files);
+          _list.addAll(
+            files.map((e) => SelectionFile(name: e.name, path: e.path)),
+          );
         });
       },
       child: widget,
@@ -189,7 +191,27 @@ class _SendFileState extends State<SendFile> {
             ),
           ),
           MaterialButton(
-            onPressed: () {},
+            onPressed: () async {
+              var choose = await FilePicker.platform.pickFiles(
+                allowMultiple: true,
+              );
+              if (choose != null) {
+                var xFiles = <SelectionFile>[];
+                for (var value in choose.files) {
+                  if (value.path != null) {
+                    xFiles.add(
+                      SelectionFile(
+                        name: value.name,
+                        path: value.path!,
+                      ),
+                    );
+                  }
+                }
+                setState(() {
+                  _list.addAll(xFiles);
+                });
+              }
+            },
             child: const Row(
               children: [
                 Icon(Icons.add),
@@ -307,7 +329,6 @@ class _ReceiveFileState extends State<ReceiveFile> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return _tasksList();
@@ -380,7 +401,7 @@ class _SendingState extends State<Sending> {
     );
   }
 
-  _sendFiles(Device device, List<XFile> files) async {
+  _sendFiles(Device device, List<SelectionFile> files) async {
     final addTasks = <SendingTask>[];
     for (var value in files) {
       addTasks.add(SendingTask(
@@ -399,7 +420,7 @@ class _SendingState extends State<Sending> {
 class SendingController {
   _SendingState? _state;
 
-  void send(Device device, List<XFile> files) {
+  void send(Device device, List<SelectionFile> files) {
     _state?._sendFiles(device, files);
   }
 }

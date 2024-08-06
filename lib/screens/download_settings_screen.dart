@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:adrop/components/common.dart';
 import 'package:adrop/src/rust/api/download.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
-import 'package:filesystem_picker/filesystem_picker.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 import 'app_screen.dart';
@@ -55,12 +53,10 @@ class _DownloadSettingsScreenState extends State<DownloadSettingsScreen> {
               ),
               MaterialButton(
                 onPressed: () async {
-                  var choose = await FilesystemPicker.openDialog(
-                    context: context,
-                    fsType: FilesystemType.folder,
-                    fileTileSelectMode: FileTileSelectMode.wholeTile,
-                    rootDirectory: Directory("/"),
-                    directory: Directory(await defaultDownloadPath()),
+                  var choose = await FilePicker.platform.getDirectoryPath(
+                    lockParentWindow: false,
+                    dialogTitle: "选择下载路径",
+                    initialDirectory: await defaultDownloadPath(),
                   );
                   if (choose != null) {
                     _controller.text = choose;

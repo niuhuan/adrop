@@ -41,10 +41,10 @@ dependencies:
   url_launcher: ^6.3.0
   flutter_inappwebview: ^6.0.0
   flutter_styled_toast: ^2.2.1
-  filesystem_picker: ^4.1.0
   desktop_drop: ^0.4.4
   cross_file: ^0.3.4+2
   uuid: ^4.4.2
+  file_picker: ^8.0.6
 
 dev_dependencies:
   flutter_test:
