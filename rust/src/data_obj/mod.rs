@@ -45,3 +45,14 @@ pub struct SendingTask {
     pub task_state: SendingTaskState,
     pub error_msg: String,
 }
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ReceivingTask {
+    pub task_id: String,
+    pub device: Device,
+    pub file_id: String,
+    pub file_name: String,
+    pub file_path: String,
+    pub task_state: SendingTaskState,
+    pub error_msg: String,
+}
