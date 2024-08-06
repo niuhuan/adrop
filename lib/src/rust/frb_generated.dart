@@ -70,7 +70,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.1.0';
 
   @override
-  int get rustContentHash => 1940924511;
+  int get rustContentHash => -461015446;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -94,7 +94,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiInitInitPath({required String localPath});
 
-  Future<SelectionFile> crateApiNopeSelectionFile(
+  Future<SelectionFile> crateApiNopeMatchSelectionFile(
       {required String name, required String path});
 
   Future<List<ReceivingTask>> crateApiReceivingListReceivingTasks();
@@ -326,7 +326,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<SelectionFile> crateApiNopeSelectionFile(
+  Future<SelectionFile> crateApiNopeMatchSelectionFile(
       {required String name, required String path}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
@@ -338,16 +338,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       },
       codec: SseCodec(
         decodeSuccessData: sse_decode_selection_file,
-        decodeErrorData: null,
+        decodeErrorData: sse_decode_AnyhowException,
       ),
-      constMeta: kCrateApiNopeSelectionFileConstMeta,
+      constMeta: kCrateApiNopeMatchSelectionFileConstMeta,
       argValues: [name, path],
       apiImpl: this,
     ));
   }
 
-  TaskConstMeta get kCrateApiNopeSelectionFileConstMeta => const TaskConstMeta(
-        debugName: "selection_file",
+  TaskConstMeta get kCrateApiNopeMatchSelectionFileConstMeta =>
+      const TaskConstMeta(
+        debugName: "match_selection_file",
         argNames: ["name", "path"],
       );
 
@@ -1143,6 +1144,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FileItemType dco_decode_file_item_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return FileItemType.values[raw as int];
+  }
+
+  @protected
   int dco_decode_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
@@ -1223,16 +1230,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ReceivingTask dco_decode_receiving_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return ReceivingTask(
       taskId: dco_decode_String(arr[0]),
       driveId: dco_decode_String(arr[1]),
       fileId: dco_decode_String(arr[2]),
       fileName: dco_decode_String(arr[3]),
       filePath: dco_decode_String(arr[4]),
-      taskState: dco_decode_receiving_task_state(arr[5]),
-      errorMsg: dco_decode_String(arr[6]),
+      fileItemType: dco_decode_file_item_type(arr[5]),
+      taskState: dco_decode_receiving_task_state(arr[6]),
+      errorMsg: dco_decode_String(arr[7]),
     );
   }
 
@@ -1246,11 +1254,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SelectionFile dco_decode_selection_file(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
     return SelectionFile(
       name: dco_decode_String(arr[0]),
       path: dco_decode_String(arr[1]),
+      fileItemType: dco_decode_file_item_type(arr[2]),
     );
   }
 
@@ -1258,15 +1267,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SendingTask dco_decode_sending_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 6)
-      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return SendingTask(
       taskId: dco_decode_String(arr[0]),
       device: dco_decode_device(arr[1]),
       fileName: dco_decode_String(arr[2]),
       filePath: dco_decode_String(arr[3]),
-      taskState: dco_decode_sending_task_state(arr[4]),
-      errorMsg: dco_decode_String(arr[5]),
+      fileItemType: dco_decode_file_item_type(arr[4]),
+      taskState: dco_decode_sending_task_state(arr[5]),
+      errorMsg: dco_decode_String(arr[6]),
     );
   }
 
@@ -1403,6 +1413,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  FileItemType sse_decode_file_item_type(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return FileItemType.values[inner];
+  }
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getInt32();
@@ -1527,6 +1544,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_fileId = sse_decode_String(deserializer);
     var var_fileName = sse_decode_String(deserializer);
     var var_filePath = sse_decode_String(deserializer);
+    var var_fileItemType = sse_decode_file_item_type(deserializer);
     var var_taskState = sse_decode_receiving_task_state(deserializer);
     var var_errorMsg = sse_decode_String(deserializer);
     return ReceivingTask(
@@ -1535,6 +1553,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         fileId: var_fileId,
         fileName: var_fileName,
         filePath: var_filePath,
+        fileItemType: var_fileItemType,
         taskState: var_taskState,
         errorMsg: var_errorMsg);
   }
@@ -1552,7 +1571,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_name = sse_decode_String(deserializer);
     var var_path = sse_decode_String(deserializer);
-    return SelectionFile(name: var_name, path: var_path);
+    var var_fileItemType = sse_decode_file_item_type(deserializer);
+    return SelectionFile(
+        name: var_name, path: var_path, fileItemType: var_fileItemType);
   }
 
   @protected
@@ -1562,6 +1583,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_device = sse_decode_device(deserializer);
     var var_fileName = sse_decode_String(deserializer);
     var var_filePath = sse_decode_String(deserializer);
+    var var_fileItemType = sse_decode_file_item_type(deserializer);
     var var_taskState = sse_decode_sending_task_state(deserializer);
     var var_errorMsg = sse_decode_String(deserializer);
     return SendingTask(
@@ -1569,6 +1591,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         device: var_device,
         fileName: var_fileName,
         filePath: var_filePath,
+        fileItemType: var_fileItemType,
         taskState: var_taskState,
         errorMsg: var_errorMsg);
   }
@@ -1707,6 +1730,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_file_item_type(FileItemType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
   void sse_encode_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putInt32(self);
@@ -1817,6 +1846,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.fileId, serializer);
     sse_encode_String(self.fileName, serializer);
     sse_encode_String(self.filePath, serializer);
+    sse_encode_file_item_type(self.fileItemType, serializer);
     sse_encode_receiving_task_state(self.taskState, serializer);
     sse_encode_String(self.errorMsg, serializer);
   }
@@ -1833,6 +1863,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.name, serializer);
     sse_encode_String(self.path, serializer);
+    sse_encode_file_item_type(self.fileItemType, serializer);
   }
 
   @protected
@@ -1842,6 +1873,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_device(self.device, serializer);
     sse_encode_String(self.fileName, serializer);
     sse_encode_String(self.filePath, serializer);
+    sse_encode_file_item_type(self.fileItemType, serializer);
     sse_encode_sending_task_state(self.taskState, serializer);
     sse_encode_String(self.errorMsg, serializer);
   }

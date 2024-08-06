@@ -68,6 +68,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   FileItem dco_decode_file_item(dynamic raw);
 
   @protected
+  FileItemType dco_decode_file_item_type(dynamic raw);
+
+  @protected
   int dco_decode_i_32(dynamic raw);
 
   @protected
@@ -164,6 +167,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   FileItem sse_decode_file_item(SseDeserializer deserializer);
+
+  @protected
+  FileItemType sse_decode_file_item_type(SseDeserializer deserializer);
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -271,6 +277,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_file_item(FileItem self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_file_item_type(FileItemType self, SseSerializer serializer);
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);

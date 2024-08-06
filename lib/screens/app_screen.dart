@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:adrop/components/content_builder.dart';
+import 'package:adrop/src/rust/api/nope.dart';
 import 'package:adrop/src/rust/api/sending.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
@@ -135,10 +136,21 @@ class _SendFileState extends State<SendFile> {
     return DropTarget(
       onDragDone: (details) async {
         var files = details.files;
+        var addFiles = <SelectionFile>[];
+        for (var value in files) {
+          try {
+            var addFile = await matchSelectionFile(
+              name: value.name,
+              path: value.path,
+            );
+            addFiles.add(addFile);
+          } catch (e) {
+            print(e);
+            defaultToast(context, '文件解析失败 $e');
+          }
+        }
         setState(() {
-          _list.addAll(
-            files.map((e) => SelectionFile(name: e.name, path: e.path)),
-          );
+          _list.addAll(addFiles);
         });
       },
       child: widget,
@@ -196,19 +208,23 @@ class _SendFileState extends State<SendFile> {
                 allowMultiple: true,
               );
               if (choose != null) {
-                var xFiles = <SelectionFile>[];
+                var addFiles = <SelectionFile>[];
                 for (var value in choose.files) {
                   if (value.path != null) {
-                    xFiles.add(
-                      SelectionFile(
+                    try {
+                      var addFile = await matchSelectionFile(
                         name: value.name,
                         path: value.path!,
-                      ),
-                    );
+                      );
+                      addFiles.add(addFile);
+                    } catch (e) {
+                      print(e);
+                      defaultToast(context, '文件解析失败 $e');
+                    }
                   }
                 }
                 setState(() {
-                  _list.addAll(xFiles);
+                  _list.addAll(addFiles);
                 });
               }
             },
@@ -270,7 +286,7 @@ class _SendFileState extends State<SendFile> {
                 ..._list.map((file) {
                   return ListTile(
                     title: Text(file.name),
-                    leading: const Icon(Icons.file_copy),
+                    leading: _iconOfFileType(file.fileItemType),
                   );
                 }),
               ],
@@ -339,10 +355,26 @@ class _ReceiveFileState extends State<ReceiveFile> {
       itemCount: _tasks.length,
       itemBuilder: (BuildContext context, int index) {
         var task = _tasks[index];
-        return ListTile(
-          title: Text(task.fileName),
-          subtitle: Text(task.taskState.toString()),
-          leading: const Icon(Icons.file_copy),
+        return Container(
+          margin: const EdgeInsets.only(
+            left: 3,
+            right: 5,
+            top: 1,
+            bottom: 1,
+          ),
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: _colorOfState("${task.taskState}"),
+                width: 2,
+              ),
+            ),
+          ),
+          child: ListTile(
+            title: Text(task.fileName),
+            subtitle: Text(task.taskState.toString()),
+            leading: _iconOfFileType(task.fileItemType),
+          ),
         );
       },
     );
@@ -392,10 +424,26 @@ class _SendingState extends State<Sending> {
       itemCount: _tasks.length,
       itemBuilder: (BuildContext context, int index) {
         var task = _tasks[index];
-        return ListTile(
-          title: Text(task.fileName),
-          subtitle: Text(task.taskState.toString()),
-          leading: const Icon(Icons.file_copy),
+        return Container(
+          margin: const EdgeInsets.only(
+            left: 3,
+            right: 5,
+            top: 1,
+            bottom: 1,
+          ),
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                color: _colorOfState("${task.taskState}"),
+                width: 2,
+              ),
+            ),
+          ),
+          child: ListTile(
+            title: Text(task.fileName),
+            subtitle: Text(task.taskState.toString()),
+            leading: _iconOfFileType(task.fileItemType),
+          ),
         );
       },
     );
@@ -409,6 +457,7 @@ class _SendingState extends State<Sending> {
         device: device,
         fileName: value.name,
         filePath: value.path,
+        fileItemType: value.fileItemType,
         taskState: SendingTaskState.init,
         errorMsg: '',
       ));
@@ -422,5 +471,26 @@ class SendingController {
 
   void send(Device device, List<SelectionFile> files) {
     _state?._sendFiles(device, files);
+  }
+}
+
+Color _colorOfState(String state) {
+  if (state.contains(".success")) {
+    return Colors.green;
+  }
+  if (state.contains(".error") || state.contains(".fail")) {
+    return Colors.red;
+  }
+  return Colors.blue;
+}
+
+Icon _iconOfFileType(FileItemType type) {
+  switch (type) {
+    case FileItemType.file:
+      return const Icon(Icons.insert_drive_file);
+    case FileItemType.folder:
+      return const Icon(Icons.folder);
+    default:
+      return const Icon(Icons.help);
   }
 }

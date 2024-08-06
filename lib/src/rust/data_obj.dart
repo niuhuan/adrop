@@ -56,6 +56,7 @@ class ReceivingTask {
   final String fileId;
   final String fileName;
   final String filePath;
+  final FileItemType fileItemType;
   final ReceivingTaskState taskState;
   final String errorMsg;
 
@@ -65,6 +66,7 @@ class ReceivingTask {
     required this.fileId,
     required this.fileName,
     required this.filePath,
+    required this.fileItemType,
     required this.taskState,
     required this.errorMsg,
   });
@@ -76,6 +78,7 @@ class ReceivingTask {
       fileId.hashCode ^
       fileName.hashCode ^
       filePath.hashCode ^
+      fileItemType.hashCode ^
       taskState.hashCode ^
       errorMsg.hashCode;
 
@@ -89,6 +92,7 @@ class ReceivingTask {
           fileId == other.fileId &&
           fileName == other.fileName &&
           filePath == other.filePath &&
+          fileItemType == other.fileItemType &&
           taskState == other.taskState &&
           errorMsg == other.errorMsg;
 }
@@ -96,14 +100,16 @@ class ReceivingTask {
 class SelectionFile {
   final String name;
   final String path;
+  final FileItemType fileItemType;
 
   const SelectionFile({
     required this.name,
     required this.path,
+    required this.fileItemType,
   });
 
   @override
-  int get hashCode => name.hashCode ^ path.hashCode;
+  int get hashCode => name.hashCode ^ path.hashCode ^ fileItemType.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -111,7 +117,8 @@ class SelectionFile {
       other is SelectionFile &&
           runtimeType == other.runtimeType &&
           name == other.name &&
-          path == other.path;
+          path == other.path &&
+          fileItemType == other.fileItemType;
 }
 
 class SendingTask {
@@ -119,6 +126,7 @@ class SendingTask {
   final Device device;
   final String fileName;
   final String filePath;
+  final FileItemType fileItemType;
   final SendingTaskState taskState;
   final String errorMsg;
 
@@ -127,6 +135,7 @@ class SendingTask {
     required this.device,
     required this.fileName,
     required this.filePath,
+    required this.fileItemType,
     required this.taskState,
     required this.errorMsg,
   });
@@ -137,6 +146,7 @@ class SendingTask {
       device.hashCode ^
       fileName.hashCode ^
       filePath.hashCode ^
+      fileItemType.hashCode ^
       taskState.hashCode ^
       errorMsg.hashCode;
 
@@ -149,6 +159,7 @@ class SendingTask {
           device == other.device &&
           fileName == other.fileName &&
           filePath == other.filePath &&
+          fileItemType == other.fileItemType &&
           taskState == other.taskState &&
           errorMsg == other.errorMsg;
 }

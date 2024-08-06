@@ -116,3 +116,14 @@ impl Default for ReceivingTaskState {
         Self::Init
     }
 }
+
+enum_str!(FileItemType {
+    File("file"),
+    Folder("folder"),
+});
+
+impl Default for FileItemType {
+    fn default() -> Self {
+        Self::File
+    }
+}

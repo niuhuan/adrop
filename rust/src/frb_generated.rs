@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.1.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1940924511;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -461015446;
 
 // Section: executor
 
@@ -256,15 +256,15 @@ fn wire__crate__api__init__init_path_impl(
         },
     )
 }
-fn wire__crate__api__nope__selection_file_impl(
+fn wire__crate__api__nope__match_selection_file_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
 ) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "selection_file",
+            debug_name: "match_selection_file",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
@@ -281,12 +281,15 @@ fn wire__crate__api__nope__selection_file_impl(
             let api_name = <String>::sse_decode(&mut deserializer);
             let api_path = <String>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let output_ok =
-                        Result::<_, ()>::Ok(crate::api::nope::selection_file(api_name, api_path))?;
-                    Ok(output_ok)
-                })())
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok =
+                            crate::api::nope::match_selection_file(api_name, api_path).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
             }
         },
     )
@@ -1376,6 +1379,18 @@ impl SseDecode for crate::api::space::FileItem {
     }
 }
 
+impl SseDecode for crate::data_obj::enums::FileItemType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::data_obj::enums::FileItemType::File,
+            1 => crate::data_obj::enums::FileItemType::Folder,
+            _ => unreachable!("Invalid variant for FileItemType: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1513,6 +1528,7 @@ impl SseDecode for crate::data_obj::ReceivingTask {
         let mut var_fileId = <String>::sse_decode(deserializer);
         let mut var_fileName = <String>::sse_decode(deserializer);
         let mut var_filePath = <String>::sse_decode(deserializer);
+        let mut var_fileItemType = <crate::data_obj::enums::FileItemType>::sse_decode(deserializer);
         let mut var_taskState =
             <crate::data_obj::enums::ReceivingTaskState>::sse_decode(deserializer);
         let mut var_errorMsg = <String>::sse_decode(deserializer);
@@ -1522,6 +1538,7 @@ impl SseDecode for crate::data_obj::ReceivingTask {
             file_id: var_fileId,
             file_name: var_fileName,
             file_path: var_filePath,
+            file_item_type: var_fileItemType,
             task_state: var_taskState,
             error_msg: var_errorMsg,
         };
@@ -1549,9 +1566,11 @@ impl SseDecode for crate::data_obj::SelectionFile {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_name = <String>::sse_decode(deserializer);
         let mut var_path = <String>::sse_decode(deserializer);
+        let mut var_fileItemType = <crate::data_obj::enums::FileItemType>::sse_decode(deserializer);
         return crate::data_obj::SelectionFile {
             name: var_name,
             path: var_path,
+            file_item_type: var_fileItemType,
         };
     }
 }
@@ -1563,6 +1582,7 @@ impl SseDecode for crate::data_obj::SendingTask {
         let mut var_device = <crate::data_obj::Device>::sse_decode(deserializer);
         let mut var_fileName = <String>::sse_decode(deserializer);
         let mut var_filePath = <String>::sse_decode(deserializer);
+        let mut var_fileItemType = <crate::data_obj::enums::FileItemType>::sse_decode(deserializer);
         let mut var_taskState =
             <crate::data_obj::enums::SendingTaskState>::sse_decode(deserializer);
         let mut var_errorMsg = <String>::sse_decode(deserializer);
@@ -1571,6 +1591,7 @@ impl SseDecode for crate::data_obj::SendingTask {
             device: var_device,
             file_name: var_fileName,
             file_path: var_filePath,
+            file_item_type: var_fileItemType,
             task_state: var_taskState,
             error_msg: var_errorMsg,
         };
@@ -1653,7 +1674,7 @@ fn pde_ffi_dispatcher_primary_impl(
         4 => wire__crate__api__download__save_download_info_impl(port, ptr, rust_vec_len, data_len),
         5 => wire__crate__api__fs__desktop_root_impl(port, ptr, rust_vec_len, data_len),
         6 => wire__crate__api__init__init_path_impl(port, ptr, rust_vec_len, data_len),
-        7 => wire__crate__api__nope__selection_file_impl(port, ptr, rust_vec_len, data_len),
+        7 => wire__crate__api__nope__match_selection_file_impl(port, ptr, rust_vec_len, data_len),
         8 => wire__crate__api__receiving__list_receiving_tasks_impl(
             port,
             ptr,
@@ -1844,6 +1865,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::space::FileItem>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::data_obj::enums::FileItemType {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::File => 0.into_dart(),
+            Self::Folder => 1.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::data_obj::enums::FileItemType
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::data_obj::enums::FileItemType>
+    for crate::data_obj::enums::FileItemType
+{
+    fn into_into_dart(self) -> crate::data_obj::enums::FileItemType {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::data_obj::LoginInfo {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [self.state.into_into_dart().into_dart()].into_dart()
@@ -1885,6 +1927,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::ReceivingTask {
             self.file_id.into_into_dart().into_dart(),
             self.file_name.into_into_dart().into_dart(),
             self.file_path.into_into_dart().into_dart(),
+            self.file_item_type.into_into_dart().into_dart(),
             self.task_state.into_into_dart().into_dart(),
             self.error_msg.into_into_dart().into_dart(),
         ]
@@ -1933,6 +1976,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SelectionFile {
         [
             self.name.into_into_dart().into_dart(),
             self.path.into_into_dart().into_dart(),
+            self.file_item_type.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -1956,6 +2000,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SendingTask {
             self.device.into_into_dart().into_dart(),
             self.file_name.into_into_dart().into_dart(),
             self.file_path.into_into_dart().into_dart(),
+            self.file_item_type.into_into_dart().into_dart(),
             self.task_state.into_into_dart().into_dart(),
             self.error_msg.into_into_dart().into_dart(),
         ]
@@ -2105,6 +2150,22 @@ impl SseEncode for crate::api::space::FileItem {
     }
 }
 
+impl SseEncode for crate::data_obj::enums::FileItemType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::data_obj::enums::FileItemType::File => 0,
+                crate::data_obj::enums::FileItemType::Folder => 1,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2230,6 +2291,7 @@ impl SseEncode for crate::data_obj::ReceivingTask {
         <String>::sse_encode(self.file_id, serializer);
         <String>::sse_encode(self.file_name, serializer);
         <String>::sse_encode(self.file_path, serializer);
+        <crate::data_obj::enums::FileItemType>::sse_encode(self.file_item_type, serializer);
         <crate::data_obj::enums::ReceivingTaskState>::sse_encode(self.task_state, serializer);
         <String>::sse_encode(self.error_msg, serializer);
     }
@@ -2260,6 +2322,7 @@ impl SseEncode for crate::data_obj::SelectionFile {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.name, serializer);
         <String>::sse_encode(self.path, serializer);
+        <crate::data_obj::enums::FileItemType>::sse_encode(self.file_item_type, serializer);
     }
 }
 
@@ -2270,6 +2333,7 @@ impl SseEncode for crate::data_obj::SendingTask {
         <crate::data_obj::Device>::sse_encode(self.device, serializer);
         <String>::sse_encode(self.file_name, serializer);
         <String>::sse_encode(self.file_path, serializer);
+        <crate::data_obj::enums::FileItemType>::sse_encode(self.file_item_type, serializer);
         <crate::data_obj::enums::SendingTaskState>::sse_encode(self.task_state, serializer);
         <String>::sse_encode(self.error_msg, serializer);
     }

@@ -12,6 +12,12 @@ enum AfterDownload {
   ;
 }
 
+enum FileItemType {
+  file,
+  folder,
+  ;
+}
+
 enum LoginState {
   unset,
   set_,

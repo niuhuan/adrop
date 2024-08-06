@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 use tokio_util::io::StreamReader;
 use crate::api::download::download_info;
 use crate::custom_crypto::{decrypt_file_name, decryptor_from_key};
-use crate::data_obj::enums::ReceivingTaskState;
+use crate::data_obj::enums::{FileItemType, ReceivingTaskState};
 use crate::data_obj::ReceivingTask;
 use crate::define::{get_alipan_client, ram_space_info};
 use crate::frb_generated::StreamSink;
@@ -118,6 +118,12 @@ pub(crate) async fn receiving_job() {
                 file_id: x.file_id.clone(),
                 file_name: name,
                 file_path: path,
+                file_item_type: {
+                    match &x.r#type {
+                        AdriveOpenFileType::File => FileItemType::File,
+                        AdriveOpenFileType::Folder => FileItemType::Folder,
+                    }
+                },
                 task_state: ReceivingTaskState::Init,
                 error_msg: "".to_string(),
             });

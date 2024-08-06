@@ -4,9 +4,10 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../data_obj.dart';
+import '../data_obj/enums.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-Future<SelectionFile> selectionFile(
+Future<SelectionFile> matchSelectionFile(
         {required String name, required String path}) =>
-    RustLib.instance.api.crateApiNopeSelectionFile(name: name, path: path);
+    RustLib.instance.api.crateApiNopeMatchSelectionFile(name: name, path: path);
