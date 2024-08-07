@@ -1,5 +1,4 @@
 use crate::data_obj::enums::AfterDownload;
-use crate::data_obj::SpaceInfo;
 use crate::database::properties::property::{load_property, save_property};
 use serde_derive::{Deserialize, Serialize};
 

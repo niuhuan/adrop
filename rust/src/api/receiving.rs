@@ -220,8 +220,8 @@ async fn list_files(drive_id: &str, folder_id: &str) -> anyhow::Result<Vec<Adriv
     let mut list = client
         .adrive_open_file_list()
         .await
-        .drive_id(drive_id.clone())
-        .parent_file_id(folder_id.clone())
+        .drive_id(drive_id)
+        .parent_file_id(folder_id)
         .request()
         .await?;
     for x in list.items {
@@ -231,8 +231,8 @@ async fn list_files(drive_id: &str, folder_id: &str) -> anyhow::Result<Vec<Adriv
         list = client
             .adrive_open_file_list()
             .await
-            .drive_id(drive_id.clone())
-            .parent_file_id(folder_id.clone())
+            .drive_id(drive_id)
+            .parent_file_id(folder_id)
             .marker(list.next_marker.unwrap())
             .request()
             .await?;

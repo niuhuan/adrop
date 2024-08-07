@@ -7,7 +7,6 @@ use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
 use anyhow::Context;
 use async_recursion::async_recursion;
 use base64::Engine;
-use flutter_rust_bridge::for_generated::futures::SinkExt;
 use lazy_static::lazy_static;
 use std::ops::{Deref, DerefMut};
 use sha1::Digest;
@@ -85,7 +84,7 @@ async fn set_sending_task_by_id(task: &SendingTask) -> anyhow::Result<()> {
     let list = lock.deref_mut();
     let mut idx = None;
     for i in 0..list.len() {
-        if lock[i].task_id == task.task_id {
+        if list[i].task_id == task.task_id {
             idx = Some(i);
             break;
         }
@@ -113,7 +112,7 @@ pub(crate) async fn sending_job() {
             break;
         }
         loop {
-            let mut need_sent = first_init_sending_task().await;
+            let need_sent = first_init_sending_task().await;
             if let Some(mut need_sent) = need_sent {
                 need_sent.task_state = SendingTaskState::Sending;
                 if let Err(err) = set_sending_task_by_id(&need_sent).await {

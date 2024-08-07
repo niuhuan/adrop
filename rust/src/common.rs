@@ -1,7 +1,5 @@
 use std::sync::Arc;
 use reqwest::Body;
-use sha1::Digest;
-use tokio::io::AsyncReadExt;
 use tokio::sync::mpsc::Sender;
 
 pub struct PutResource {

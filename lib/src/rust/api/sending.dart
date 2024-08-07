@@ -8,7 +8,7 @@ import '../data_obj/enums.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `log_log`, `password_sha1`, `put_file_with_password`, `put_steam_with_password`, `send_file`, `sending_job`, `sync_tasks_to_dart`, `upload_file`, `upload_folder`
+// These functions are ignored because they are not marked as `pub`: `first_init_sending_task`, `password_sha1`, `put_file_with_password`, `put_steam_with_password`, `send_file`, `sending_job`, `set_sending_task_by_id`, `sync_tasks_to_dart`, `upload_file`, `upload_folder`
 // These types are ignored because they are not used by any `pub` functions: `SENDING_CALL_BACKS`, `SENDING_TASKS`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `deref`, `deref`, `initialize`, `initialize`
 

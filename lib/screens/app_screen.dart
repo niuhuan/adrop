@@ -21,7 +21,6 @@ class AppScreen extends StatefulWidget {
 }
 
 class _AppScreenState extends State<AppScreen> with WindowListener {
-
   final SendingController _sendingController = SendingController();
   var _currentIndex = 0;
 
@@ -467,6 +466,7 @@ class _SendingState extends State<Sending> {
         fileItemType: value.fileItemType,
         taskState: SendingTaskState.init,
         errorMsg: '',
+        cloudFileId: '',
       ));
     }
     await addSendingTasks(tasks: addTasks);
