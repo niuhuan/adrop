@@ -1,6 +1,6 @@
 pub mod enums;
 
-use crate::data_obj::enums::{FileItemType, LoginState, ReceivingTaskState, SendingTaskState};
+use crate::data_obj::enums::{FileItemType, LoginState, ReceivingTaskState, SendingTaskErrorType, SendingTaskState};
 use alipan::AccessToken;
 use serde_derive::{Deserialize, Serialize};
 
@@ -44,6 +44,7 @@ pub struct SendingTask {
     pub file_path: String,
     pub file_item_type: FileItemType,
     pub task_state: SendingTaskState,
+    pub error_type: SendingTaskErrorType,
     pub error_msg: String,
     pub cloud_file_id: String, // 如果是文件夹，在创建云端文件夹之后将会变成非空字符串
 }

@@ -1,6 +1,6 @@
 use crate::custom_crypto::{encrypt_file_name, encryptor_from_key};
-use crate::data_obj::enums::SendingTaskState;
-use crate::data_obj::SendingTask;
+use crate::data_obj::enums::{SendingTaskErrorType, SendingTaskState};
+use crate::data_obj::{Device, SelectionFile, SendingTask};
 use crate::define::{get_alipan_client, ram_space_info};
 use crate::frb_generated::StreamSink;
 use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
@@ -39,7 +39,21 @@ pub async fn list_sending_tasks() -> anyhow::Result<Vec<crate::data_obj::Sending
     Ok(SENDING_TASKS.lock().await.clone())
 }
 
-pub async fn add_sending_tasks(tasks: Vec<crate::data_obj::SendingTask>) -> anyhow::Result<()> {
+pub async fn add_sending_tasks(device: Device, selection_files: Vec<SelectionFile>) -> anyhow::Result<()> {
+    let tasks = selection_files
+        .into_iter()
+        .map(|value| SendingTask {
+            task_id: uuid::Uuid::new_v4().to_string(),
+            device: device.clone(),
+            file_name: value.name,
+            file_path: value.path,
+            file_item_type: value.file_item_type,
+            task_state: SendingTaskState::Init,
+            error_msg: "".to_string(),
+            cloud_file_id: "".to_string(),
+            error_type: SendingTaskErrorType::Unset,
+        })
+        .collect::<Vec<SendingTask>>();
     let mut lock = SENDING_TASKS.lock().await;
     for task in tasks {
         lock.push(task);

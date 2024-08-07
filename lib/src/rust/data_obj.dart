@@ -128,6 +128,7 @@ class SendingTask {
   final String filePath;
   final FileItemType fileItemType;
   final SendingTaskState taskState;
+  final SendingTaskErrorType errorType;
   final String errorMsg;
   final String cloudFileId;
 
@@ -138,6 +139,7 @@ class SendingTask {
     required this.filePath,
     required this.fileItemType,
     required this.taskState,
+    required this.errorType,
     required this.errorMsg,
     required this.cloudFileId,
   });
@@ -150,6 +152,7 @@ class SendingTask {
       filePath.hashCode ^
       fileItemType.hashCode ^
       taskState.hashCode ^
+      errorType.hashCode ^
       errorMsg.hashCode ^
       cloudFileId.hashCode;
 
@@ -164,6 +167,7 @@ class SendingTask {
           filePath == other.filePath &&
           fileItemType == other.fileItemType &&
           taskState == other.taskState &&
+          errorType == other.errorType &&
           errorMsg == other.errorMsg &&
           cloudFileId == other.cloudFileId;
 }

@@ -34,6 +34,12 @@ enum ReceivingTaskState {
   ;
 }
 
+enum SendingTaskErrorType {
+  unset,
+  unknown,
+  ;
+}
+
 enum SendingTaskState {
   init,
   sending,

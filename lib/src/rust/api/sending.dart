@@ -21,5 +21,8 @@ Future<void> unregisterSendingListener() =>
 Future<List<SendingTask>> listSendingTasks() =>
     RustLib.instance.api.crateApiSendingListSendingTasks();
 
-Future<void> addSendingTasks({required List<SendingTask> tasks}) =>
-    RustLib.instance.api.crateApiSendingAddSendingTasks(tasks: tasks);
+Future<void> addSendingTasks(
+        {required Device device,
+        required List<SelectionFile> selectionFiles}) =>
+    RustLib.instance.api.crateApiSendingAddSendingTasks(
+        device: device, selectionFiles: selectionFiles);

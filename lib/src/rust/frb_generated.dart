@@ -104,7 +104,7 @@ abstract class RustLibApi extends BaseApi {
   Future<void> crateApiReceivingUnregisterReceivingTask();
 
   Future<void> crateApiSendingAddSendingTasks(
-      {required List<SendingTask> tasks});
+      {required Device device, required List<SelectionFile> selectionFiles});
 
   Future<List<SendingTask>> crateApiSendingListSendingTasks();
 
@@ -429,11 +429,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @override
   Future<void> crateApiSendingAddSendingTasks(
-      {required List<SendingTask> tasks}) {
+      {required Device device, required List<SelectionFile> selectionFiles}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
-        sse_encode_list_sending_task(tasks, serializer);
+        sse_encode_box_autoadd_device(device, serializer);
+        sse_encode_list_selection_file(selectionFiles, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 11, port: port_);
       },
@@ -442,7 +443,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiSendingAddSendingTasksConstMeta,
-      argValues: [tasks],
+      argValues: [device, selectionFiles],
       apiImpl: this,
     ));
   }
@@ -450,7 +451,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSendingAddSendingTasksConstMeta =>
       const TaskConstMeta(
         debugName: "add_sending_tasks",
-        argNames: ["tasks"],
+        argNames: ["device", "selectionFiles"],
       );
 
   @override
@@ -1094,6 +1095,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Device dco_decode_box_autoadd_device(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_device(raw);
+  }
+
+  @protected
   DownloadConfig dco_decode_box_autoadd_download_config(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_download_config(raw);
@@ -1186,6 +1193,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<SelectionFile> dco_decode_list_selection_file(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_selection_file).toList();
+  }
+
+  @protected
   List<SendingTask> dco_decode_list_sending_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_sending_task).toList();
@@ -1267,8 +1280,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SendingTask dco_decode_sending_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 8)
-      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
+    if (arr.length != 9)
+      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
     return SendingTask(
       taskId: dco_decode_String(arr[0]),
       device: dco_decode_device(arr[1]),
@@ -1276,9 +1289,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       filePath: dco_decode_String(arr[3]),
       fileItemType: dco_decode_file_item_type(arr[4]),
       taskState: dco_decode_sending_task_state(arr[5]),
-      errorMsg: dco_decode_String(arr[6]),
-      cloudFileId: dco_decode_String(arr[7]),
+      errorType: dco_decode_sending_task_error_type(arr[6]),
+      errorMsg: dco_decode_String(arr[7]),
+      cloudFileId: dco_decode_String(arr[8]),
     );
+  }
+
+  @protected
+  SendingTaskErrorType dco_decode_sending_task_error_type(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return SendingTaskErrorType.values[raw as int];
   }
 
   @protected
@@ -1366,6 +1386,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_i_32(deserializer);
     return AfterDownload.values[inner];
+  }
+
+  @protected
+  Device sse_decode_box_autoadd_device(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_device(deserializer));
   }
 
   @protected
@@ -1472,6 +1498,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var ans_ = <ReceivingTask>[];
     for (var idx_ = 0; idx_ < len_; ++idx_) {
       ans_.add(sse_decode_receiving_task(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<SelectionFile> sse_decode_list_selection_file(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <SelectionFile>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_selection_file(deserializer));
     }
     return ans_;
   }
@@ -1586,6 +1625,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_filePath = sse_decode_String(deserializer);
     var var_fileItemType = sse_decode_file_item_type(deserializer);
     var var_taskState = sse_decode_sending_task_state(deserializer);
+    var var_errorType = sse_decode_sending_task_error_type(deserializer);
     var var_errorMsg = sse_decode_String(deserializer);
     var var_cloudFileId = sse_decode_String(deserializer);
     return SendingTask(
@@ -1595,8 +1635,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         filePath: var_filePath,
         fileItemType: var_fileItemType,
         taskState: var_taskState,
+        errorType: var_errorType,
         errorMsg: var_errorMsg,
         cloudFileId: var_cloudFileId);
+  }
+
+  @protected
+  SendingTaskErrorType sse_decode_sending_task_error_type(
+      SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return SendingTaskErrorType.values[inner];
   }
 
   @protected
@@ -1695,6 +1744,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_device(Device self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_device(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_download_config(
       DownloadConfig self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -1784,6 +1839,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_32(self.length, serializer);
     for (final item in self) {
       sse_encode_receiving_task(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_selection_file(
+      List<SelectionFile> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_selection_file(item, serializer);
     }
   }
 
@@ -1878,8 +1943,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.filePath, serializer);
     sse_encode_file_item_type(self.fileItemType, serializer);
     sse_encode_sending_task_state(self.taskState, serializer);
+    sse_encode_sending_task_error_type(self.errorType, serializer);
     sse_encode_String(self.errorMsg, serializer);
     sse_encode_String(self.cloudFileId, serializer);
+  }
+
+  @protected
+  void sse_encode_sending_task_error_type(
+      SendingTaskErrorType self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
   }
 
   @protected

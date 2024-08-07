@@ -127,3 +127,14 @@ impl Default for FileItemType {
         Self::File
     }
 }
+
+enum_str!(SendingTaskErrorType{
+    Unset("unset"),
+    Unknown("unknown"),
+});
+
+impl Default for SendingTaskErrorType {
+    fn default() -> Self {
+        Self::Unset
+    }
+}

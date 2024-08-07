@@ -9,7 +9,6 @@ import 'package:adrop/src/rust/api/receiving.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:uuid/v4.dart';
 import 'package:window_manager/window_manager.dart';
 import '../components/common.dart';
 
@@ -456,20 +455,7 @@ class _SendingState extends State<Sending> {
   }
 
   _sendFiles(Device device, List<SelectionFile> files) async {
-    final addTasks = <SendingTask>[];
-    for (var value in files) {
-      addTasks.add(SendingTask(
-        taskId: const UuidV4().generate().toString(),
-        device: device,
-        fileName: value.name,
-        filePath: value.path,
-        fileItemType: value.fileItemType,
-        taskState: SendingTaskState.init,
-        errorMsg: '',
-        cloudFileId: '',
-      ));
-    }
-    await addSendingTasks(tasks: addTasks);
+    await addSendingTasks(device: device, selectionFiles: files);
   }
 }
 

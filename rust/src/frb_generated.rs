@@ -426,12 +426,16 @@ fn wire__crate__api__sending__add_sending_tasks_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_tasks = <Vec<crate::data_obj::SendingTask>>::sse_decode(&mut deserializer);
+            let api_device = <crate::data_obj::Device>::sse_decode(&mut deserializer);
+            let api_selection_files =
+                <Vec<crate::data_obj::SelectionFile>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || async move {
-                        let output_ok = crate::api::sending::add_sending_tasks(api_tasks).await?;
+                        let output_ok =
+                            crate::api::sending::add_sending_tasks(api_device, api_selection_files)
+                                .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -1453,6 +1457,18 @@ impl SseDecode for Vec<crate::data_obj::ReceivingTask> {
     }
 }
 
+impl SseDecode for Vec<crate::data_obj::SelectionFile> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut len_ = <i32>::sse_decode(deserializer);
+        let mut ans_ = vec![];
+        for idx_ in 0..len_ {
+            ans_.push(<crate::data_obj::SelectionFile>::sse_decode(deserializer));
+        }
+        return ans_;
+    }
+}
+
 impl SseDecode for Vec<crate::data_obj::SendingTask> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1585,6 +1601,8 @@ impl SseDecode for crate::data_obj::SendingTask {
         let mut var_fileItemType = <crate::data_obj::enums::FileItemType>::sse_decode(deserializer);
         let mut var_taskState =
             <crate::data_obj::enums::SendingTaskState>::sse_decode(deserializer);
+        let mut var_errorType =
+            <crate::data_obj::enums::SendingTaskErrorType>::sse_decode(deserializer);
         let mut var_errorMsg = <String>::sse_decode(deserializer);
         let mut var_cloudFileId = <String>::sse_decode(deserializer);
         return crate::data_obj::SendingTask {
@@ -1594,8 +1612,21 @@ impl SseDecode for crate::data_obj::SendingTask {
             file_path: var_filePath,
             file_item_type: var_fileItemType,
             task_state: var_taskState,
+            error_type: var_errorType,
             error_msg: var_errorMsg,
             cloud_file_id: var_cloudFileId,
+        };
+    }
+}
+
+impl SseDecode for crate::data_obj::enums::SendingTaskErrorType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::data_obj::enums::SendingTaskErrorType::Unset,
+            1 => crate::data_obj::enums::SendingTaskErrorType::Unknown,
+            _ => unreachable!("Invalid variant for SendingTaskErrorType: {}", inner),
         };
     }
 }
@@ -2004,6 +2035,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SendingTask {
             self.file_path.into_into_dart().into_dart(),
             self.file_item_type.into_into_dart().into_dart(),
             self.task_state.into_into_dart().into_dart(),
+            self.error_type.into_into_dart().into_dart(),
             self.error_msg.into_into_dart().into_dart(),
             self.cloud_file_id.into_into_dart().into_dart(),
         ]
@@ -2015,6 +2047,27 @@ impl flutter_rust_bridge::IntoIntoDart<crate::data_obj::SendingTask>
     for crate::data_obj::SendingTask
 {
     fn into_into_dart(self) -> crate::data_obj::SendingTask {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::data_obj::enums::SendingTaskErrorType {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Unset => 0.into_dart(),
+            Self::Unknown => 1.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::data_obj::enums::SendingTaskErrorType
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::data_obj::enums::SendingTaskErrorType>
+    for crate::data_obj::enums::SendingTaskErrorType
+{
+    fn into_into_dart(self) -> crate::data_obj::enums::SendingTaskErrorType {
         self
     }
 }
@@ -2223,6 +2276,16 @@ impl SseEncode for Vec<crate::data_obj::ReceivingTask> {
     }
 }
 
+impl SseEncode for Vec<crate::data_obj::SelectionFile> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(self.len() as _, serializer);
+        for item in self {
+            <crate::data_obj::SelectionFile>::sse_encode(item, serializer);
+        }
+    }
+}
+
 impl SseEncode for Vec<crate::data_obj::SendingTask> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2338,8 +2401,25 @@ impl SseEncode for crate::data_obj::SendingTask {
         <String>::sse_encode(self.file_path, serializer);
         <crate::data_obj::enums::FileItemType>::sse_encode(self.file_item_type, serializer);
         <crate::data_obj::enums::SendingTaskState>::sse_encode(self.task_state, serializer);
+        <crate::data_obj::enums::SendingTaskErrorType>::sse_encode(self.error_type, serializer);
         <String>::sse_encode(self.error_msg, serializer);
         <String>::sse_encode(self.cloud_file_id, serializer);
+    }
+}
+
+impl SseEncode for crate::data_obj::enums::SendingTaskErrorType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::data_obj::enums::SendingTaskErrorType::Unset => 0,
+                crate::data_obj::enums::SendingTaskErrorType::Unknown => 1,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
     }
 }
 

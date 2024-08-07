@@ -51,6 +51,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AfterDownload dco_decode_after_download(dynamic raw);
 
   @protected
+  Device dco_decode_box_autoadd_device(dynamic raw);
+
+  @protected
   DownloadConfig dco_decode_box_autoadd_download_config(dynamic raw);
 
   @protected
@@ -87,6 +90,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ReceivingTask> dco_decode_list_receiving_task(dynamic raw);
 
   @protected
+  List<SelectionFile> dco_decode_list_selection_file(dynamic raw);
+
+  @protected
   List<SendingTask> dco_decode_list_sending_task(dynamic raw);
 
   @protected
@@ -115,6 +121,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SendingTask dco_decode_sending_task(dynamic raw);
+
+  @protected
+  SendingTaskErrorType dco_decode_sending_task_error_type(dynamic raw);
 
   @protected
   SendingTaskState dco_decode_sending_task_state(dynamic raw);
@@ -149,6 +158,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AfterDownload sse_decode_after_download(SseDeserializer deserializer);
+
+  @protected
+  Device sse_decode_box_autoadd_device(SseDeserializer deserializer);
 
   @protected
   DownloadConfig sse_decode_box_autoadd_download_config(
@@ -189,6 +201,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       SseDeserializer deserializer);
 
   @protected
+  List<SelectionFile> sse_decode_list_selection_file(
+      SseDeserializer deserializer);
+
+  @protected
   List<SendingTask> sse_decode_list_sending_task(SseDeserializer deserializer);
 
   @protected
@@ -220,6 +236,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SendingTask sse_decode_sending_task(SseDeserializer deserializer);
+
+  @protected
+  SendingTaskErrorType sse_decode_sending_task_error_type(
+      SseDeserializer deserializer);
 
   @protected
   SendingTaskState sse_decode_sending_task_state(SseDeserializer deserializer);
@@ -257,6 +277,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_after_download(AfterDownload self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_box_autoadd_device(Device self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_download_config(
@@ -300,6 +323,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       List<ReceivingTask> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_selection_file(
+      List<SelectionFile> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_sending_task(
       List<SendingTask> self, SseSerializer serializer);
 
@@ -332,6 +359,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_sending_task(SendingTask self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sending_task_error_type(
+      SendingTaskErrorType self, SseSerializer serializer);
 
   @protected
   void sse_encode_sending_task_state(
