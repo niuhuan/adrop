@@ -10,7 +10,6 @@ use base64::Engine;
 use flutter_rust_bridge::for_generated::futures::SinkExt;
 use lazy_static::lazy_static;
 use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
 use sha1::Digest;
 use tokio::io::AsyncReadExt;
 use tokio::sync::Mutex;
@@ -48,7 +47,7 @@ pub async fn add_sending_tasks(tasks: Vec<crate::data_obj::SendingTask>) -> anyh
     }
     let tasks = lock.clone();
     drop(lock);
-    log_log(sync_tasks_to_dart(tasks).await);
+    let _ = sync_tasks_to_dart(tasks).await;
     Ok(())
 }
 
@@ -62,10 +61,44 @@ async fn sync_tasks_to_dart(tasks: Vec<crate::data_obj::SendingTask>) -> anyhow:
     Ok(())
 }
 
-fn log_log<T>(r: anyhow::Result<T>) {
-    if let Err(e) = r {
-        println!("{:?}", e);
+async fn first_init_sending_task() -> Option<SendingTask> {
+    let mut lock = SENDING_TASKS.lock().await;
+    if lock.is_empty() {
+        drop(lock);
+        return None;
     }
+    for x in lock.deref_mut() {
+        if x.task_state == SendingTaskState::Init {
+            x.task_state = SendingTaskState::Sending;
+            let need_sent = Some(x.clone());
+            drop(lock);
+            return need_sent;
+        }
+    }
+    drop(lock);
+    return None;
+}
+
+async fn set_sending_task_by_id(task: &SendingTask) -> anyhow::Result<()> {
+    let mut lock = SENDING_TASKS.lock().await;
+    // for i
+    let list = lock.deref_mut();
+    let mut idx = None;
+    for i in 0..list.len() {
+        if lock[i].task_id == task.task_id {
+            idx = Some(i);
+            break;
+        }
+    }
+    if let Some(idx) = idx {
+        list[idx] = task.clone();
+    } else {
+        return Err(anyhow::anyhow!("task not found"));
+    }
+    let tasks = lock.deref().clone();
+    drop(lock);
+    let _ = sync_tasks_to_dart(tasks).await;
+    Ok(())
 }
 
 pub(crate) async fn sending_job() {
@@ -80,51 +113,29 @@ pub(crate) async fn sending_job() {
             break;
         }
         loop {
-            let mut need_sent = None;
-            let mut lock = SENDING_TASKS.lock().await;
-            if lock.is_empty() {
-                drop(lock);
-                break;
-            }
-            for x in lock.deref_mut() {
-                if x.task_state == SendingTaskState::Init {
-                    x.task_state = SendingTaskState::Sending;
-                    need_sent = Some(x.clone());
+            let mut need_sent = first_init_sending_task().await;
+            if let Some(mut need_sent) = need_sent {
+                need_sent.task_state = SendingTaskState::Sending;
+                if let Err(err) = set_sending_task_by_id(&need_sent).await {
+                    println!("set sending task failed: {:?}", err);
                     break;
                 }
-            }
-            let sync = lock.deref().clone();
-            drop(lock);
-            let _ = sync_tasks_to_dart(sync).await;
-            if let Some(need_sent) = need_sent {
                 println!("start send : {:?}", need_sent);
                 if let Err(e) = send_file(&need_sent).await {
                     println!("send file failed: {:?} : {:?}", need_sent, e);
-                    let mut lock = SENDING_TASKS.lock().await;
-                    for x in lock.deref_mut() {
-                        if x.task_id == need_sent.task_id {
-                            x.task_state = SendingTaskState::Failed;
-                            x.error_msg = e.to_string();
-                            break;
-                        }
+                    need_sent.task_state = SendingTaskState::Failed;
+                    need_sent.error_msg = e.to_string();
+                    if let Err(err) = set_sending_task_by_id(&need_sent).await {
+                        println!("set sending task failed: {:?}", err);
+                        break;
                     }
-                    let sync = lock.deref().clone();
-                    drop(lock);
-                    let _ = sync_tasks_to_dart(sync).await;
-                    println!("send file failed sync : {:?}", need_sent);
                 } else {
                     println!("send file success: {:?}", need_sent);
-                    let mut lock = SENDING_TASKS.lock().await;
-                    for x in lock.deref_mut() {
-                        if x.task_id == need_sent.task_id {
-                            x.task_state = SendingTaskState::Success;
-                            break;
-                        }
+                    need_sent.task_state = SendingTaskState::Success;
+                    if let Err(err) = set_sending_task_by_id(&need_sent).await {
+                        println!("set sending task failed: {:?}", err);
+                        break;
                     }
-                    let sync = lock.deref().clone();
-                    drop(lock);
-                    let _ = sync_tasks_to_dart(sync).await;
-                    println!("send file success sync: {:?}", need_sent);
                 }
             } else {
                 break;

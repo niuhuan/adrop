@@ -1586,6 +1586,7 @@ impl SseDecode for crate::data_obj::SendingTask {
         let mut var_taskState =
             <crate::data_obj::enums::SendingTaskState>::sse_decode(deserializer);
         let mut var_errorMsg = <String>::sse_decode(deserializer);
+        let mut var_cloudFileId = <String>::sse_decode(deserializer);
         return crate::data_obj::SendingTask {
             task_id: var_taskId,
             device: var_device,
@@ -1594,6 +1595,7 @@ impl SseDecode for crate::data_obj::SendingTask {
             file_item_type: var_fileItemType,
             task_state: var_taskState,
             error_msg: var_errorMsg,
+            cloud_file_id: var_cloudFileId,
         };
     }
 }
@@ -2003,6 +2005,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SendingTask {
             self.file_item_type.into_into_dart().into_dart(),
             self.task_state.into_into_dart().into_dart(),
             self.error_msg.into_into_dart().into_dart(),
+            self.cloud_file_id.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -2336,6 +2339,7 @@ impl SseEncode for crate::data_obj::SendingTask {
         <crate::data_obj::enums::FileItemType>::sse_encode(self.file_item_type, serializer);
         <crate::data_obj::enums::SendingTaskState>::sse_encode(self.task_state, serializer);
         <String>::sse_encode(self.error_msg, serializer);
+        <String>::sse_encode(self.cloud_file_id, serializer);
     }
 }
 

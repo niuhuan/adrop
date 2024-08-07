@@ -45,6 +45,7 @@ pub struct SendingTask {
     pub file_item_type: FileItemType,
     pub task_state: SendingTaskState,
     pub error_msg: String,
+    pub cloud_file_id: String, // 如果是文件夹，在创建云端文件夹之后将会变成非空字符串
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

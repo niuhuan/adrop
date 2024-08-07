@@ -1267,8 +1267,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SendingTask dco_decode_sending_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 7)
-      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    if (arr.length != 8)
+      throw Exception('unexpected arr length: expect 8 but see ${arr.length}');
     return SendingTask(
       taskId: dco_decode_String(arr[0]),
       device: dco_decode_device(arr[1]),
@@ -1277,6 +1277,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       fileItemType: dco_decode_file_item_type(arr[4]),
       taskState: dco_decode_sending_task_state(arr[5]),
       errorMsg: dco_decode_String(arr[6]),
+      cloudFileId: dco_decode_String(arr[7]),
     );
   }
 
@@ -1586,6 +1587,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_fileItemType = sse_decode_file_item_type(deserializer);
     var var_taskState = sse_decode_sending_task_state(deserializer);
     var var_errorMsg = sse_decode_String(deserializer);
+    var var_cloudFileId = sse_decode_String(deserializer);
     return SendingTask(
         taskId: var_taskId,
         device: var_device,
@@ -1593,7 +1595,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         filePath: var_filePath,
         fileItemType: var_fileItemType,
         taskState: var_taskState,
-        errorMsg: var_errorMsg);
+        errorMsg: var_errorMsg,
+        cloudFileId: var_cloudFileId);
   }
 
   @protected
@@ -1876,6 +1879,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_file_item_type(self.fileItemType, serializer);
     sse_encode_sending_task_state(self.taskState, serializer);
     sse_encode_String(self.errorMsg, serializer);
+    sse_encode_String(self.cloudFileId, serializer);
   }
 
   @protected
