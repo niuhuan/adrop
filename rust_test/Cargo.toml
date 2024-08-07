@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 rust_lib_adrop = { path = "../rust" }
 tokio = { version = "1.39.2", features = ["full"] }
+alipan = { version = "0", default-features = false, features = ["rustls-tls", "rustls-tls-native-roots", "backtrace"] }

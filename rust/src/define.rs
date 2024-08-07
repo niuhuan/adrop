@@ -122,7 +122,7 @@ pub(crate) fn get_database_dir() -> &'static String {
     DATABASE_DIR.get().unwrap()
 }
 
-pub(crate) fn get_alipan_client() -> &'static alipan::AdriveClient {
+pub fn get_alipan_client() -> &'static alipan::AdriveClient {
     ALIPAN_CLIENT.get().unwrap()
 }
 

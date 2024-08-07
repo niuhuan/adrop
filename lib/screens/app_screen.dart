@@ -75,11 +75,6 @@ class _AppScreenState extends State<AppScreen> with WindowListener {
         ],
       ),
     );
-
-    @override
-    void onWindowClose() {
-      print("onWindowClose");
-    }
   }
 
   Future _sendFiles(Device device, List<SelectionFile> files) async {
