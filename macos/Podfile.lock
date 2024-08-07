@@ -6,6 +6,8 @@ PODS:
     - OrderedSet (~> 5.0)
   - FlutterMacOS (1.0.0)
   - OrderedSet (5.0.0)
+  - package_info_plus (0.0.1):
+    - FlutterMacOS
   - rust_lib_adrop (0.0.1):
     - FlutterMacOS
   - screen_retriever (0.0.1):
@@ -21,6 +23,7 @@ DEPENDENCIES:
   - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
   - flutter_inappwebview_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_inappwebview_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - package_info_plus (from `Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos`)
   - rust_lib_adrop (from `Flutter/ephemeral/.symlinks/plugins/rust_lib_adrop/macos`)
   - screen_retriever (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever/macos`)
   - tray_manager (from `Flutter/ephemeral/.symlinks/plugins/tray_manager/macos`)
@@ -38,6 +41,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_inappwebview_macos/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
+  package_info_plus:
+    :path: Flutter/ephemeral/.symlinks/plugins/package_info_plus/macos
   rust_lib_adrop:
     :path: Flutter/ephemeral/.symlinks/plugins/rust_lib_adrop/macos
   screen_retriever:
@@ -54,6 +59,7 @@ SPEC CHECKSUMS:
   flutter_inappwebview_macos: 9600c9df9fdb346aaa8933812009f8d94304203d
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   OrderedSet: aaeb196f7fef5a9edf55d89760da9176ad40b93c
+  package_info_plus: fa739dd842b393193c5ca93c26798dff6e3d0e0c
   rust_lib_adrop: 2147e2e80ada6b56bc935c61b62e49cdc50b6ea2
   screen_retriever: 59634572a57080243dd1bf715e55b6c54f241a38
   tray_manager: 9064e219c56d75c476e46b9a21182087930baf90

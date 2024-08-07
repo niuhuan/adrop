@@ -7,18 +7,18 @@ import 'package:window_manager/window_manager.dart';
 import 'package:tray_manager/tray_manager.dart';
 
 class W with WindowListener {
-
   const W();
 
   @override
   Future<void> onWindowClose() async {
     await windowManager.hide();
-    await windowManager.setSkipTaskbar(true);
+    if (Platform.isMacOS) {
+      await windowManager.setSkipTaskbar(true);
+    }
   }
 }
 
 class T with TrayListener {
-
   const T();
 
   @override
@@ -30,7 +30,9 @@ class T with TrayListener {
   Future<void> onTrayMenuItemClick(MenuItem menuItem) async {
     if (menuItem.key == 'show_window') {
       await windowManager.show();
-      await windowManager.setSkipTaskbar(false);
+      if (Platform.isMacOS) {
+        await windowManager.setSkipTaskbar(false);
+      }
     } else if (menuItem.key == 'exit_app') {
       exit(0);
     }
@@ -48,9 +50,7 @@ setWindowManager() async {
 
 setTrayManager() async {
   await trayManager.setIcon(
-    Platform.isWindows
-        ? 'lib/assets/app_icon.ico'
-        : 'lib/assets/app_icon.png',
+    Platform.isWindows ? 'lib/assets/app_icon.ico' : 'lib/assets/app_icon.png',
   );
   Menu menu = Menu(
     items: [

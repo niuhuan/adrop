@@ -3,9 +3,7 @@ import 'package:adrop/screens/download_settings_screen.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
 import 'package:flutter/material.dart';
-
 import '../components/common.dart';
-import 'app_screen.dart';
 
 class SpaceDeviceScreen extends StatefulWidget {
   final String driveId;
@@ -166,7 +164,7 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
             );
             Navigator.of(context)
                 .pushReplacement(MaterialPageRoute(builder: (context) {
-              return const AppScreen();
+              return const DownloadSettingsScreen();
             }));
           } catch (e, s) {
             defaultToast(context, "创建失败\n$e");
