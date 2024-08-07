@@ -49,6 +49,52 @@ async fn sync_tasks_to_dart(tasks: Vec<ReceivingTask>) -> anyhow::Result<()> {
     Ok(())
 }
 
+async fn exists_task_file_ids() -> Vec<String> {
+    let lock = RECEIVING_TASKS.lock().await;
+    let exists_task_file_ids_string = lock.deref().iter().map(|x| x.file_id.clone()).collect::<Vec<String>>();
+    drop(lock);
+    exists_task_file_ids_string
+}
+
+async fn first_init_receiving_tasks() -> Option<ReceivingTask> {
+    let mut lock = RECEIVING_TASKS.lock().await;
+    if lock.is_empty() {
+        drop(lock);
+        return None;
+    }
+    for x in lock.deref_mut() {
+        if x.task_state == ReceivingTaskState::Init {
+            let task = Some(x.clone());
+            drop(lock);
+            return task;
+        }
+    }
+    drop(lock);
+    return None;
+}
+
+async fn set_receiving_task_by_id(task: &ReceivingTask) -> anyhow::Result<()> {
+    let mut lock = RECEIVING_TASKS.lock().await;
+    let list = lock.deref_mut();
+    let mut idx = None;
+    for i in 0..list.len() {
+        if list[i].task_id == task.task_id {
+            idx = Some(i);
+            break;
+        }
+    }
+    if let Some(idx) = idx {
+        list[idx] = task.clone();
+        let sync = lock.deref().clone();
+        drop(lock);
+        let _ = sync_tasks_to_dart(sync).await;
+        Ok(())
+    } else {
+        drop(lock);
+        Err(anyhow::anyhow!("task not found"))
+    }
+}
+
 pub(crate) async fn receiving_job() {
     loop {
         tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
@@ -80,9 +126,7 @@ pub(crate) async fn receiving_job() {
         } else {
             continue;
         };
-        let lock = RECEIVING_TASKS.lock().await;
-        let exists_task_file_ids_string = lock.deref().iter().map(|x| x.file_id.clone()).collect::<Vec<String>>();
-        drop(lock);
+        let exists_task_file_ids_string = exists_task_file_ids().await;
         let exists_task_file_ids = exists_task_file_ids_string.iter().map(|x| x.as_str()).collect::<Vec<&str>>();
         let password = if let Ok(password) = base64::prelude::BASE64_URL_SAFE.decode(space_info.true_pass_base64.as_str()) {
             password
@@ -139,48 +183,28 @@ pub(crate) async fn receiving_job() {
         }
         // download file
         loop {
-            let mut task = None;
-            let mut lock = RECEIVING_TASKS.lock().await;
-            if lock.is_empty() {
-                drop(lock);
-                break;
-            }
-            for x in lock.deref_mut() {
-                if x.task_state == ReceivingTaskState::Init {
-                    x.task_state = ReceivingTaskState::Receiving;
-                    task = Some(x.clone());
+            let task = first_init_receiving_tasks().await;
+            if let Some(mut task) = task {
+                task.task_state = ReceivingTaskState::Receiving;
+                if let Err(err) = set_receiving_task_by_id(&task).await {
+                    println!("设置任务状态失败 : {}", err);
                     break;
                 }
-            }
-            let sync = lock.deref().clone();
-            drop(lock);
-            let _ = sync_tasks_to_dart(sync).await;
-            if let Some(task) = task {
                 if let Err(e) = download_item(&task, password.as_slice()).await {
                     println!("下载出错 : {} : {}", task.file_path, e);
-                    let mut lock = RECEIVING_TASKS.lock().await;
-                    for x in lock.deref_mut() {
-                        if x.task_id == task.task_id {
-                            x.task_state = ReceivingTaskState::Failed;
-                            x.error_msg = e.to_string();
-                            break;
-                        }
+                    task.task_state = ReceivingTaskState::Failed;
+                    if let Err(err) = set_receiving_task_by_id(&task).await {
+                        println!("设置任务状态失败 : {}", err);
+                        break;
                     }
-                    let sync = lock.deref().clone();
-                    drop(lock);
-                    let _ = sync_tasks_to_dart(sync).await;
                 } else {
                     println!("下载成功 : {}", task.file_path);
-                    let mut lock = RECEIVING_TASKS.lock().await;
-                    for x in lock.deref_mut() {
-                        if x.task_id == task.task_id {
-                            x.task_state = ReceivingTaskState::Success;
-                            break;
-                        }
+                    task.task_state = ReceivingTaskState::Success;
+                    task.task_state = ReceivingTaskState::Failed;
+                    if let Err(err) = set_receiving_task_by_id(&task).await {
+                        println!("设置任务状态失败 : {}", err);
+                        break;
                     }
-                    let sync = lock.deref().clone();
-                    drop(lock);
-                    let _ = sync_tasks_to_dart(sync).await;
                 }
             } else {
                 break;
