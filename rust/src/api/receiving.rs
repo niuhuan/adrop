@@ -200,7 +200,6 @@ pub(crate) async fn receiving_job() {
                 } else {
                     println!("下载成功 : {}", task.file_path);
                     task.task_state = ReceivingTaskState::Success;
-                    task.task_state = ReceivingTaskState::Failed;
                     if let Err(err) = set_receiving_task_by_id(&task).await {
                         println!("设置任务状态失败 : {}", err);
                         break;

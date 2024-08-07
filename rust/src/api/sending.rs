@@ -64,7 +64,7 @@ pub async fn add_sending_tasks(device: Device, selection_files: Vec<SelectionFil
     Ok(())
 }
 
-async fn sync_tasks_to_dart(tasks: Vec<crate::data_obj::SendingTask>) -> anyhow::Result<()> {
+async fn sync_tasks_to_dart(tasks: Vec<SendingTask>) -> anyhow::Result<()> {
     let scb = SENDING_CALL_BACKS.lock().await;
     if let Some(scb) = scb.deref() {
         scb.add(tasks)
@@ -134,7 +134,7 @@ pub(crate) async fn sending_job() {
                     break;
                 }
                 println!("start send : {:?}", need_sent);
-                if let Err(e) = send_file(&need_sent).await {
+                if let Err(e) = send_file(&mut need_sent).await {
                     println!("send file failed: {:?} : {:?}", need_sent, e);
                     need_sent.task_state = SendingTaskState::Failed;
                     need_sent.error_msg = e.to_string();
@@ -161,17 +161,22 @@ pub(crate) async fn sending_job() {
 
 */
 
-async fn send_file(task: &SendingTask) -> anyhow::Result<()> {
+async fn send_file(task: &mut SendingTask) -> anyhow::Result<()> {
     let file_state = tokio::fs::metadata(task.file_path.as_str()).await;
     let meta = match file_state {
         Ok(meta) => meta,
         Err(e) => return Err(anyhow::anyhow!(e)),
     };
     if meta.is_dir() {
+        let file_name = task.file_name.clone();
+        let file_path = task.file_path.clone();
+        let device = task.device.clone();
+        let mut callback = FileIdCallback(task);
         upload_folder(
-            task.file_name.as_str(),
-            task.file_path.as_str(),
-            task.device.folder_file_id.as_str(),
+            file_name.as_str(),
+            file_path.as_str(),
+            device.folder_file_id.as_str(),
+            Some(&mut callback),
         )
             .await?;
     } else if meta.is_file() {
@@ -185,11 +190,22 @@ async fn send_file(task: &SendingTask) -> anyhow::Result<()> {
     Ok(())
 }
 
+struct FileIdCallback<'a>(&'a mut SendingTask);
+
+impl FileIdCallback<'_> {
+    async fn call(&mut self, file_id: &str) -> anyhow::Result<()> {
+        self.0.cloud_file_id = file_id.to_string();
+        set_sending_task_by_id(self.0).await?;
+        Ok(())
+    }
+}
+
 #[async_recursion]
 async fn upload_folder(
     folder_name: &str,
     folder_path: &str,
     parent_folder_id: &str,
+    option: Option<&mut FileIdCallback>,
 ) -> anyhow::Result<()> {
     let space_info = ram_space_info().await?;
     let password = base64::prelude::BASE64_URL_SAFE.decode(space_info.true_pass_base64.as_str())?;
@@ -207,6 +223,9 @@ async fn upload_folder(
         .check_name_mode(CheckNameMode::Refuse)
         .request()
         .await?;
+    if let Some(callback) = option {
+        callback.call(folder_result.file_id.as_str()).await?;
+    }
     let mut entries = tokio::fs::read_dir(folder_path).await?;
     while let Some(entry) = entries.next_entry().await? {
         let meta = entry.metadata().await?;
@@ -215,6 +234,7 @@ async fn upload_folder(
                 entry.file_name().to_str().unwrap(),
                 entry.path().to_str().unwrap(),
                 folder_result.file_id.as_str(),
+                None,
             )
                 .await?;
         } else if meta.is_file() {
