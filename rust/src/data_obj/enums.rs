@@ -138,3 +138,17 @@ impl Default for SendingTaskErrorType {
         Self::Unset
     }
 }
+
+enum_str!(SendingTaskClearType{
+    Unset("unset"),
+    ClearSuccess("clear_success"),
+    CancelFailed("clear_failed"),
+    RetryFailed("retry_failed"),
+});
+
+enum_str!(ReceivingTaskClearType{
+    Unset("unset"),
+    ClearSuccess("clear_success"),
+    CancelFailedAndDeleteCloud("cancel_failed_and_delete_cloud"),
+    RetryFailed("retry_failed"),
+});

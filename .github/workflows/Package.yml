@@ -1,0 +1,102 @@
+name: Package
+
+on:
+  workflow_dispatch:
+
+env:
+  LLVM_VERSION: '10.0'
+  RUST_TOOLCHAIN: nightly-2024-07-09
+  NDK_VERSION: 25.2.9519653
+  FLUTTER_VERSION: '3.22.3'
+  FLUTTER_CHANNEL: 'stable'
+
+jobs:
+
+  ci-pass:
+    name: CI is green
+    runs-on: ubuntu-latest
+    needs:
+      - build_release_assets
+    steps:
+      - run: exit 0
+
+  build_release_assets:
+    name: Build release assets
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - target: macos
+            host: macos-latest
+          - target: windows
+            host: windows-latest
+
+    runs-on: ${{ matrix.config.host }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: 'adrop'
+
+      - name: Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          components: rustfmt
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          override: true
+
+      - name: Setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          architecture: x64
+
+      - name: Build (macos)
+        if: matrix.config.target == 'macos'
+        run: |
+          rustup target install x86_64-apple-darwin
+          rustup target install aarch64-apple-darwin
+          flutter config --enable-macos-desktop
+          cd adrop
+          flutter pub get
+          flutter build macos --release
+          cd build
+          mkdir appimage
+          mv macos/Build/Products/Release/adrop.app appimage/
+          ln -sf /Applications appimage/
+          hdiutil create -volname adrop -srcfolder appimage -ov -format UDBZ macos.dmg
+          echo "ASSET_NAME=macos.dmg" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/macos.dmg" >> $GITHUB_ENV
+
+      - name: build (windows)
+        if: matrix.config.target == 'windows'
+        run: |
+          flutter config --enable-windows-desktop
+          cd adrop
+          flutter pub get
+          flutter build windows
+          cd build/windows/x64/runner/Release
+          Compress-Archive * ../../../../../build/windows.zip
+          cd ../../../../..
+          echo "ASSET_NAME=windows.zip" >> $env:GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
+
+      - name: Upload Asset
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ASSET_NAME }}
+          path: ${{ env.ASSET_PATH }}
+          retention-days: 3
