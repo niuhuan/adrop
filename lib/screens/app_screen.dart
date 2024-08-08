@@ -13,6 +13,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
 import '../components/common.dart';
@@ -493,27 +494,6 @@ class _SendFileState extends State<SendFile> {
       _list.clear();
     });
   }
-
-  Widget _deviceIcon(int type) {
-    switch (type) {
-      case DeviceType.unknown:
-        return const Icon(Icons.help);
-      case DeviceType.macbook:
-        return const Icon(Icons.laptop_mac);
-      case DeviceType.windows:
-        return const Icon(Icons.laptop_windows);
-      case DeviceType.linux:
-        return const Icon(Icons.laptop_windows);
-      case DeviceType.iphone:
-        return const Icon(Icons.phone_iphone);
-      case DeviceType.ipad:
-        return const Icon(Icons.tablet_mac);
-      case DeviceType.android:
-        return const Icon(Icons.phone_android);
-      default:
-        return const Icon(Icons.help);
-    }
-  }
 }
 
 class ReceiveFile extends StatefulWidget {
@@ -634,7 +614,11 @@ class _SendingState extends State<Sending> {
     return ListView.builder(
       itemCount: _tasks.length,
       itemBuilder: (BuildContext context, int index) {
-        var task = _tasks[index];
+        final task = _tasks[index];
+        final state = "${task.taskState}";
+        final label = _sendingLabelOfState(state);
+        final color = _colorOfState(state);
+        final size = sizeFormat(task.currentFileUploadSize);
         return Container(
           margin: const EdgeInsets.only(
             left: 3,
@@ -645,16 +629,29 @@ class _SendingState extends State<Sending> {
           decoration: BoxDecoration(
             border: Border(
               left: BorderSide(
-                color: _colorOfState("${task.taskState}"),
+                color: color,
                 width: 2,
               ),
             ),
           ),
           child: ListTile(
             title: Text(task.fileName),
-            subtitle: Text(
-              "${task.taskState} : ${task.currentFileUploadSize}",
-            ),
+            subtitle: Text.rich(TextSpan(
+              children: [
+                TextSpan(
+                  text: label,
+                  style: TextStyle(
+                    color: color,
+                  ),
+                ),
+                const TextSpan(
+                  text: "  ",
+                ),
+                TextSpan(
+                  text: size,
+                ),
+              ],
+            )),
             leading: _iconOfFileType(task.fileItemType),
           ),
         );
@@ -676,13 +673,54 @@ class SendingController {
 }
 
 Color _colorOfState(String state) {
-  if (state.contains(".success")) {
+  if (state.endsWith(".success")) {
     return Colors.green;
   }
-  if (state.contains(".error") || state.contains(".fail")) {
+  if (state.endsWith(".error") || state.endsWith(".fail") || state.endsWith(".failed") || state.endsWith(".canceled")) {
     return Colors.red;
   }
+  if (state.endsWith(".canceling")) {
+    return Colors.yellow;
+  }
   return Colors.blue;
+}
+
+String _sendingLabelOfState(String state) {
+  if (state.endsWith(".init")) {
+    return "队列中";
+  }
+  if (state.endsWith(".success")) {
+    return "上传成功";
+  }
+  if (state.endsWith(".error") || state.endsWith(".fail") || state.endsWith(".failed")) {
+    return "上传失败";
+  }
+  if (state.endsWith(".canceled")) {
+    return "已取消";
+  }
+  if (state.endsWith(".canceling")) {
+    return "取消中";
+  }
+  return "未知";
+}
+
+
+String sizeFormat(PlatformInt64 sizeBigInt) {
+  const b = 1;
+  const kib = b << 10;
+  const mib = kib << 10;
+  const gib = mib << 10;
+  final size = sizeBigInt.toInt();
+  if (size < kib) {
+    return "$size B";
+  }
+  if (size < mib) {
+    return "${(size / kib).toStringAsFixed(2)} KiB";
+  }
+  if (size < gib) {
+    return "${(size / mib).toStringAsFixed(2)} MiB";
+  }
+  return "${(size / gib).toStringAsFixed(2)} GiB";
 }
 
 Icon _iconOfFileType(FileItemType type) {
@@ -691,6 +729,27 @@ Icon _iconOfFileType(FileItemType type) {
       return const Icon(Icons.insert_drive_file);
     case FileItemType.folder:
       return const Icon(Icons.folder);
+    default:
+      return const Icon(Icons.help);
+  }
+}
+
+Widget _deviceIcon(int type) {
+  switch (type) {
+    case DeviceType.unknown:
+      return const Icon(Icons.help);
+    case DeviceType.macbook:
+      return const Icon(Icons.laptop_mac);
+    case DeviceType.windows:
+      return const Icon(Icons.laptop_windows);
+    case DeviceType.linux:
+      return const Icon(Icons.laptop_windows);
+    case DeviceType.iphone:
+      return const Icon(Icons.phone_iphone);
+    case DeviceType.ipad:
+      return const Icon(Icons.tablet_mac);
+    case DeviceType.android:
+      return const Icon(Icons.phone_android);
     default:
       return const Icon(Icons.help);
   }
