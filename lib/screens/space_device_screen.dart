@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:adrop/components/content_builder.dart';
+import 'package:adrop/components/device_type.dart';
 import 'package:adrop/screens/download_settings_screen.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
@@ -168,7 +171,7 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
               parentFolderFileId: widget.folderId,
               truePassBase64: widget.password,
               deviceName: _inputName,
-              deviceType: 0,
+              deviceType: _deviceTypeInt(),
             );
             Navigator.of(context)
                 .pushReplacement(MaterialPageRoute(builder: (context) {
@@ -181,6 +184,25 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
         child: const Text("创建"),
       ),
     ]);
+  }
+
+  int _deviceTypeInt() {
+    if (Platform.isMacOS) {
+      return DeviceType.macbook;
+    }
+    if (Platform.isWindows) {
+      return DeviceType.windows;
+    }
+    if (Platform.isLinux) {
+      return DeviceType.linux;
+    }
+    if (Platform.isIOS) {
+      return DeviceType.iphone;
+    }
+    if (Platform.isAndroid) {
+      return DeviceType.android;
+    }
+    return DeviceType.unknown;
   }
 }
 

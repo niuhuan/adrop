@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:adrop/components/content_builder.dart';
+import 'package:adrop/components/device_type.dart';
 import 'package:adrop/src/rust/api/nope.dart';
 import 'package:adrop/src/rust/api/sending.dart';
 import 'package:adrop/src/rust/api/space.dart';
@@ -127,7 +128,7 @@ class _SendFileState extends State<SendFile> {
     return Scaffold(
       body: Column(
         children: [
-          _dropFile(_selectedFiles()),
+          _selectedFiles(),
           Expanded(
             child: _devices(),
           )
@@ -162,20 +163,70 @@ class _SendFileState extends State<SendFile> {
   }
 
   Widget _selectedFiles() {
+    if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+      return _dropFile(_selectedFilesDesktop());
+    }
     if (Platform.isIOS || Platform.isAndroid) {
       return _selectedFilesMobile();
     }
-    return _selectedFilesDesktop();
+    return const Center(
+      child: Text("未适配的平台"),
+    );
   }
 
   Widget _selectedFilesDesktop() {
+    final windowWidth = MediaQuery.of(context).size.width;
+    if (windowWidth < 650) {
+      return Container(
+        margin: const EdgeInsets.all(2),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Colors.grey.withOpacity(.1),
+            width: 2.5,
+            style: BorderStyle.solid,
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                _clearFileListButton(),
+                Expanded(child: Container()),
+                _fileListPreviewButton(),
+              ],
+            ),
+            Container(
+              padding: const EdgeInsets.only(
+                left: 10,
+                right: 10,
+                top: 5,
+                bottom: 5,
+              ),
+              child: Divider(
+                height: 1,
+                color: Colors.grey.withOpacity(.1),
+              ),
+            ),
+            Row(
+              children: [
+                _dropTips(),
+                Expanded(child: Container()),
+                _addFilesButton(),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
     return Container(
       margin: const EdgeInsets.all(1),
       padding: const EdgeInsets.all(30),
       decoration: BoxDecoration(
         border: Border.all(
-          color: Colors.grey,
-          width: 1,
+          color: Colors.grey.withOpacity(.05),
+          width: 2.5,
+          style: BorderStyle.solid,
         ),
       ),
       child: Row(
@@ -353,26 +404,50 @@ class _SendFileState extends State<SendFile> {
         AsyncSnapshot<List<Device>> snapshot,
       ) {
         var devices = snapshot.data!;
-        return ListView.builder(
-          itemCount: devices.length + 1,
+        final tips = Container(
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            children: [
+              Text("共 ${devices.length} 台设备"),
+              Expanded(child: Container()),
+              _refreshDevicesButton(),
+            ],
+          ),
+        );
+        final list = ListView.builder(
+          itemCount: devices.length,
           itemBuilder: (BuildContext context, int index) {
-            if (index == devices.length) {
-              return Container(
-                padding: const EdgeInsets.all(10),
-                child: Text("共 ${devices.length} 台设备"),
-              );
-            }
             var device = devices[index];
             return ListTile(
               onTap: () {
                 _sendFiles(device);
               },
               title: Text(device.name),
-              leading: const Icon(Icons.computer),
+              leading: _deviceIcon(device.deviceType),
             );
           },
         );
+        return Column(
+          children: [
+            tips,
+            Expanded(
+              child: list,
+            ),
+          ],
+        );
       },
+    );
+  }
+
+  Widget _refreshDevicesButton() {
+    return MaterialButton(
+      onPressed: _refresh,
+      child: const Row(
+        children: [
+          Icon(Icons.sync),
+          Text("刷新设备列表"),
+        ],
+      ),
     );
   }
 
@@ -417,6 +492,27 @@ class _SendFileState extends State<SendFile> {
     setState(() {
       _list.clear();
     });
+  }
+
+  Widget _deviceIcon(int type) {
+    switch (type) {
+      case DeviceType.unknown:
+        return const Icon(Icons.help);
+      case DeviceType.macbook:
+        return const Icon(Icons.laptop_mac);
+      case DeviceType.windows:
+        return const Icon(Icons.laptop_windows);
+      case DeviceType.linux:
+        return const Icon(Icons.laptop_windows);
+      case DeviceType.iphone:
+        return const Icon(Icons.phone_iphone);
+      case DeviceType.ipad:
+        return const Icon(Icons.tablet_mac);
+      case DeviceType.android:
+        return const Icon(Icons.phone_android);
+      default:
+        return const Icon(Icons.help);
+    }
   }
 }
 
