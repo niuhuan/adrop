@@ -12,6 +12,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
 import '../components/common.dart';
 
@@ -215,6 +216,7 @@ class _SendFileState extends State<SendFile> {
           const Divider(),
           Row(
             children: [
+              _addMediaButton(),
               Expanded(child: Container()),
               _addFilesButton(),
             ],
@@ -302,6 +304,40 @@ class _SendFileState extends State<SendFile> {
         children: [
           const Icon(Icons.add),
           Text(text),
+        ],
+      ),
+    );
+  }
+
+  Widget _addMediaButton() {
+    return MaterialButton(
+      onPressed: () async {
+        final List<AssetEntity>? result = await AssetPicker.pickAssets(context);
+        if (result == null) {
+          return;
+        }
+        var addFiles = <SelectionFile>[];
+        for (var ae in result) {
+          final file = await ae.file;
+          if (file == null) {
+            continue;
+          }
+          final path = file.path;
+          final name = file.path.split('/').last;
+          var addFile = await matchSelectionFile(
+            name: name,
+            path: path,
+          );
+          addFiles.add(addFile);
+        }
+        setState(() {
+          _list.addAll(addFiles);
+        });
+      },
+      child: const Row(
+        children: [
+          Icon(Icons.movie),
+          Text("添加媒体"),
         ],
       ),
     );
