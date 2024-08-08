@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/src/rust/api/nope.dart';
 import 'package:adrop/src/rust/api/sending.dart';
@@ -8,7 +9,9 @@ import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/receiving.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:window_manager/window_manager.dart';
 import '../components/common.dart';
 
@@ -158,6 +161,13 @@ class _SendFileState extends State<SendFile> {
   }
 
   Widget _selectedFiles() {
+    if (Platform.isIOS || Platform.isAndroid) {
+      return _selectedFilesMobile();
+    }
+    return _selectedFilesDesktop();
+  }
+
+  Widget _selectedFilesDesktop() {
     return Container(
       margin: const EdgeInsets.all(1),
       padding: const EdgeInsets.all(30),
@@ -169,72 +179,129 @@ class _SendFileState extends State<SendFile> {
       ),
       child: Row(
         children: [
-          MaterialButton(
-            onPressed: () async {
-              setState(() {
-                _list.clear();
-              });
-            },
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.clear,
-                ),
-                Text("清除"),
-              ],
-            ),
-          ),
+          _clearFileListButton(),
           Container(
             width: 20,
           ),
-          MaterialButton(
-            onPressed: _showFilesDialog,
-            child: Row(
-              children: [
-                const Icon(Icons.file_copy_rounded),
-                Text(" 将发送 ${_list.length} 个文件(夹), 点击预览"),
-              ],
-            ),
+          _fileListPreviewButton(),
+          Expanded(
+            child: _dropTips(),
           ),
-          const Expanded(
-            child: Text(
-              "将文件拖动到此处",
-              textAlign: TextAlign.center,
-            ),
+          _addFilesButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _selectedFilesMobile() {
+    return Container(
+      margin: const EdgeInsets.all(1),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: Colors.grey,
+          width: 1,
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              _clearFileListButton(),
+              Expanded(child: Container()),
+              _fileListPreviewButton(),
+            ],
           ),
-          MaterialButton(
-            onPressed: () async {
-              var choose = await FilePicker.platform.pickFiles(
-                allowMultiple: true,
-              );
-              if (choose != null) {
-                var addFiles = <SelectionFile>[];
-                for (var value in choose.files) {
-                  if (value.path != null) {
-                    try {
-                      var addFile = await matchSelectionFile(
-                        name: value.name,
-                        path: value.path!,
-                      );
-                      addFiles.add(addFile);
-                    } catch (e) {
-                      print(e);
-                      defaultToast(context, '文件解析失败 $e');
-                    }
-                  }
-                }
-                setState(() {
-                  _list.addAll(addFiles);
-                });
+          const Divider(),
+          Row(
+            children: [
+              Expanded(child: Container()),
+              _addFilesButton(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _clearFileListButton() {
+    return MaterialButton(
+      onPressed: () async {
+        setState(() {
+          _list.clear();
+        });
+      },
+      child: const Row(
+        children: [
+          Icon(
+            Icons.clear,
+          ),
+          Text("清除"),
+        ],
+      ),
+    );
+  }
+
+  Widget _fileListPreviewButton() {
+    var text = "将发送 ${_list.length} 个文件(夹)";
+    if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
+      text += ", (点击预览)";
+    }
+    return MaterialButton(
+      onPressed: _showFilesDialog,
+      child: Row(
+        children: [
+          const Icon(Icons.file_copy_rounded),
+          Text(
+            text,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dropTips() {
+    return const Text(
+      "将文件拖动到此处",
+      textAlign: TextAlign.center,
+    );
+  }
+
+  Widget _addFilesButton() {
+    var text = "添加";
+    if (Platform.isIOS || Platform.isAndroid) {
+      text = "添加文件";
+    }
+    return MaterialButton(
+      onPressed: () async {
+        var choose = await FilePicker.platform.pickFiles(
+          allowMultiple: true,
+        );
+        if (choose != null) {
+          var addFiles = <SelectionFile>[];
+          for (var value in choose.files) {
+            if (value.path != null) {
+              try {
+                var addFile = await matchSelectionFile(
+                  name: value.name,
+                  path: value.path!,
+                );
+                addFiles.add(addFile);
+              } catch (e) {
+                print(e);
+                defaultToast(context, '文件解析失败 $e');
               }
-            },
-            child: const Row(
-              children: [
-                Icon(Icons.add),
-                Text("添加"),
-              ],
-            ),
-          ),
+            }
+          }
+          setState(() {
+            _list.addAll(addFiles);
+          });
+        }
+      },
+      child: Row(
+        children: [
+          const Icon(Icons.add),
+          Text(text),
         ],
       ),
     );
