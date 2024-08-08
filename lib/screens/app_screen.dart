@@ -41,10 +41,6 @@ class _AppScreenState extends State<AppScreen> with WindowListener {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('aDrop'),
-        elevation: 1,
-      ),
       body: IndexedStack(
         index: _currentIndex,
         children: [
@@ -126,6 +122,10 @@ class _SendFileState extends State<SendFile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('aDrop'),
+        elevation: 1,
+      ),
       body: Column(
         children: [
           _selectedFiles(),
@@ -546,7 +546,13 @@ class _ReceiveFileState extends State<ReceiveFile> {
 
   @override
   Widget build(BuildContext context) {
-    return _tasksList();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('aDrop'),
+        elevation: 1,
+      ),
+      body: _tasksList(),
+    );
   }
 
   Widget _tasksList() {
@@ -615,7 +621,13 @@ class _SendingState extends State<Sending> {
 
   @override
   Widget build(BuildContext context) {
-    return _tasksList();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('aDrop'),
+        elevation: 1,
+      ),
+      body: _tasksList(),
+    );
   }
 
   Widget _tasksList() {
