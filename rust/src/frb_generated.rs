@@ -1605,6 +1605,7 @@ impl SseDecode for crate::data_obj::SendingTask {
             <crate::data_obj::enums::SendingTaskErrorType>::sse_decode(deserializer);
         let mut var_errorMsg = <String>::sse_decode(deserializer);
         let mut var_cloudFileId = <String>::sse_decode(deserializer);
+        let mut var_currentFileUploadSize = <i64>::sse_decode(deserializer);
         return crate::data_obj::SendingTask {
             task_id: var_taskId,
             device: var_device,
@@ -1615,6 +1616,7 @@ impl SseDecode for crate::data_obj::SendingTask {
             error_type: var_errorType,
             error_msg: var_errorMsg,
             cloud_file_id: var_cloudFileId,
+            current_file_upload_size: var_currentFileUploadSize,
         };
     }
 }
@@ -2038,6 +2040,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SendingTask {
             self.error_type.into_into_dart().into_dart(),
             self.error_msg.into_into_dart().into_dart(),
             self.cloud_file_id.into_into_dart().into_dart(),
+            self.current_file_upload_size.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -2404,6 +2407,7 @@ impl SseEncode for crate::data_obj::SendingTask {
         <crate::data_obj::enums::SendingTaskErrorType>::sse_encode(self.error_type, serializer);
         <String>::sse_encode(self.error_msg, serializer);
         <String>::sse_encode(self.cloud_file_id, serializer);
+        <i64>::sse_encode(self.current_file_upload_size, serializer);
     }
 }
 

@@ -1280,8 +1280,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SendingTask dco_decode_sending_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 9)
-      throw Exception('unexpected arr length: expect 9 but see ${arr.length}');
+    if (arr.length != 10)
+      throw Exception('unexpected arr length: expect 10 but see ${arr.length}');
     return SendingTask(
       taskId: dco_decode_String(arr[0]),
       device: dco_decode_device(arr[1]),
@@ -1292,6 +1292,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       errorType: dco_decode_sending_task_error_type(arr[6]),
       errorMsg: dco_decode_String(arr[7]),
       cloudFileId: dco_decode_String(arr[8]),
+      currentFileUploadSize: dco_decode_i_64(arr[9]),
     );
   }
 
@@ -1628,6 +1629,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_errorType = sse_decode_sending_task_error_type(deserializer);
     var var_errorMsg = sse_decode_String(deserializer);
     var var_cloudFileId = sse_decode_String(deserializer);
+    var var_currentFileUploadSize = sse_decode_i_64(deserializer);
     return SendingTask(
         taskId: var_taskId,
         device: var_device,
@@ -1637,7 +1639,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         taskState: var_taskState,
         errorType: var_errorType,
         errorMsg: var_errorMsg,
-        cloudFileId: var_cloudFileId);
+        cloudFileId: var_cloudFileId,
+        currentFileUploadSize: var_currentFileUploadSize);
   }
 
   @protected
@@ -1946,6 +1949,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_sending_task_error_type(self.errorType, serializer);
     sse_encode_String(self.errorMsg, serializer);
     sse_encode_String(self.cloudFileId, serializer);
+    sse_encode_i_64(self.currentFileUploadSize, serializer);
   }
 
   @protected

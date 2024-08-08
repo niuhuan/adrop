@@ -652,7 +652,9 @@ class _SendingState extends State<Sending> {
           ),
           child: ListTile(
             title: Text(task.fileName),
-            subtitle: Text(task.taskState.toString()),
+            subtitle: Text(
+              "${task.taskState} : ${task.currentFileUploadSize}",
+            ),
             leading: _iconOfFileType(task.fileItemType),
           ),
         );

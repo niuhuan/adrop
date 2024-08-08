@@ -1,18 +1,22 @@
+use crate::common::PutResource;
 use crate::custom_crypto::{encrypt_file_name, encryptor_from_key};
 use crate::data_obj::enums::{SendingTaskErrorType, SendingTaskState};
 use crate::data_obj::{Device, SelectionFile, SendingTask};
 use crate::define::{get_alipan_client, ram_space_info};
 use crate::frb_generated::StreamSink;
-use alipan::{AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode};
+use alipan::{
+    AdriveOpenFileCreate, AdriveOpenFilePartInfoCreate, AdriveOpenFileType, CheckNameMode,
+};
 use anyhow::Context;
 use async_recursion::async_recursion;
+use async_trait::async_trait;
 use base64::Engine;
 use lazy_static::lazy_static;
-use std::ops::{Deref, DerefMut};
 use sha1::Digest;
+use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
 use tokio::io::AsyncReadExt;
 use tokio::sync::Mutex;
-use crate::common::PutResource;
 
 lazy_static! {
     static ref SENDING_TASKS: Mutex<Vec<SendingTask>> = Mutex::new(vec![]);
@@ -39,7 +43,10 @@ pub async fn list_sending_tasks() -> anyhow::Result<Vec<crate::data_obj::Sending
     Ok(SENDING_TASKS.lock().await.clone())
 }
 
-pub async fn add_sending_tasks(device: Device, selection_files: Vec<SelectionFile>) -> anyhow::Result<()> {
+pub async fn add_sending_tasks(
+    device: Device,
+    selection_files: Vec<SelectionFile>,
+) -> anyhow::Result<()> {
     let tasks = selection_files
         .into_iter()
         .map(|value| SendingTask {
@@ -52,6 +59,7 @@ pub async fn add_sending_tasks(device: Device, selection_files: Vec<SelectionFil
             error_msg: "".to_string(),
             cloud_file_id: "".to_string(),
             error_type: SendingTaskErrorType::Unset,
+            current_file_upload_size: 0,
         })
         .collect::<Vec<SendingTask>>();
     let mut lock = SENDING_TASKS.lock().await;
@@ -67,8 +75,7 @@ pub async fn add_sending_tasks(device: Device, selection_files: Vec<SelectionFil
 async fn sync_tasks_to_dart(tasks: Vec<SendingTask>) -> anyhow::Result<()> {
     let scb = SENDING_CALL_BACKS.lock().await;
     if let Some(scb) = scb.deref() {
-        scb.add(tasks)
-            .map_err(|e| anyhow::anyhow!(e))?;
+        scb.add(tasks).map_err(|e| anyhow::anyhow!(e))?;
     }
     drop(scb);
     Ok(())
@@ -114,6 +121,82 @@ async fn set_sending_task_by_id(task: &SendingTask) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Debug)]
+struct SendingController(Arc<Mutex<SendingTask>>);
+
+impl Clone for SendingController {
+    fn clone(&self) -> Self {
+        Self(Arc::clone(&self.0))
+    }
+}
+
+impl SendingController {
+    async fn set_data<F>(&self, f: F)
+    where
+        F: FnOnce(&mut SendingTask),
+    {
+        let mut lock = self.0.lock().await;
+        f(lock.deref_mut());
+        drop(lock);
+    }
+
+    async fn get_data<F, T>(&self, f: F) -> T
+    where
+        F: FnOnce(&SendingTask) -> T,
+    {
+        let lock = self.0.lock().await;
+        let result = f(lock.deref());
+        drop(lock);
+        result
+    }
+
+    async fn sync(&self) -> anyhow::Result<()> {
+        let send_task = self.0.lock().await.clone();
+        set_sending_task_by_id(&send_task).await?;
+        drop(send_task);
+        Ok(())
+    }
+}
+
+#[async_trait]
+trait FileCreateCallBack: Sync + Send {
+    async fn call(&self, open_file: &AdriveOpenFileCreate) -> anyhow::Result<()>;
+}
+
+struct SetTaskFileId(SendingController);
+
+#[async_trait]
+impl FileCreateCallBack for SetTaskFileId {
+    async fn call(&self, open_file: &AdriveOpenFileCreate) -> anyhow::Result<()> {
+        self.0
+            .set_data(|send_task: &mut SendingTask| {
+                send_task.cloud_file_id = open_file.file_id.clone();
+            })
+            .await;
+        let _ = self.0.sync().await;
+        Ok(())
+    }
+}
+
+#[async_trait]
+trait FileLengthCallback: Sync + Send {
+    async fn call(&self, processed: usize) -> anyhow::Result<()>;
+}
+
+#[async_trait]
+impl FileLengthCallback for SetTaskFileId {
+    async fn call(&self, processed: usize) -> anyhow::Result<()> {
+        self.0
+            .set_data(|send_task: &mut SendingTask| {
+                send_task.current_file_upload_size = processed as i64;
+            })
+            .await;
+        println!("processed: {}", processed);
+        self.0.sync().await?;
+        Ok(())
+    }
+}
+
 pub(crate) async fn sending_job() {
     loop {
         tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
@@ -126,29 +209,38 @@ pub(crate) async fn sending_job() {
             break;
         }
         loop {
-            let need_sent = first_init_sending_task().await;
-            if let Some(mut need_sent) = need_sent {
-                need_sent.task_state = SendingTaskState::Sending;
-                if let Err(err) = set_sending_task_by_id(&need_sent).await {
+            let need_processing = first_init_sending_task().await;
+            if let Some(need_processing) = need_processing {
+                let task_controller = SendingController(Arc::new(Mutex::new(need_processing)));
+                task_controller
+                    .set_data(|send_task: &mut SendingTask| {
+                        send_task.task_state = SendingTaskState::Sending;
+                    })
+                    .await;
+                if let Err(err) = task_controller.sync().await {
                     println!("set sending task failed: {:?}", err);
                     break;
                 }
-                println!("start send : {:?}", need_sent);
-                if let Err(e) = send_file(&mut need_sent).await {
-                    println!("send file failed: {:?} : {:?}", need_sent, e);
-                    need_sent.task_state = SendingTaskState::Failed;
-                    need_sent.error_msg = e.to_string();
-                    if let Err(err) = set_sending_task_by_id(&need_sent).await {
-                        println!("set sending task failed: {:?}", err);
-                        break;
-                    }
+                println!("start send : {:?}", task_controller);
+                if let Err(e) = send_file(task_controller.clone()).await {
+                    println!("send file failed: {:?} : {:?}", task_controller, e);
+                    task_controller
+                        .set_data(|send_task: &mut SendingTask| {
+                            send_task.task_state = SendingTaskState::Failed;
+                            send_task.error_msg = e.to_string();
+                        })
+                        .await;
                 } else {
-                    println!("send file success: {:?}", need_sent);
-                    need_sent.task_state = SendingTaskState::Success;
-                    if let Err(err) = set_sending_task_by_id(&need_sent).await {
-                        println!("set sending task failed: {:?}", err);
-                        break;
-                    }
+                    println!("send file success: {:?}", task_controller);
+                    task_controller
+                        .set_data(|send_task: &mut SendingTask| {
+                            send_task.task_state = SendingTaskState::Success;
+                        })
+                        .await;
+                }
+                if let Err(err) = task_controller.sync().await {
+                    println!("set sending task failed: {:?}", err);
+                    break;
                 }
             } else {
                 break;
@@ -157,47 +249,39 @@ pub(crate) async fn sending_job() {
     }
 }
 
-/*
-
-*/
-
-async fn send_file(task: &mut SendingTask) -> anyhow::Result<()> {
-    let file_state = tokio::fs::metadata(task.file_path.as_str()).await;
+async fn send_file(controller: SendingController) -> anyhow::Result<()> {
+    let (file_name, file_path, device) = controller
+        .get_data(|send_task| {
+            (
+                send_task.file_name.clone(),
+                send_task.file_path.clone(),
+                send_task.device.clone(),
+            )
+        })
+        .await;
+    let file_state = tokio::fs::metadata(file_path.as_str()).await;
     let meta = match file_state {
         Ok(meta) => meta,
         Err(e) => return Err(anyhow::anyhow!(e)),
     };
     if meta.is_dir() {
-        let file_name = task.file_name.clone();
-        let file_path = task.file_path.clone();
-        let device = task.device.clone();
-        let mut callback = FileIdCallback(task);
         upload_folder(
             file_name.as_str(),
             file_path.as_str(),
             device.folder_file_id.as_str(),
-            Some(&mut callback),
+            Some(Box::new(SetTaskFileId(controller))),
         )
             .await?;
     } else if meta.is_file() {
         upload_file(
-            task.file_name.as_str(),
-            task.file_path.as_str(),
-            task.device.folder_file_id.as_str(),
-        )
+            file_name.as_str(),
+            file_path.as_str(),
+            device.folder_file_id.as_str(),
+            Some(Box::new(SetTaskFileId(controller)),
+            ))
             .await?;
     }
     Ok(())
-}
-
-struct FileIdCallback<'a>(&'a mut SendingTask);
-
-impl FileIdCallback<'_> {
-    async fn call(&mut self, file_id: &str) -> anyhow::Result<()> {
-        self.0.cloud_file_id = file_id.to_string();
-        set_sending_task_by_id(self.0).await?;
-        Ok(())
-    }
 }
 
 #[async_recursion]
@@ -205,7 +289,7 @@ async fn upload_folder(
     folder_name: &str,
     folder_path: &str,
     parent_folder_id: &str,
-    option: Option<&mut FileIdCallback>,
+    option: Option<Box<dyn FileCreateCallBack>>,
 ) -> anyhow::Result<()> {
     let space_info = ram_space_info().await?;
     let password = base64::prelude::BASE64_URL_SAFE.decode(space_info.true_pass_base64.as_str())?;
@@ -224,7 +308,7 @@ async fn upload_folder(
         .request()
         .await?;
     if let Some(callback) = option {
-        callback.call(folder_result.file_id.as_str()).await?;
+        callback.call(&folder_result).await?;
     }
     let mut entries = tokio::fs::read_dir(folder_path).await?;
     while let Some(entry) = entries.next_entry().await? {
@@ -242,6 +326,7 @@ async fn upload_folder(
                 entry.file_name().to_str().unwrap(),
                 entry.path().to_str().unwrap(),
                 folder_result.file_id.as_str(),
+                None,
             )
                 .await?;
         }
@@ -263,6 +348,7 @@ async fn upload_file(
     file_name: &str,
     file_path: &str,
     parent_folder_id: &str,
+    option: Option<Box<dyn FileLengthCallback>>,
 ) -> anyhow::Result<()> {
     let space_info = ram_space_info().await?;
     let password = base64::prelude::BASE64_URL_SAFE.decode(space_info.true_pass_base64.as_str())?;
@@ -292,7 +378,7 @@ async fn upload_file(
         return Err(anyhow::anyhow!("文件已存在"));
     }
     let url = result.part_info_list[0].upload_url.clone();
-    put_file_with_password(file_path, password.as_slice(), url.as_str()).await?;
+    put_file_with_password(file_path, password.as_slice(), url.as_str(), option).await?;
     client
         .adrive_open_file_complete()
         .await
@@ -344,12 +430,17 @@ async fn password_sha1(file_path: &str, password: &[u8]) -> anyhow::Result<(Stri
     Ok((hex::encode(result), size as u64))
 }
 
-async fn put_file_with_password(file_path: &str, password: &[u8], url: &str) -> anyhow::Result<()> {
+async fn put_file_with_password(
+    file_path: &str,
+    password: &[u8],
+    url: &str,
+    option: Option<Box<dyn FileLengthCallback>>,
+) -> anyhow::Result<()> {
     let (sender, body) = PutResource::channel_resource();
     let request = reqwest::Client::new().put(url).body(body).send();
     let cp = sender.clone();
     let read_file_back = async move {
-        let result = put_steam_with_password(cp, file_path, password).await;
+        let result = put_steam_with_password(cp, file_path, password, option).await;
         if let Err(e) = result {
             let _ = sender.send(Err(e)).await;
         }
@@ -363,7 +454,9 @@ async fn put_steam_with_password(
     sender: tokio::sync::mpsc::Sender<anyhow::Result<Vec<u8>>>,
     path: &str,
     password: &[u8],
+    option: Option<Box<dyn FileLengthCallback>>,
 ) -> anyhow::Result<()> {
+    let mut processed = 0;
     let mut buffer = vec![0u8; 1 << 20];
     let file = tokio::fs::File::open(path).await?;
     let mut reader = tokio::io::BufReader::new(file);
@@ -377,6 +470,10 @@ async fn put_steam_with_password(
             match enc {
                 Ok(vec) => {
                     sender.send(Ok(vec)).await?;
+                    processed += position;
+                    if let Some(call) = &option {
+                        call.call(processed).await?;
+                    }
                 }
                 Err(err) => {
                     sender.send(Err(anyhow::anyhow!("{}", err))).await?;
@@ -390,6 +487,10 @@ async fn put_steam_with_password(
             match encryptor.encrypt_next(&buffer[..]) {
                 Ok(vec) => {
                     sender.send(Ok(vec)).await?;
+                    processed += buffer.len();
+                    if let Some(call) = &option {
+                        call.call(processed).await?;
+                    }
                 }
                 Err(err) => {
                     sender.send(Err(anyhow::anyhow!("{}", err))).await?;
