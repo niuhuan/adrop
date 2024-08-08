@@ -10,7 +10,9 @@ import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/receiving.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
@@ -433,18 +435,9 @@ class _SendFileState extends State<SendFile> {
         itemCount: devices.length,
         itemBuilder: (BuildContext context, int index) {
           var device = devices[index];
-          return Container(
-            padding: const EdgeInsets.all(10),
-            child: ListTile(
-              onTap: () async {
-                _sendFiles(device);
-              },
-              title: Text(device.name),
-              leading: Icon(
-                _deviceIcon(device.deviceType),
-                size: 40,
-              ),
-            ),
+          return _dropToDevice(
+            device,
+            _deviceTile(device),
           );
         },
       );
@@ -458,8 +451,28 @@ class _SendFileState extends State<SendFile> {
           spacing: 10,
           alignment: WrapAlignment.start,
           children: [
-            for (var device in devices) _deviceButton(device),
+            for (var device in devices)
+              _dropToDevice(
+                device,
+                _deviceButton(device),
+              ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _deviceTile(Device device) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: ListTile(
+        onTap: () async {
+          _sendFiles(device);
+        },
+        title: Text(device.name),
+        leading: Icon(
+          _deviceIcon(device.deviceType),
+          size: 40,
         ),
       ),
     );
@@ -494,6 +507,32 @@ class _SendFileState extends State<SendFile> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _dropToDevice(Device device, Widget child) {
+    if (Platform.isIOS || Platform.isAndroid) {
+      return child;
+    }
+    return DropTarget(
+      onDragDone: (details) async {
+        var files = details.files;
+        var addFiles = <SelectionFile>[];
+        for (var value in files) {
+          try {
+            var addFile = await matchSelectionFile(
+              name: value.name,
+              path: value.path,
+            );
+            addFiles.add(addFile);
+          } catch (e) {
+            print(e);
+            defaultToast(context, '文件解析失败 $e');
+          }
+        }
+        await widget.sendFiles(device, addFiles);
+      },
+      child: child,
     );
   }
 
@@ -734,6 +773,24 @@ class _SendingState extends State<Sending> {
                 const TextSpan(
                   text: "  ",
                 ),
+                WidgetSpan(
+                  child: Icon(
+                    _deviceIcon(
+                      task.device.deviceType,
+                    ),
+                    size: 16,
+                  ),
+                  alignment: PlaceholderAlignment.middle,
+                ),
+                const TextSpan(
+                  text: " ",
+                ),
+                TextSpan(
+                  text: task.device.name,
+                ),
+                const TextSpan(
+                  text: "  ",
+                ),
                 TextSpan(
                   text: size,
                 ),
@@ -748,6 +805,7 @@ class _SendingState extends State<Sending> {
 
   _sendFiles(Device device, List<SelectionFile> files) async {
     await addSendingTasks(device: device, selectionFiles: files);
+    defaultToast(context, "已添加到发送队列");
   }
 }
 
