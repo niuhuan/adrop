@@ -34,6 +34,14 @@ enum ReceivingTaskState {
   ;
 }
 
+enum SendingTaskClearType {
+  unset,
+  clearSuccess,
+  cancelFailed,
+  retryFailed,
+  ;
+}
+
 enum SendingTaskErrorType {
   unset,
   unknown,

@@ -27,3 +27,8 @@ Future<void> addSendingTasks(
         required List<SelectionFile> selectionFiles}) =>
     RustLib.instance.api.crateApiSendingAddSendingTasks(
         device: device, selectionFiles: selectionFiles);
+
+Future<void> clearSendingTasks(
+        {required List<SendingTaskClearType> clearTypes}) =>
+    RustLib.instance.api
+        .crateApiSendingClearSendingTasks(clearTypes: clearTypes);

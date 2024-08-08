@@ -96,6 +96,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SendingTask> dco_decode_list_sending_task(dynamic raw);
 
   @protected
+  List<SendingTaskClearType> dco_decode_list_sending_task_clear_type(
+      dynamic raw);
+
+  @protected
   LoginInfo dco_decode_login_info(dynamic raw);
 
   @protected
@@ -121,6 +125,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SendingTask dco_decode_sending_task(dynamic raw);
+
+  @protected
+  SendingTaskClearType dco_decode_sending_task_clear_type(dynamic raw);
 
   @protected
   SendingTaskErrorType dco_decode_sending_task_error_type(dynamic raw);
@@ -208,6 +215,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<SendingTask> sse_decode_list_sending_task(SseDeserializer deserializer);
 
   @protected
+  List<SendingTaskClearType> sse_decode_list_sending_task_clear_type(
+      SseDeserializer deserializer);
+
+  @protected
   LoginInfo sse_decode_login_info(SseDeserializer deserializer);
 
   @protected
@@ -236,6 +247,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SendingTask sse_decode_sending_task(SseDeserializer deserializer);
+
+  @protected
+  SendingTaskClearType sse_decode_sending_task_clear_type(
+      SseDeserializer deserializer);
 
   @protected
   SendingTaskErrorType sse_decode_sending_task_error_type(
@@ -331,6 +346,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       List<SendingTask> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_sending_task_clear_type(
+      List<SendingTaskClearType> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_login_info(LoginInfo self, SseSerializer serializer);
 
   @protected
@@ -359,6 +378,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_sending_task(SendingTask self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sending_task_clear_type(
+      SendingTaskClearType self, SseSerializer serializer);
 
   @protected
   void sse_encode_sending_task_error_type(

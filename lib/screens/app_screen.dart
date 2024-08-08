@@ -10,9 +10,7 @@ import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/receiving.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
@@ -415,19 +413,7 @@ class _SendFileState extends State<SendFile> {
             ],
           ),
         );
-        final list = ListView.builder(
-          itemCount: devices.length,
-          itemBuilder: (BuildContext context, int index) {
-            var device = devices[index];
-            return ListTile(
-              onTap: () {
-                _sendFiles(device);
-              },
-              title: Text(device.name),
-              leading: _deviceIcon(device.deviceType),
-            );
-          },
-        );
+        final list = _deviceList(devices);
         return Column(
           children: [
             tips,
@@ -437,6 +423,77 @@ class _SendFileState extends State<SendFile> {
           ],
         );
       },
+    );
+  }
+
+  Widget _deviceList(List<Device> devices) {
+    final windowWidth = MediaQuery.of(context).size.width;
+    if (windowWidth < 510) {
+      return ListView.builder(
+        itemCount: devices.length,
+        itemBuilder: (BuildContext context, int index) {
+          var device = devices[index];
+          return Container(
+            padding: const EdgeInsets.all(10),
+            child: ListTile(
+              onTap: () async {
+                _sendFiles(device);
+              },
+              title: Text(device.name),
+              leading: Icon(
+                _deviceIcon(device.deviceType),
+                size: 40,
+              ),
+            ),
+          );
+        },
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(10),
+      child: SizedBox(
+        width: double.maxFinite,
+        child: Wrap(
+          runSpacing: 10,
+          spacing: 10,
+          alignment: WrapAlignment.start,
+          children: [
+            for (var device in devices) _deviceButton(device),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _deviceButton(Device device) {
+    return MaterialButton(
+      onPressed: () {
+        _sendFiles(device);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(
+          top: 10,
+          left: 10,
+          right: 10,
+          bottom: 10,
+        ),
+        padding: const EdgeInsets.only(
+          top: 10,
+          left: 20,
+          right: 20,
+          bottom: 10,
+        ),
+        child: Column(
+          children: [
+            Icon(
+              _deviceIcon(device.deviceType),
+              size: 80,
+            ),
+            const SizedBox(width: 10, height: 10),
+            Text(device.name),
+          ],
+        ),
+      ),
     );
   }
 
@@ -605,6 +662,36 @@ class _SendingState extends State<Sending> {
       appBar: AppBar(
         title: const Text('aDrop'),
         elevation: 1,
+        actions: [
+          MenuAnchor(
+            builder: (
+              BuildContext context,
+              MenuController controller,
+              Widget? child,
+            ) {
+              return IconButton(
+                icon: const Icon(Icons.clear_all),
+                onPressed: () {
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    controller.open();
+                  }
+                },
+              );
+            },
+            menuChildren: [
+              MenuItemButton(
+                onPressed: () {
+                  clearSendingTasks(clearTypes: [
+                    SendingTaskClearType.clearSuccess,
+                  ]);
+                },
+                child: const Text("清理发送成功的任务"),
+              ),
+            ],
+          ),
+        ],
       ),
       body: _tasksList(),
     );
@@ -676,7 +763,10 @@ Color _colorOfState(String state) {
   if (state.endsWith(".success")) {
     return Colors.green;
   }
-  if (state.endsWith(".error") || state.endsWith(".fail") || state.endsWith(".failed") || state.endsWith(".canceled")) {
+  if (state.endsWith(".error") ||
+      state.endsWith(".fail") ||
+      state.endsWith(".failed") ||
+      state.endsWith(".canceled")) {
     return Colors.red;
   }
   if (state.endsWith(".canceling")) {
@@ -689,10 +779,15 @@ String _sendingLabelOfState(String state) {
   if (state.endsWith(".init")) {
     return "队列中";
   }
+  if (state.endsWith(".sending")) {
+    return "上传中";
+  }
   if (state.endsWith(".success")) {
     return "上传成功";
   }
-  if (state.endsWith(".error") || state.endsWith(".fail") || state.endsWith(".failed")) {
+  if (state.endsWith(".error") ||
+      state.endsWith(".fail") ||
+      state.endsWith(".failed")) {
     return "上传失败";
   }
   if (state.endsWith(".canceled")) {
@@ -703,7 +798,6 @@ String _sendingLabelOfState(String state) {
   }
   return "未知";
 }
-
 
 String sizeFormat(PlatformInt64 sizeBigInt) {
   const b = 1;
@@ -734,23 +828,23 @@ Icon _iconOfFileType(FileItemType type) {
   }
 }
 
-Widget _deviceIcon(int type) {
+IconData _deviceIcon(int type) {
   switch (type) {
     case DeviceType.unknown:
-      return const Icon(Icons.help);
+      return Icons.help;
     case DeviceType.macbook:
-      return const Icon(Icons.laptop_mac);
+      return Icons.laptop_mac;
     case DeviceType.windows:
-      return const Icon(Icons.laptop_windows);
+      return Icons.laptop_windows;
     case DeviceType.linux:
-      return const Icon(Icons.laptop_windows);
+      return Icons.laptop_windows;
     case DeviceType.iphone:
-      return const Icon(Icons.phone_iphone);
+      return Icons.phone_iphone;
     case DeviceType.ipad:
-      return const Icon(Icons.tablet_mac);
+      return Icons.tablet_mac;
     case DeviceType.android:
-      return const Icon(Icons.phone_android);
+      return Icons.phone_android;
     default:
-      return const Icon(Icons.help);
+      return Icons.help;
   }
 }

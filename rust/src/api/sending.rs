@@ -1,6 +1,8 @@
 use crate::common::PutResource;
 use crate::custom_crypto::{encrypt_file_name, encryptor_from_key};
-use crate::data_obj::enums::{SendingTaskErrorType, SendingTaskState};
+use crate::data_obj::enums::{
+    FileItemType, SendingTaskClearType, SendingTaskErrorType, SendingTaskState,
+};
 use crate::data_obj::{Device, SelectionFile, SendingTask};
 use crate::define::{get_alipan_client, ram_space_info};
 use crate::frb_generated::StreamSink;
@@ -65,6 +67,78 @@ pub async fn add_sending_tasks(
     let mut lock = SENDING_TASKS.lock().await;
     for task in tasks {
         lock.push(task);
+    }
+    let tasks = lock.clone();
+    drop(lock);
+    let _ = sync_tasks_to_dart(tasks).await;
+    Ok(())
+}
+
+pub async fn clear_sending_tasks(clear_types: Vec<SendingTaskClearType>) -> anyhow::Result<()> {
+    let client = get_alipan_client();
+    let space_info = ram_space_info().await?;
+    let mut lock = SENDING_TASKS.lock().await;
+    for clear_type in clear_types {
+        match clear_type {
+            SendingTaskClearType::Unset => {}
+            SendingTaskClearType::ClearSuccess => {
+                lock.retain(|x| x.task_state != SendingTaskState::Success);
+            }
+            SendingTaskClearType::CancelFailed => {
+                let mut remove_task_ids = vec![];
+                for task in lock.deref() {
+                    if task.task_state == SendingTaskState::Failed {
+                        match task.file_item_type {
+                            FileItemType::File => {
+                                remove_task_ids.push(task.task_id.clone());
+                                let _ = tokio::fs::remove_file(task.file_path.as_str()).await;
+                            }
+                            FileItemType::Folder => {
+                                if !task.cloud_file_id.is_empty() {
+                                    if let Err(err) = client
+                                        .adrive_open_file_recyclebin_trash()
+                                        .await
+                                        .drive_id(space_info.drive_id.as_str())
+                                        .file_id(task.cloud_file_id.as_str())
+                                        .request()
+                                        .await
+                                    {
+                                        match err.inner {
+                                            alipan::ErrorInfo::ServerError(server_error) => {
+                                                if server_error.code == "404" {
+                                                    remove_task_ids.push(task.task_id.clone());
+                                                    let _ = tokio::fs::remove_dir_all(
+                                                        task.file_path.as_str(),
+                                                    )
+                                                    .await;
+                                                } else {
+                                                    // todo 提示用户
+                                                }
+                                            }
+                                            _ => {
+                                                // todo 提示用户
+                                            }
+                                        }
+                                    } else {
+                                        remove_task_ids.push(task.task_id.clone());
+                                        let _ = tokio::fs::remove_dir_all(task.file_path.as_str())
+                                            .await;
+                                    }
+                                } else {
+                                    remove_task_ids.push(task.task_id.clone());
+                                    let _ =
+                                        tokio::fs::remove_dir_all(task.file_path.as_str()).await;
+                                }
+                            }
+                        }
+                    }
+                }
+                lock.retain(|x| !remove_task_ids.contains(&x.task_id));
+            }
+            SendingTaskClearType::RetryFailed => {
+                // todo
+            }
+        }
     }
     let tasks = lock.clone();
     drop(lock);
@@ -271,15 +345,15 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
             device.folder_file_id.as_str(),
             Some(Box::new(SetTaskFileId(controller))),
         )
-            .await?;
+        .await?;
     } else if meta.is_file() {
         upload_file(
             file_name.as_str(),
             file_path.as_str(),
             device.folder_file_id.as_str(),
-            Some(Box::new(SetTaskFileId(controller)),
-            ))
-            .await?;
+            Some(Box::new(SetTaskFileId(controller))),
+        )
+        .await?;
     }
     Ok(())
 }
@@ -320,7 +394,7 @@ async fn upload_folder(
                 folder_result.file_id.as_str(),
                 None,
             )
-                .await?;
+            .await?;
         } else if meta.is_file() {
             upload_file(
                 entry.file_name().to_str().unwrap(),
@@ -328,7 +402,7 @@ async fn upload_folder(
                 folder_result.file_id.as_str(),
                 None,
             )
-                .await?;
+            .await?;
         }
     }
     let _ = client
