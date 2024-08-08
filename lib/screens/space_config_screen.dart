@@ -3,6 +3,7 @@ import 'package:adrop/components/content_error.dart';
 import 'package:adrop/screens/space_device_screen.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 
 class SpaceConfigScreen extends StatefulWidget {
   final String deriveId;
@@ -66,24 +67,22 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _body(),
-    );
-  }
-
-  Widget _body() {
     switch (statue) {
       case stateInit:
-        return const Center(
-          child: CircularProgressIndicator(),
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
         );
       case initSuccess:
         return _successBody();
       case initFail:
-        return ContentError(
-          error: _error,
-          stackTrace: _stackTrace,
-          onRefresh: onRefresh,
+        return Scaffold(
+          body: ContentError(
+            error: _error,
+            stackTrace: _stackTrace,
+            onRefresh: onRefresh,
+          ),
         );
       default:
         return const Center(
@@ -97,92 +96,105 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
   }
 
   Widget _setNewPassword() {
-    return Column(
-      children: [
-        Container(height: 30),
-        const Text('当前路径不存在密码文件, 需要传输文件应设置新密码, 请输入'),
-        Container(height: 30),
-        Container(
-          margin: const EdgeInsets.only(
-            left: 20,
-            right: 20,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('设置传输文件夹的密码'),
+      ),
+      body: Column(
+        children: [
+          Container(height: 30),
+          const Text('当前路径不存在密码文件, 需要传输文件应设置新密码, 请输入'),
+          Container(height: 30),
+          Container(
+            margin: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+            ),
+            child: TextField(
+              onChanged: (value) {
+                _inputPassword = value;
+              },
+            ),
           ),
-          child: TextField(
-            onChanged: (value) {
-              _inputPassword = value;
-            },
-          ),
-        ),
-        Container(height: 30),
-        ElevatedButton(
-          onPressed: () async {
-            try {
-              var truePass = await setNewPassword(
-                driveId: widget.deriveId,
-                parentFolderFileId: widget.folderId,
-                password: _inputPassword,
-              );
-              defaultToast(context, "设置密码成功");
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => SpaceDeviceScreen(
-                    driveId: widget.deriveId,
-                    folderId: widget.folderId,
-                    password: truePass,
+          Container(height: 30),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                var truePass = await setNewPassword(
+                  driveId: widget.deriveId,
+                  parentFolderFileId: widget.folderId,
+                  password: _inputPassword,
+                );
+                defaultToast(context, "设置密码成功");
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => SpaceDeviceScreen(
+                      driveId: widget.deriveId,
+                      folderId: widget.folderId,
+                      password: truePass,
+                    ),
                   ),
-                ),
-              );
-            } catch (e, s) {
-              defaultToast(context, "设置密码失败\n$e");
-            }
-          },
-          child: const Text('确定设置新密码'),
-        ),
-      ],
+                );
+              } catch (e, s) {
+                defaultToast(context, "设置密码失败\n$e");
+              }
+            },
+            child: const Text('确定设置新密码'),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _checkOldPassword() {
-    return Column(
-      children: [
-        Container(height: 30),
-        const Text('输入当前传输文件夹的密码'),
-        Container(height: 30),
-        Container(
-          margin: const EdgeInsets.only(
-            left: 20,
-            right: 20,
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('传输文件夹的密码'),
+      ),
+      body: Column(
+        children: [
+          Container(height: 30),
+          Container(
+            margin: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+            ),
+            child: TextField(
+              onChanged: (value) {
+                _inputPassword = value;
+              },
+            ),
           ),
-          child: TextField(
-            onChanged: (value) {
-              _inputPassword = value;
-            },
-          ),
-        ),
-        Container(height: 30),
-        ElevatedButton(
-          onPressed: () async {
-            try {
-              var truePass = await checkOldPassword(
-                passwordEnc: _passwordEnc!,
-                password: _inputPassword,
-              );
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (context) => SpaceDeviceScreen(
-                    driveId: widget.deriveId,
-                    folderId: widget.folderId,
-                    password: truePass,
+          Container(height: 30),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                var truePass = await checkOldPassword(
+                  passwordEnc: _passwordEnc!,
+                  password: _inputPassword,
+                );
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => SpaceDeviceScreen(
+                      driveId: widget.deriveId,
+                      folderId: widget.folderId,
+                      password: truePass,
+                    ),
                   ),
-                ),
-              );
-            } catch (e, s) {
-              defaultToast(context, "密码错误\n$e");
-            }
-          },
-          child: const Text('确定'),
-        ),
-      ],
+                );
+              } catch (e, s) {
+                if (e is AnyhowException) {
+                  AnyhowException ex = e;
+                  defaultToast(context, ex.message);
+                } else {
+                  defaultToast(context, "密码错误\n$e");
+                }
+              }
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      ),
     );
   }
 }

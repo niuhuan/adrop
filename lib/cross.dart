@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -18,6 +19,10 @@ class Cross {
       return await desktopRoot();
     }
     throw "没有适配的平台";
+  }
+
+  Future<String> iosDocumentDirectory() async {
+    return await _channel.invokeMethod("documentDirectory");
   }
 
   Future saveImageToGallery(String path) async {

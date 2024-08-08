@@ -41,6 +41,7 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
       ),
       body: Column(children: [
         _title("从已知设备中选择"),
+        _tips("仅限于重新安装时，或之前的设备已不再使用"),
         Expanded(child: _chooseOld()),
         const Divider(),
         _title("是一个新设备"),
@@ -53,6 +54,13 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Text(title, style: const TextStyle(fontSize: 20)),
+    );
+  }
+
+  Widget _tips(String tips) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Text(tips, style: const TextStyle(fontSize: 14)),
     );
   }
 

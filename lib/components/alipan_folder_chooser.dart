@@ -37,116 +37,122 @@ class _AlipanFolderChooserState extends State<AlipanFolderChooser> {
   @override
   Widget build(BuildContext context) {
     var ffi = lastFolderFileId(_current);
-    return Column(
-      children: [
-        SizedBox(
-          height: 50,
-          child: Row(
-            children: [
-              Container(
-                width: 18,
-              ),
-              GestureDetector(
-                onTap: () {
-                  if (_current.isNotEmpty) {
-                    setState(() {
-                      _current.removeLast();
-                    });
-                    widget.onFolderChange(_current);
-                  }
-                },
-                child: const Icon(Icons.reply),
-              ),
-              Container(
-                width: 10,
-              ),
-              GestureDetector(
-                onTap: () {
-                  showCreateFolderDialog();
-                },
-                child: const Icon(Icons.create_new_folder),
-              ),
-              Container(
-                width: 25,
-              ),
-              const Text("路径 : "),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.only(
-                    left: 20,
-                    right: 50,
-                  ),
-                  scrollDirection: Axis.horizontal,
-                  children: [
-                    Center(
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _current.clear();
-                          });
-                          widget.onFolderChange(_current);
-                        },
-                        child: const Text(
-                          "根文件夹",
-                          style: TextStyle(
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("用于传输的云盘文件夹"),
+      ),
+      body: Column(
+        children: [
+          const Divider(),
+          SizedBox(
+            height: 50,
+            child: Row(
+              children: [
+                Container(
+                  width: 18,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    if (_current.isNotEmpty) {
+                      setState(() {
+                        _current.removeLast();
+                      });
+                      widget.onFolderChange(_current);
+                    }
+                  },
+                  child: const Icon(Icons.reply),
+                ),
+                Container(
+                  width: 10,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    showCreateFolderDialog();
+                  },
+                  child: const Icon(Icons.create_new_folder),
+                ),
+                Container(
+                  width: 25,
+                ),
+                const Text("路径 : "),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.only(
+                      left: 20,
+                      right: 50,
                     ),
-                    for (var i = 0; i < _current.length; i++) ...[
-                      const Center(child: Text("  >  ")),
+                    scrollDirection: Axis.horizontal,
+                    children: [
                       Center(
                         child: GestureDetector(
                           onTap: () {
                             setState(() {
-                              _current.removeRange(i + 1, _current.length);
+                              _current.clear();
                             });
                             widget.onFolderChange(_current);
                           },
-                          child: Text(
-                            _current[i].fileName,
-                            style: const TextStyle(
+                          child: const Text(
+                            "根文件夹",
+                            style: TextStyle(
                               decoration: TextDecoration.underline,
                             ),
                           ),
                         ),
                       ),
-                    ]
-                  ],
+                      for (var i = 0; i < _current.length; i++) ...[
+                        const Center(child: Text("  >  ")),
+                        Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _current.removeRange(i + 1, _current.length);
+                              });
+                              widget.onFolderChange(_current);
+                            },
+                            child: Text(
+                              _current[i].fileName,
+                              style: const TextStyle(
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
                 ),
-              ),
-              Container(
-                width: 25,
-              ),
-              GestureDetector(
-                onTap: () {
-                  widget.onFolderCheck(_current);
-                },
-                child: const Icon(Icons.check),
-              ),
-              Container(
-                width: 18,
-              ),
-            ],
+                Container(
+                  width: 25,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    widget.onFolderCheck(_current);
+                  },
+                  child: const Icon(Icons.check),
+                ),
+                Container(
+                  width: 18,
+                ),
+              ],
+            ),
           ),
-        ),
-        const Divider(),
-        Expanded(
-          key: Key("AFC:$ffi"),
-          child: ItemList(
-            controller: _itemListController,
-            driveId: widget.deriveId,
-            folderFileId: ffi,
-            onChooseFolder: (item) {
-              setState(() {
-                _current.add(item);
-              });
-              widget.onFolderChange(_current);
-            },
+          const Divider(),
+          Expanded(
+            key: Key("AFC:$ffi"),
+            child: ItemList(
+              controller: _itemListController,
+              driveId: widget.deriveId,
+              folderFileId: ffi,
+              onChooseFolder: (item) {
+                setState(() {
+                  _current.add(item);
+                });
+                widget.onFolderChange(_current);
+              },
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

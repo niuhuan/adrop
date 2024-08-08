@@ -57,8 +57,13 @@ class _MobileLoginScreenState extends State<LoginScreen> {
   void onWebViewCreated(InAppWebViewController controller) {
     _webViewController = controller;
     _webViewController.addJavaScriptHandler(
-      handlerName: "finish",
+      handlerName: "_finish",
       callback: _finish,
+    );
+    _webViewController.loadUrl(
+      urlRequest: URLRequest(
+        url: WebUri.uri(Uri.parse("http://localhost:23767/html/index.html")),
+      ),
     );
   }
 

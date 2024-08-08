@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:adrop/components/common.dart';
+import 'package:adrop/cross.dart';
 import 'package:adrop/src/rust/api/download.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:file_picker/file_picker.dart';
@@ -10,7 +13,53 @@ class DownloadSettingsScreen extends StatefulWidget {
   const DownloadSettingsScreen({super.key});
 
   @override
-  State<DownloadSettingsScreen> createState() => _DownloadSettingsScreenState();
+  State<DownloadSettingsScreen> createState() =>
+      _createDownloadSettingsScreenState();
+}
+
+State<DownloadSettingsScreen> _createDownloadSettingsScreenState() {
+  if (Platform.isIOS) {
+    return _IosDownloadSettingsScreenState();
+  }
+  return _DownloadSettingsScreenState();
+}
+
+class _IosDownloadSettingsScreenState extends State<DownloadSettingsScreen> {
+  _init() async {
+    final dd = await cross.iosDocumentDirectory();
+    await saveDownloadInfo(
+      downloadConfig: DownloadConfig(
+        downloadTo: dd,
+        afterDownload: AfterDownload.moveToTrash,
+        taskExpireEsc: 60 * 60 * 24 * 30,
+      ),
+    );
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (context) => const AppScreen(),
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _init();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
 }
 
 class _DownloadSettingsScreenState extends State<DownloadSettingsScreen> {

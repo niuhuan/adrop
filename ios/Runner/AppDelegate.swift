@@ -15,6 +15,11 @@ import UIKit
                   let documentsPath = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true)[0]
                   result(documentsPath)
               }
+              else if call.method == "documentDirectory" {
+                  let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+                  try? FileManager.default.createDirectory(atPath: documentsPath, withIntermediateDirectories: true, attributes: nil)
+                  result(documentsPath)
+              }
               else if call.method == "saveImageToGallery"{
                   if let args = call.arguments as? String{
                       do {
