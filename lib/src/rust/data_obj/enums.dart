@@ -24,6 +24,14 @@ enum LoginState {
   ;
 }
 
+enum ReceivingTaskClearType {
+  unset,
+  clearSuccess,
+  cancelFailedAndDeleteCloud,
+  retryFailed,
+  ;
+}
+
 enum ReceivingTaskState {
   init,
   receiving,

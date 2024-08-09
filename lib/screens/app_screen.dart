@@ -10,9 +10,7 @@ import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/receiving.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
@@ -626,6 +624,52 @@ class _ReceiveFileState extends State<ReceiveFile> {
       appBar: AppBar(
         title: const Text('aDrop'),
         elevation: 1,
+        actions: [
+          MenuAnchor(
+            builder: (
+              BuildContext context,
+              MenuController controller,
+              Widget? child,
+            ) {
+              return IconButton(
+                icon: const Icon(Icons.clear_all),
+                onPressed: () {
+                  if (controller.isOpen) {
+                    controller.close();
+                  } else {
+                    controller.open();
+                  }
+                },
+              );
+            },
+            menuChildren: [
+              MenuItemButton(
+                onPressed: () {
+                  clearReceivingTasks(clearTypes: [
+                    ReceivingTaskClearType.clearSuccess,
+                  ]);
+                },
+                child: const Text("清理接收成功的任务"),
+              ),
+              MenuItemButton(
+                onPressed: () {
+                  clearReceivingTasks(clearTypes: [
+                    ReceivingTaskClearType.retryFailed,
+                  ]);
+                },
+                child: const Text("重试接收失败的任务"),
+              ),
+              MenuItemButton(
+                onPressed: () {
+                  clearReceivingTasks(clearTypes: [
+                    ReceivingTaskClearType.cancelFailedAndDeleteCloud,
+                  ]);
+                },
+                child: const Text("取消接收失败的文件"),
+              ),
+            ],
+          ),
+        ],
       ),
       body: _tasksList(),
     );
@@ -727,6 +771,22 @@ class _SendingState extends State<Sending> {
                   ]);
                 },
                 child: const Text("清理发送成功的任务"),
+              ),
+              MenuItemButton(
+                onPressed: () {
+                  clearSendingTasks(clearTypes: [
+                    SendingTaskClearType.retryFailed,
+                  ]);
+                },
+                child: const Text("重试发送失败的任务"),
+              ),
+              MenuItemButton(
+                onPressed: () {
+                  clearSendingTasks(clearTypes: [
+                    SendingTaskClearType.cancelFailed,
+                  ]);
+                },
+                child: const Text("取消发送失败的任务"),
               ),
             ],
           ),

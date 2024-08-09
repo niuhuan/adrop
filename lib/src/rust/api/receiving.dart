@@ -20,3 +20,8 @@ Future<void> unregisterReceivingTask() =>
 
 Future<List<ReceivingTask>> listReceivingTasks() =>
     RustLib.instance.api.crateApiReceivingListReceivingTasks();
+
+Future<void> clearReceivingTasks(
+        {required List<ReceivingTaskClearType> clearTypes}) =>
+    RustLib.instance.api
+        .crateApiReceivingClearReceivingTasks(clearTypes: clearTypes);

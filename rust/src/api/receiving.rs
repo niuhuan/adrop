@@ -1,27 +1,31 @@
-use std::ops::{Deref, DerefMut};
-use alipan::AdriveOpenFileType;
-use alipan::response::AdriveOpenFile;
-use async_recursion::async_recursion;
-use base64::Engine;
-use flutter_rust_bridge::for_generated::futures::TryStreamExt;
-use lazy_static::lazy_static;
-use tokio::io::{AsyncReadExt, AsyncWriteExt};
-use tokio::sync::Mutex;
-use tokio_util::io::StreamReader;
 use crate::api::download::download_info;
 use crate::custom_crypto::{decrypt_file_name, decryptor_from_key};
-use crate::data_obj::enums::{FileItemType, ReceivingTaskState};
+use crate::data_obj::enums::{FileItemType, ReceivingTaskClearType, ReceivingTaskState};
 use crate::data_obj::ReceivingTask;
 use crate::define::{get_alipan_client, ram_space_info};
 use crate::frb_generated::StreamSink;
 use crate::utils::join_paths;
+use alipan::response::AdriveOpenFile;
+use alipan::{AdriveOpenFileType, ErrorInfo};
+use async_recursion::async_recursion;
+use base64::Engine;
+use flutter_rust_bridge::for_generated::futures::future::err;
+use flutter_rust_bridge::for_generated::futures::TryStreamExt;
+use lazy_static::lazy_static;
+use std::ops::{Deref, DerefMut};
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use tokio::sync::Mutex;
+use tokio_util::io::StreamReader;
 
 lazy_static! {
     static ref RECEIVING_TASKS: Mutex::<Vec<ReceivingTask>> = Mutex::new(Vec::new());
-    static ref RECEIVING_CALL_BACKS: Mutex<Option<StreamSink<Vec<ReceivingTask>>>> = Mutex::new(None);
+    static ref RECEIVING_CALL_BACKS: Mutex<Option<StreamSink<Vec<ReceivingTask>>>> =
+        Mutex::new(None);
 }
 
-pub async fn register_receiving_task(listener: StreamSink<Vec<ReceivingTask>>) -> anyhow::Result<()> {
+pub async fn register_receiving_task(
+    listener: StreamSink<Vec<ReceivingTask>>,
+) -> anyhow::Result<()> {
     let mut rcb = RECEIVING_CALL_BACKS.lock().await;
     *rcb = Some(listener);
     drop(rcb);
@@ -39,11 +43,87 @@ pub async fn list_receiving_tasks() -> anyhow::Result<Vec<ReceivingTask>> {
     Ok(RECEIVING_TASKS.lock().await.clone())
 }
 
+pub async fn clear_receiving_tasks(clear_types: Vec<ReceivingTaskClearType>) -> anyhow::Result<()> {
+    let mut lock = RECEIVING_TASKS.lock().await;
+    for clear_type in clear_types {
+        match clear_type {
+            ReceivingTaskClearType::Unset => {}
+            ReceivingTaskClearType::ClearSuccess => {
+                lock.retain(|x| x.task_state != ReceivingTaskState::Success);
+            }
+            ReceivingTaskClearType::RetryFailed => {
+                for x in lock.deref_mut() {
+                    if x.task_state == ReceivingTaskState::Failed {
+                        x.task_state = ReceivingTaskState::Init;
+                        match x.file_item_type {
+                            FileItemType::File => {
+                                let _ = tokio::fs::remove_file(x.file_path.as_str()).await;
+                            }
+                            FileItemType::Folder => {
+                                let _ = tokio::fs::remove_dir_all(x.file_path.as_str()).await;
+                            }
+                        }
+                    }
+                }
+            }
+            ReceivingTaskClearType::CancelFailedAndDeleteCloud => {
+                let space_info = ram_space_info().await?;
+                let client = get_alipan_client();
+                let mut remove_task_id_list = vec![];
+                let mut remove_failed_task_list = vec![];
+                for x in lock.deref() {
+                    if x.task_state == ReceivingTaskState::Failed {
+                        if let Err(err) = client
+                            .adrive_open_file_recyclebin_trash()
+                            .await
+                            .drive_id(space_info.drive_id.as_str())
+                            .file_id(x.file_id.as_str())
+                            .request()
+                            .await
+                        {
+                            match err.inner {
+                                ErrorInfo::ServerError(err) => {
+                                    if err.code == "404" {
+                                        remove_task_id_list.push(x.task_id.clone());
+                                    } else {
+                                        remove_failed_task_list.push(x.clone());
+                                    }
+                                }
+                                _ => {
+                                    remove_failed_task_list.push(x.clone());
+                                }
+                            }
+                        };
+                        remove_task_id_list.push(x.task_id.clone());
+                    }
+                }
+                for x in lock.deref() {
+                    if remove_task_id_list.contains(&x.task_id) {
+                        match x.file_item_type {
+                            FileItemType::File => {
+                                let _ = tokio::fs::remove_file(x.file_path.as_str()).await;
+                            }
+                            FileItemType::Folder => {
+                                let _ = tokio::fs::remove_dir_all(x.file_path.as_str()).await;
+                            }
+                        }
+                    }
+                }
+                lock.retain(|x| !remove_task_id_list.contains(&x.task_id));
+                // todo 通知失败的任务
+            }
+        }
+    }
+    let sync = lock.deref().clone();
+    drop(lock);
+    let _ = sync_tasks_to_dart(sync).await;
+    Ok(())
+}
+
 async fn sync_tasks_to_dart(tasks: Vec<ReceivingTask>) -> anyhow::Result<()> {
     let rcb = RECEIVING_CALL_BACKS.lock().await;
     if let Some(rcb) = rcb.deref() {
-        rcb.add(tasks)
-            .map_err(|e| anyhow::anyhow!(e))?;
+        rcb.add(tasks).map_err(|e| anyhow::anyhow!(e))?;
     }
     drop(rcb);
     Ok(())
@@ -51,7 +131,11 @@ async fn sync_tasks_to_dart(tasks: Vec<ReceivingTask>) -> anyhow::Result<()> {
 
 async fn exists_task_file_ids() -> Vec<String> {
     let lock = RECEIVING_TASKS.lock().await;
-    let exists_task_file_ids_string = lock.deref().iter().map(|x| x.file_id.clone()).collect::<Vec<String>>();
+    let exists_task_file_ids_string = lock
+        .deref()
+        .iter()
+        .map(|x| x.file_id.clone())
+        .collect::<Vec<String>>();
     drop(lock);
     exists_task_file_ids_string
 }
@@ -121,14 +205,21 @@ pub(crate) async fn receiving_job() {
         let cloud_files = if let Ok(list_files) = list_files(
             space_info.drive_id.as_str(),
             space_info.this_device_folder_file_id.as_str(),
-        ).await {
+        )
+        .await
+        {
             list_files
         } else {
             continue;
         };
         let exists_task_file_ids_string = exists_task_file_ids().await;
-        let exists_task_file_ids = exists_task_file_ids_string.iter().map(|x| x.as_str()).collect::<Vec<&str>>();
-        let password = if let Ok(password) = base64::prelude::BASE64_URL_SAFE.decode(space_info.true_pass_base64.as_str()) {
+        let exists_task_file_ids = exists_task_file_ids_string
+            .iter()
+            .map(|x| x.as_str())
+            .collect::<Vec<&str>>();
+        let password = if let Ok(password) =
+            base64::prelude::BASE64_URL_SAFE.decode(space_info.true_pass_base64.as_str())
+        {
             password
         } else {
             println!("password decode failed");
@@ -142,15 +233,15 @@ pub(crate) async fn receiving_job() {
             if exists_task_file_ids.contains(&x.file_id.as_str()) {
                 continue;
             }
-            let file_name = if let Ok(file_name) = decrypt_file_name(x.name.as_str(), password.as_slice()) {
-                file_name
-            } else {
-                continue;
-            };
-            let (name, path, _tmp_path) = if let Ok(data) = take_file_name(
-                download_info.download_to.as_str(),
-                file_name.as_str(),
-            ).await {
+            let file_name =
+                if let Ok(file_name) = decrypt_file_name(x.name.as_str(), password.as_slice()) {
+                    file_name
+                } else {
+                    continue;
+                };
+            let (name, path, _tmp_path) = if let Ok(data) =
+                take_file_name(download_info.download_to.as_str(), file_name.as_str()).await
+            {
                 data
             } else {
                 break;
@@ -212,10 +303,15 @@ pub(crate) async fn receiving_job() {
     }
 }
 
-async fn take_file_name(download_to: &str, file_name: &str) -> anyhow::Result<(String, String, String)> {
+async fn take_file_name(
+    download_to: &str,
+    file_name: &str,
+) -> anyhow::Result<(String, String, String)> {
     let raw_name_path = join_paths(vec![download_to, file_name]);
     let raw_name_path_tmp = raw_name_path.clone() + ".adroptmp";
-    if tokio::fs::try_exists(raw_name_path.as_str()).await? || tokio::fs::try_exists(raw_name_path_tmp.as_str()).await? {
+    if tokio::fs::try_exists(raw_name_path.as_str()).await?
+        || tokio::fs::try_exists(raw_name_path_tmp.as_str()).await?
+    {
         let (file_name, ext) = if let Some(pos) = file_name.rfind(".") {
             let (file_name, ext) = file_name.split_at(pos);
             (file_name, ext)
@@ -227,7 +323,9 @@ async fn take_file_name(download_to: &str, file_name: &str) -> anyhow::Result<(S
             let new_file_name = format!("{}({}){}", file_name, i, ext);
             let new_raw_name_path = join_paths(vec![download_to, new_file_name.as_str()]);
             let new_raw_name_path_tmp = new_raw_name_path.clone() + ".adroptmp";
-            if !tokio::fs::try_exists(new_raw_name_path.as_str()).await? && !tokio::fs::try_exists(new_raw_name_path_tmp.as_str()).await? {
+            if !tokio::fs::try_exists(new_raw_name_path.as_str()).await?
+                && !tokio::fs::try_exists(new_raw_name_path_tmp.as_str()).await?
+            {
                 return Ok((new_file_name, new_raw_name_path, new_raw_name_path_tmp));
             }
             i += 1;
@@ -269,7 +367,8 @@ async fn list_files(drive_id: &str, folder_id: &str) -> anyhow::Result<Vec<Adriv
 async fn download_item(task: &ReceivingTask, password: &[u8]) -> anyhow::Result<()> {
     println!("download item: {}", task.file_path);
     let client = get_alipan_client();
-    let cloud_file = client.adrive_open_file_get()
+    let cloud_file = client
+        .adrive_open_file_get()
         .await
         .drive_id(task.drive_id.as_str())
         .file_id(task.file_id.as_str())
@@ -285,21 +384,33 @@ async fn download_item(task: &ReceivingTask, password: &[u8]) -> anyhow::Result<
     }
 }
 
-async fn download_one_file(cloud_file: &AdriveOpenFile, file_path: &str, password: &[u8]) -> anyhow::Result<()> {
+async fn download_one_file(
+    cloud_file: &AdriveOpenFile,
+    file_path: &str,
+    password: &[u8],
+) -> anyhow::Result<()> {
     println!("download file: {}", file_path);
     download_file(cloud_file, file_path, password).await?;
     remove_cloud_file(cloud_file).await?;
     Ok(())
 }
 
-async fn download_one_folder(cloud_file: &AdriveOpenFile, file_path: &str, password: &[u8]) -> anyhow::Result<()> {
+async fn download_one_folder(
+    cloud_file: &AdriveOpenFile,
+    file_path: &str,
+    password: &[u8],
+) -> anyhow::Result<()> {
     println!("download folder: {}", file_path);
     download_folder(cloud_file, file_path, password).await?;
     remove_cloud_file(cloud_file).await?;
     Ok(())
 }
 
-async fn download_file(cloud_file: &AdriveOpenFile, file_path: &str, password: &[u8]) -> anyhow::Result<()> {
+async fn download_file(
+    cloud_file: &AdriveOpenFile,
+    file_path: &str,
+    password: &[u8],
+) -> anyhow::Result<()> {
     println!("download file: {}", file_path);
     let client = get_alipan_client();
     let url = client
@@ -315,7 +426,11 @@ async fn download_file(cloud_file: &AdriveOpenFile, file_path: &str, password: &
 }
 
 #[async_recursion]
-async fn download_folder(cloud_file: &AdriveOpenFile, file_path: &str, password: &[u8]) -> anyhow::Result<()> {
+async fn download_folder(
+    cloud_file: &AdriveOpenFile,
+    file_path: &str,
+    password: &[u8],
+) -> anyhow::Result<()> {
     println!("download folder: {}", file_path);
     tokio::fs::create_dir_all(file_path).await?;
     let children = list_files(cloud_file.drive_id.as_str(), cloud_file.file_id.as_str()).await?;
@@ -336,7 +451,8 @@ async fn download_folder(cloud_file: &AdriveOpenFile, file_path: &str, password:
 
 async fn remove_cloud_file(cloud_file: &AdriveOpenFile) -> anyhow::Result<()> {
     let client = get_alipan_client();
-    client.adrive_open_file_recyclebin_trash()
+    client
+        .adrive_open_file_recyclebin_trash()
         .await
         .drive_id(cloud_file.drive_id.as_str())
         .file_id(cloud_file.file_id.as_str())
@@ -344,7 +460,6 @@ async fn remove_cloud_file(cloud_file: &AdriveOpenFile) -> anyhow::Result<()> {
         .await?;
     Ok(())
 }
-
 
 async fn down_to_file_with_password(
     url: String,

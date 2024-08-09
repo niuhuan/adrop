@@ -92,6 +92,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<ReceivingTask> dco_decode_list_receiving_task(dynamic raw);
 
   @protected
+  List<ReceivingTaskClearType> dco_decode_list_receiving_task_clear_type(
+      dynamic raw);
+
+  @protected
   List<SelectionFile> dco_decode_list_selection_file(dynamic raw);
 
   @protected
@@ -118,6 +122,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReceivingTask dco_decode_receiving_task(dynamic raw);
+
+  @protected
+  ReceivingTaskClearType dco_decode_receiving_task_clear_type(dynamic raw);
 
   @protected
   ReceivingTaskState dco_decode_receiving_task_state(dynamic raw);
@@ -210,6 +217,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       SseDeserializer deserializer);
 
   @protected
+  List<ReceivingTaskClearType> sse_decode_list_receiving_task_clear_type(
+      SseDeserializer deserializer);
+
+  @protected
   List<SelectionFile> sse_decode_list_selection_file(
       SseDeserializer deserializer);
 
@@ -239,6 +250,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ReceivingTask sse_decode_receiving_task(SseDeserializer deserializer);
+
+  @protected
+  ReceivingTaskClearType sse_decode_receiving_task_clear_type(
+      SseDeserializer deserializer);
 
   @protected
   ReceivingTaskState sse_decode_receiving_task_state(
@@ -340,6 +355,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       List<ReceivingTask> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_receiving_task_clear_type(
+      List<ReceivingTaskClearType> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_selection_file(
       List<SelectionFile> self, SseSerializer serializer);
 
@@ -370,6 +389,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_receiving_task(ReceivingTask self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_receiving_task_clear_type(
+      ReceivingTaskClearType self, SseSerializer serializer);
 
   @protected
   void sse_encode_receiving_task_state(
