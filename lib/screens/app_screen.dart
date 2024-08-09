@@ -15,6 +15,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
 import '../components/common.dart';
+import '../components/launch_at_startup.dart';
 
 class AppScreen extends StatefulWidget {
   const AppScreen({super.key});
@@ -625,6 +626,7 @@ class _ReceiveFileState extends State<ReceiveFile> {
         title: const Text('aDrop'),
         elevation: 1,
         actions: [
+          autoStartupIcon(),
           MenuAnchor(
             builder: (
               BuildContext context,

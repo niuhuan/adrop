@@ -6,6 +6,8 @@ import 'package:adrop/src/rust/frb_generated.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:tray_manager/tray_manager.dart';
 
+import 'components/launch_at_startup.dart';
+
 class W with WindowListener {
   const W();
 
@@ -75,6 +77,7 @@ Future<void> main() async {
     WidgetsFlutterBinding.ensureInitialized();
     await setWindowManager();
     await setTrayManager();
+    await initAutoStartup();
   }
   runApp(const MyApp());
 }
