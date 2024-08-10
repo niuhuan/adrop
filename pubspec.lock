@@ -89,14 +89,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
-  desktop_drop:
+  desktop_drop_for_t:
     dependency: "direct main"
     description:
-      name: desktop_drop
-      sha256: d55a010fe46c8e8fcff4ea4b451a9ff84a162217bdb3b2a0aa1479776205e15d
+      name: desktop_drop_for_t
+      sha256: "661828a3410a8d0d42809e68a0edd8e5888cee3eeb74a7e985cf30ee3c1ca8a1"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.4"
+    version: "0.4.6"
   extended_image:
     dependency: transitive
     description:

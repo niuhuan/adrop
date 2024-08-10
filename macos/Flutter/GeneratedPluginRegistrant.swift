@@ -5,7 +5,7 @@
 import FlutterMacOS
 import Foundation
 
-import desktop_drop
+import desktop_drop_for_t
 import flutter_inappwebview_macos
 import package_info_plus
 import path_provider_foundation

@@ -8,7 +8,7 @@ import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/receiving.dart';
-import 'package:desktop_drop/desktop_drop.dart';
+import 'package:desktop_drop_for_t/desktop_drop_for_t.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
