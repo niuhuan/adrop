@@ -6,9 +6,13 @@ on:
 env:
   LLVM_VERSION: '10.0'
   RUST_TOOLCHAIN: nightly-2024-07-09
-  NDK_VERSION: 25.2.9519653
   FLUTTER_VERSION: '3.22.3'
   FLUTTER_CHANNEL: 'stable'
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
+  ANDROID_NDK_VERSION: 25.2.9519653
+  ANDROID_PLATFORMS: "platforms;android-33 platforms;android-34"
+  ANDROID_BUILD_TOOLS: "build-tools;33.0.1"
 
 jobs:
 
@@ -30,6 +34,10 @@ jobs:
             host: macos-latest
           - target: windows
             host: windows-latest
+          - target: ios
+            host: macos-latest
+          - target: android-arm64
+            host: ubuntu-latest
 
     runs-on: ${{ matrix.config.host }}
 
@@ -64,6 +72,19 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           architecture: x64
 
+      - name: Setup java
+        if: matrix.config.target == 'android-arm64'
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 8512546
+          packages: 'platform-tools ${{ env.ANDROID_PLATFORMS }} ${{ env.ANDROID_BUILD_TOOLS }} ndk;${{ env.ANDROID_NDK_VERSION }}'
+
       - name: Build (macos)
         if: matrix.config.target == 'macos'
         run: |
@@ -93,6 +114,34 @@ jobs:
           cd ../../../../..
           echo "ASSET_NAME=windows.zip" >> $env:GITHUB_ENV
           echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
+
+      - name: build (ios)
+        if: matrix.config.target == 'ios'
+        run: |
+          rustup target install aarch64-apple-ios
+          cd adrop
+          flutter pub get
+          flutter build ios --no-simulator --no-codesign --release
+          cd build
+          rm -rf Payload
+          mkdir Payload
+          mv ios/iphoneos/Runner.app Payload/
+          sh ../scripts/thin-payload.sh Payload
+          zip -r -9 nosign.ipa Payload
+          cd ..
+          echo "ASSET_NAME=nosign.ipa" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/nosign.ipa" >> $GITHUB_ENV
+
+
+      - name: Install rust target and build (Android-arm64)
+        if: matrix.config.target == 'android-arm64'
+        run: |
+          export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}
+          rustup target install aarch64-linux-android
+          cd adrop
+          flutter build apk --target-platform android-arm64
+          echo "ASSET_NAME=app-release.apk" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/app/outputs/flutter-apk/app-release.apk" >> $GITHUB_ENV
 
       - name: Upload Asset
         uses: actions/upload-artifact@v4
