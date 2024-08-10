@@ -2,6 +2,19 @@ name: Package
 
 on:
   workflow_dispatch:
+    inputs:
+      macos:
+        description: 'Build macOS'
+        type: boolean
+      windows:
+        description: 'Build Windows'
+        type: boolean
+      ios:
+        description: 'Build iOS'
+        type: boolean
+      android-arm64:
+        description: 'Build Android'
+        type: boolean
 
 env:
   LLVM_VERSION: '10.0'
@@ -43,12 +56,18 @@ jobs:
 
     steps:
 
-      - name: Checkout
+      - name: CHECK BUILD
+        run: |
+          echo "BUILD_TARGET=${{ github.event.inputs[matrix.config.target] }}" >> $GITHUB_ENV
+
+      - if: env.BUILD_TARGET == 'true'
+        name: Checkout
         uses: actions/checkout@v3
         with:
           path: 'adrop'
 
-      - name: Cargo cache
+      - if: env.BUILD_TARGET == 'true'
+        name: Cargo cache
         uses: actions/cache@v3
         with:
           path: |
@@ -58,35 +77,38 @@ jobs:
             ~/.cargo/git/db/
           key: ${{ runner.os }}-cargo-
 
-      - name: Install rust toolchain
+      - if: env.BUILD_TARGET == 'true'
+        name: Install rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           components: rustfmt
           toolchain: ${{ env.RUST_TOOLCHAIN }}
           override: true
 
-      - name: Setup flutter
+      - if: env.BUILD_TARGET == 'true'
+        name: Setup flutter
         uses: subosito/flutter-action@v2
         with:
           channel: ${{ env.FLUTTER_CHANNEL }}
           flutter-version: ${{ env.FLUTTER_VERSION }}
           architecture: x64
 
-      - name: Setup java
-        if: matrix.config.target == 'android-arm64'
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'android-arm64'
+        name: Setup java
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-      - name: Setup Android SDK
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'android-arm64'
+        name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 8512546
           packages: 'platform-tools ${{ env.ANDROID_PLATFORMS }} ${{ env.ANDROID_BUILD_TOOLS }} ndk;${{ env.ANDROID_NDK_VERSION }}'
 
-      - name: Build (macos)
-        if: matrix.config.target == 'macos'
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'macos'
+        name: Build (macos)
         run: |
           rustup target install x86_64-apple-darwin
           rustup target install aarch64-apple-darwin
@@ -102,8 +124,8 @@ jobs:
           echo "ASSET_NAME=macos.dmg" >> $GITHUB_ENV
           echo "ASSET_PATH=adrop/build/macos.dmg" >> $GITHUB_ENV
 
-      - name: build (windows)
-        if: matrix.config.target == 'windows'
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'windows'
+        name: build (windows)
         run: |
           flutter config --enable-windows-desktop
           cd adrop
@@ -115,8 +137,8 @@ jobs:
           echo "ASSET_NAME=windows.zip" >> $env:GITHUB_ENV
           echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
 
-      - name: build (ios)
-        if: matrix.config.target == 'ios'
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'linux'
+        name: build (ios)
         run: |
           rustup target install aarch64-apple-ios
           cd adrop
@@ -133,8 +155,8 @@ jobs:
           echo "ASSET_PATH=adrop/build/nosign.ipa" >> $GITHUB_ENV
 
 
-      - name: Install rust target and build (Android-arm64)
-        if: matrix.config.target == 'android-arm64'
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'android-arm64'
+        name: build (android-arm64)
         run: |
           export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}
           rustup target install aarch64-linux-android
@@ -143,7 +165,8 @@ jobs:
           echo "ASSET_NAME=app-release.apk" >> $GITHUB_ENV
           echo "ASSET_PATH=adrop/build/app/outputs/flutter-apk/app-release.apk" >> $GITHUB_ENV
 
-      - name: Upload Asset
+      - if: env.BUILD_TARGET == 'true'
+        name: Upload Asset
         uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ASSET_NAME }}
