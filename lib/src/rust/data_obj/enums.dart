@@ -65,3 +65,9 @@ enum SendingTaskState {
   canceled,
   ;
 }
+
+enum SendingTaskType {
+  single,
+  packZip,
+  ;
+}

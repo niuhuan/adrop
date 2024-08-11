@@ -7,6 +7,7 @@ import 'api/download.dart';
 import 'api/fs.dart';
 import 'api/init.dart';
 import 'api/nope.dart';
+import 'api/property.dart';
 import 'api/receiving.dart';
 import 'api/sending.dart';
 import 'api/simple.dart';
@@ -78,6 +79,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
+  List<String> dco_decode_list_String(dynamic raw);
+
+  @protected
   List<Device> dco_decode_list_device(dynamic raw);
 
   @protected
@@ -143,6 +147,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SendingTaskState dco_decode_sending_task_state(dynamic raw);
 
   @protected
+  SendingTaskType dco_decode_sending_task_type(dynamic raw);
+
+  @protected
   SpaceInfo dco_decode_space_info(dynamic raw);
 
   @protected
@@ -200,6 +207,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+  @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer);
 
   @protected
   List<Device> sse_decode_list_device(SseDeserializer deserializer);
@@ -275,6 +285,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SendingTaskState sse_decode_sending_task_state(SseDeserializer deserializer);
 
   @protected
+  SendingTaskType sse_decode_sending_task_type(SseDeserializer deserializer);
+
+  @protected
   SpaceInfo sse_decode_space_info(SseDeserializer deserializer);
 
   @protected
@@ -337,6 +350,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_device(List<Device> self, SseSerializer serializer);
@@ -413,6 +429,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_sending_task_state(
       SendingTaskState self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_sending_task_type(
+      SendingTaskType self, SseSerializer serializer);
 
   @protected
   void sse_encode_space_info(SpaceInfo self, SseSerializer serializer);

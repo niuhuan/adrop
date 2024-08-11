@@ -152,3 +152,14 @@ enum_str!(ReceivingTaskClearType{
     CancelFailedAndDeleteCloud("cancel_failed_and_delete_cloud"),
     RetryFailed("retry_failed"),
 });
+
+enum_str!(SendingTaskType{
+    Single("single"),
+    PackZip("pack_zip"),
+});
+
+impl Default for SendingTaskType {
+    fn default() -> Self {
+        Self::Single
+    }
+}

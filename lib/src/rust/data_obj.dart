@@ -132,6 +132,9 @@ class SendingTask {
   final String errorMsg;
   final String cloudFileId;
   final PlatformInt64 currentFileUploadSize;
+  final SendingTaskType sendingTaskType;
+  final List<String> sendingFilePathList;
+  final String tmpFilePath;
 
   const SendingTask({
     required this.taskId,
@@ -144,6 +147,9 @@ class SendingTask {
     required this.errorMsg,
     required this.cloudFileId,
     required this.currentFileUploadSize,
+    required this.sendingTaskType,
+    required this.sendingFilePathList,
+    required this.tmpFilePath,
   });
 
   @override
@@ -157,7 +163,10 @@ class SendingTask {
       errorType.hashCode ^
       errorMsg.hashCode ^
       cloudFileId.hashCode ^
-      currentFileUploadSize.hashCode;
+      currentFileUploadSize.hashCode ^
+      sendingTaskType.hashCode ^
+      sendingFilePathList.hashCode ^
+      tmpFilePath.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -173,7 +182,10 @@ class SendingTask {
           errorType == other.errorType &&
           errorMsg == other.errorMsg &&
           cloudFileId == other.cloudFileId &&
-          currentFileUploadSize == other.currentFileUploadSize;
+          currentFileUploadSize == other.currentFileUploadSize &&
+          sendingTaskType == other.sendingTaskType &&
+          sendingFilePathList == other.sendingFilePathList &&
+          tmpFilePath == other.tmpFilePath;
 }
 
 class SpaceInfo {

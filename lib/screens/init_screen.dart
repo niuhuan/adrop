@@ -8,6 +8,7 @@ import 'package:adrop/src/rust/api/user.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:flutter/material.dart';
+import '../configs/configs.dart';
 import '../src/rust/api/download.dart';
 import 'login_screen.dart';
 
@@ -46,6 +47,7 @@ class _InitScreenState extends State<InitScreen> {
     var navigator = Navigator.of(context);
     var root = await cross.root();
     await initPath(localPath: root);
+    await initConfigs();
     var li = await loginInfo();
     switch (li.state) {
       case LoginState.set_:

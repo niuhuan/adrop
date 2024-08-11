@@ -9,7 +9,6 @@ use alipan::response::AdriveOpenFile;
 use alipan::{AdriveOpenFileType, ErrorInfo};
 use async_recursion::async_recursion;
 use base64::Engine;
-use flutter_rust_bridge::for_generated::futures::future::err;
 use flutter_rust_bridge::for_generated::futures::TryStreamExt;
 use lazy_static::lazy_static;
 use std::ops::{Deref, DerefMut};

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/components/device_type.dart';
+import 'package:adrop/configs/configs.dart';
 import 'package:adrop/src/rust/api/nope.dart';
 import 'package:adrop/src/rust/api/sending.dart';
 import 'package:adrop/src/rust/api/space.dart';
@@ -125,6 +126,21 @@ class _SendFileState extends State<SendFile> {
       appBar: AppBar(
         title: const Text('aDrop'),
         elevation: 1,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await zipOnSend.setValue(!zipOnSend.value);
+              defaultToast(
+                context,
+                zipOnSend.value ? '已开启压缩发送' : '已关闭压缩发送',
+              );
+              setState(() {});
+            },
+            icon: Icon(
+              zipOnSend.value ? Icons.folder_zip : Icons.folder_zip_outlined,
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -823,7 +839,9 @@ class _SendingState extends State<Sending> {
             ),
           ),
           child: ListTile(
-            title: Text(task.fileName),
+            title: Text(
+              "${task.fileName}${_mutilFile(task)}",
+            ),
             subtitle: Text.rich(TextSpan(
               children: [
                 TextSpan(
@@ -858,7 +876,7 @@ class _SendingState extends State<Sending> {
                 ),
               ],
             )),
-            leading: _iconOfFileType(task.fileItemType),
+            leading: _iconOfSendTask(task),
           ),
         );
       },
@@ -866,8 +884,20 @@ class _SendingState extends State<Sending> {
   }
 
   _sendFiles(Device device, List<SelectionFile> files) async {
-    await addSendingTasks(device: device, selectionFiles: files);
+    await addSendingTasks(
+      device: device,
+      selectionFiles: files,
+      sendingTaskType:
+          zipOnSend.value ? SendingTaskType.packZip : SendingTaskType.single,
+    );
     defaultToast(context, "已添加到发送队列");
+  }
+
+  String _mutilFile(SendingTask task) {
+    if (task.sendingFilePathList.isNotEmpty) {
+      return " (${task.sendingFilePathList.length}个文件(夹))";
+    }
+    return "";
   }
 }
 
@@ -935,6 +965,13 @@ String sizeFormat(PlatformInt64 sizeBigInt) {
     return "${(size / mib).toStringAsFixed(2)} MiB";
   }
   return "${(size / gib).toStringAsFixed(2)} GiB";
+}
+
+Widget _iconOfSendTask(SendingTask task) {
+  if (task.sendingTaskType == SendingTaskType.packZip) {
+    return const Icon(Icons.folder_zip);
+  }
+  return _iconOfFileType(task.fileItemType);
 }
 
 Icon _iconOfFileType(FileItemType type) {

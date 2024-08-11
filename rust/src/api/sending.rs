@@ -1,7 +1,8 @@
+use crate::api::download::download_info;
 use crate::common::PutResource;
 use crate::custom_crypto::{encrypt_file_name, encryptor_from_key};
 use crate::data_obj::enums::{
-    FileItemType, SendingTaskClearType, SendingTaskErrorType, SendingTaskState,
+    FileItemType, SendingTaskClearType, SendingTaskErrorType, SendingTaskState, SendingTaskType,
 };
 use crate::data_obj::{Device, SelectionFile, SendingTask};
 use crate::define::{get_alipan_client, ram_space_info};
@@ -12,10 +13,14 @@ use alipan::{
 use anyhow::Context;
 use async_recursion::async_recursion;
 use async_trait::async_trait;
+use async_zip::tokio::write::ZipFileWriter;
+use async_zip::{Compression, ZipEntryBuilder};
 use base64::Engine;
+use flutter_rust_bridge::for_generated::futures::AsyncWriteExt;
 use lazy_static::lazy_static;
 use sha1::Digest;
 use std::ops::{Deref, DerefMut};
+use std::path::Path;
 use std::sync::Arc;
 use tokio::io::AsyncReadExt;
 use tokio::sync::Mutex;
@@ -48,22 +53,45 @@ pub async fn list_sending_tasks() -> anyhow::Result<Vec<crate::data_obj::Sending
 pub async fn add_sending_tasks(
     device: Device,
     selection_files: Vec<SelectionFile>,
+    sending_task_type: SendingTaskType,
 ) -> anyhow::Result<()> {
-    let tasks = selection_files
-        .into_iter()
-        .map(|value| SendingTask {
-            task_id: uuid::Uuid::new_v4().to_string(),
-            device: device.clone(),
-            file_name: value.name,
-            file_path: value.path,
-            file_item_type: value.file_item_type,
-            task_state: SendingTaskState::Init,
-            error_msg: "".to_string(),
-            cloud_file_id: "".to_string(),
-            error_type: SendingTaskErrorType::Unset,
-            current_file_upload_size: 0,
-        })
-        .collect::<Vec<SendingTask>>();
+    let tasks = match sending_task_type {
+        SendingTaskType::Single => selection_files
+            .into_iter()
+            .map(|value| SendingTask {
+                task_id: uuid::Uuid::new_v4().to_string(),
+                device: device.clone(),
+                file_name: value.name,
+                file_path: value.path,
+                file_item_type: value.file_item_type,
+                task_state: SendingTaskState::Init,
+                error_msg: "".to_string(),
+                cloud_file_id: "".to_string(),
+                error_type: SendingTaskErrorType::Unset,
+                current_file_upload_size: 0,
+                sending_task_type,
+                sending_file_path_list: vec![],
+                tmp_file_path: "".to_string(),
+            })
+            .collect::<Vec<SendingTask>>(),
+        SendingTaskType::PackZip => {
+            vec![SendingTask {
+                task_id: uuid::Uuid::new_v4().to_string(),
+                device: device.clone(),
+                file_name: "".to_string(),
+                file_path: "".to_string(),
+                file_item_type: FileItemType::Folder,
+                task_state: SendingTaskState::Init,
+                error_msg: "".to_string(),
+                cloud_file_id: "".to_string(),
+                error_type: SendingTaskErrorType::Unset,
+                current_file_upload_size: 0,
+                sending_task_type,
+                sending_file_path_list: selection_files.into_iter().map(|x| x.path).collect(),
+                tmp_file_path: "".to_string(),
+            }]
+        }
+    };
     let mut lock = SENDING_TASKS.lock().await;
     for task in tasks {
         lock.push(task);
@@ -83,13 +111,13 @@ pub async fn clear_sending_tasks(clear_types: Vec<SendingTaskClearType>) -> anyh
                 lock.retain(|x| x.task_state != SendingTaskState::Success);
             }
             SendingTaskClearType::CancelFailed => {
-                let (remove_task_ids, fail_task_list) =
+                let (remove_task_ids, _fail_task_list) =
                     can_reset_sending_task_list(lock.deref()).await?;
                 lock.retain(|x| !remove_task_ids.contains(&x.task_id));
                 // todo 提示用户 fail_task_list
             }
             SendingTaskClearType::RetryFailed => {
-                let (reset_task_ids, fail_task_list) =
+                let (reset_task_ids, _fail_task_list) =
                     can_reset_sending_task_list(lock.deref()).await?;
                 for x in lock.deref_mut() {
                     if reset_task_ids.contains(&x.task_id) {
@@ -118,6 +146,13 @@ async fn can_reset_sending_task_list(
     let mut reset_fail_task_ids = vec![];
     for task in task_list {
         if task.task_state == SendingTaskState::Failed {
+            if task.sending_task_type == SendingTaskType::PackZip {
+                reset_task_ids.push(task.task_id.clone());
+                if !task.tmp_file_path.is_empty() {
+                    let _ = tokio::fs::remove_file(task.tmp_file_path.as_str()).await;
+                }
+                continue;
+            }
             match task.file_item_type {
                 FileItemType::File => {
                     reset_task_ids.push(task.task_id.clone());
@@ -340,15 +375,43 @@ pub(crate) async fn sending_job() {
 }
 
 async fn send_file(controller: SendingController) -> anyhow::Result<()> {
-    let (file_name, file_path, device) = controller
+    let (file_name, file_path, device, s_type, s_list) = controller
         .get_data(|send_task| {
             (
                 send_task.file_name.clone(),
                 send_task.file_path.clone(),
                 send_task.device.clone(),
+                send_task.sending_task_type.clone(),
+                send_task.sending_file_path_list.clone(),
             )
         })
         .await;
+    if s_type == SendingTaskType::PackZip {
+        let download = download_info()
+            .await?
+            .with_context(|| "download info failed")?;
+        let uuid_name = uuid::Uuid::new_v4().to_string() + ".zip";
+        let tmp_file_path_buf = Path::new(download.download_to.as_str()).join(uuid_name.as_str());
+        let tmp_file_path = tmp_file_path_buf
+            .to_str()
+            .with_context(|| "tmp file path failed")?;
+        controller
+            .set_data(|send_task: &mut SendingTask| {
+                send_task.file_name = uuid_name.clone();
+                send_task.tmp_file_path = tmp_file_path.to_string();
+            })
+            .await;
+        make_zip(tmp_file_path, s_list.iter().map(String::as_str).collect()).await?;
+        upload_file(
+            uuid_name.as_str(),
+            tmp_file_path,
+            device.folder_file_id.as_str(),
+            Some(Box::new(SetTaskFileId(controller))),
+        )
+        .await?;
+        let _ = tokio::fs::remove_file(tmp_file_path).await;
+        return Ok(());
+    }
     let file_state = tokio::fs::metadata(file_path.as_str()).await;
     let meta = match file_state {
         Ok(meta) => meta,
@@ -588,6 +651,62 @@ async fn put_steam_with_password(
                 }
             }
         }
+    }
+    Ok(())
+}
+
+async fn make_zip(file_path: &str, files: Vec<&str>) -> anyhow::Result<()> {
+    let mut file = tokio::fs::File::create(file_path).await?;
+    let mut writer = ZipFileWriter::with_tokio(&mut file);
+    for x in files {
+        let path = std::path::Path::new(x);
+        let in_zip_path = Path::new(
+            path.file_name()
+                .with_context(|| format!("file name failed: {:?}", path))?,
+        );
+        put_entry(&mut writer, in_zip_path, path).await?;
+    }
+    writer.close().await?;
+    Ok(())
+}
+
+#[async_recursion]
+async fn put_entry(
+    writer: &mut ZipFileWriter<&mut tokio::fs::File>,
+    in_zip_path: &Path,
+    path: &Path,
+) -> anyhow::Result<()> {
+    let meta = tokio::fs::metadata(path).await?;
+    let in_zip_name = in_zip_path
+        .to_str()
+        .with_context(|| format!("file name failed: {:?}", path))?;
+    let in_zip_name = if meta.is_dir() {
+        format!("{}/", in_zip_name)
+    } else {
+        in_zip_name.to_string()
+    };
+    let builder = ZipEntryBuilder::new(in_zip_name.into(), Compression::Deflate);
+    if meta.is_dir() {
+        writer.write_entry_whole(builder, &[]).await?;
+        let mut rd = tokio::fs::read_dir(path).await?;
+        while let Some(entry) = rd.next_entry().await? {
+            let child_in_zip_path = in_zip_path.join(entry.file_name());
+            let child_path = path.join(entry.file_name());
+            put_entry(writer, &child_in_zip_path, &child_path).await?;
+        }
+    } else {
+        let mut file = tokio::fs::File::open(path).await?;
+        let mut stream = writer.write_entry_stream(builder).await?;
+        let mut buff = vec![0u8; 1 << 20];
+        loop {
+            let n = file.read(&mut buff).await?;
+            if n == 0 {
+                break;
+            }
+            stream.write_all(&buff[..n]).await?;
+        }
+        stream.flush().await?;
+        stream.close().await?;
     }
     Ok(())
 }
