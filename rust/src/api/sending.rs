@@ -14,12 +14,13 @@ use anyhow::Context;
 use async_recursion::async_recursion;
 use async_trait::async_trait;
 use async_zip::tokio::write::ZipFileWriter;
-use async_zip::{Compression, ZipEntryBuilder};
+use async_zip::{Compression, ZipDateTimeBuilder, ZipEntryBuilder};
 use base64::Engine;
 use flutter_rust_bridge::for_generated::futures::AsyncWriteExt;
 use lazy_static::lazy_static;
 use sha1::Digest;
 use std::ops::{Deref, DerefMut};
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::io::AsyncReadExt;
@@ -408,7 +409,7 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
             device.folder_file_id.as_str(),
             Some(Box::new(SetTaskFileId(controller))),
         )
-        .await?;
+            .await?;
         let _ = tokio::fs::remove_file(tmp_file_path).await;
         return Ok(());
     }
@@ -424,7 +425,7 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
             device.folder_file_id.as_str(),
             Some(Box::new(SetTaskFileId(controller))),
         )
-        .await?;
+            .await?;
     } else if meta.is_file() {
         upload_file(
             file_name.as_str(),
@@ -432,7 +433,7 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
             device.folder_file_id.as_str(),
             Some(Box::new(SetTaskFileId(controller))),
         )
-        .await?;
+            .await?;
     }
     Ok(())
 }
@@ -473,7 +474,7 @@ async fn upload_folder(
                 folder_result.file_id.as_str(),
                 None,
             )
-            .await?;
+                .await?;
         } else if meta.is_file() {
             upload_file(
                 entry.file_name().to_str().unwrap(),
@@ -481,7 +482,7 @@ async fn upload_folder(
                 folder_result.file_id.as_str(),
                 None,
             )
-            .await?;
+                .await?;
         }
     }
     let _ = client
@@ -685,7 +686,24 @@ async fn put_entry(
     } else {
         in_zip_name.to_string()
     };
-    let builder = ZipEntryBuilder::new(in_zip_name.into(), Compression::Deflate);
+    let mut builder = ZipEntryBuilder::new(in_zip_name.into(), Compression::Deflate);
+    let mode = meta.permissions().mode();
+    builder = builder.unix_permissions(mode as u16);
+    if let Ok(system_time) = meta.modified() {
+        let local_time = chrono::DateTime::<chrono::Local>::from(system_time);
+        // let utc_time = local_time.with_timezone(&chrono::Utc);
+        // builder = builder.last_modification_date(ZipDateTime::from(utc_time));
+        use chrono::Datelike;
+        use chrono::Timelike;
+        builder = builder.last_modification_date(ZipDateTimeBuilder::default()
+            .year(local_time.year())
+            .month(local_time.month())
+            .day(local_time.day())
+            .hour(local_time.hour())
+            .minute(local_time.minute())
+            .second(local_time.second())
+            .build());
+    }
     if meta.is_dir() {
         writer.write_entry_whole(builder, &[]).await?;
         let mut rd = tokio::fs::read_dir(path).await?;

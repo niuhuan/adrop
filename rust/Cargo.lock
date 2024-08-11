@@ -2234,6 +2234,7 @@ dependencies = [
  "async-trait",
  "async_zip",
  "base64 0.22.1",
+ "chrono",
  "dirs",
  "flutter_rust_bridge",
  "hex",

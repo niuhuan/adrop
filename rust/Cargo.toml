@@ -35,3 +35,4 @@ sha1 = "0.10.6"
 uuid = { version = "1.10.0", features = ["v4"] }
 tokio-util = { version = "0.7.11", features = ["compat"] }
 async_zip = { version = "0.0.17", features = ["chrono", "deflate", "async-compression", "zstd", "tokio", "lzma", "tokio-util", "tokio-fs"] }
+chrono = "0.4.38"

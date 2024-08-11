@@ -1,4 +1,3 @@
-use alipan::ErrorInfo;
 
 fn main() {
     println!("Hello, world!");
@@ -17,6 +16,7 @@ async fn test_init_path() {
 
 #[tokio::test]
 async fn test_match_selection_file() {
+    use alipan::ErrorInfo;
     use ::rust_lib_adrop::api::init::init_path;
     use ::rust_lib_adrop::define::get_alipan_client;
     let home = std::env::var("HOME").unwrap();
