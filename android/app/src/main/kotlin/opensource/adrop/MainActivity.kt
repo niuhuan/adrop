@@ -56,19 +56,6 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun downloadsDir(): File {
-        return context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
-            ?: throw java.lang.IllegalStateException()
-    }
-
-    private fun defaultPikapikaDir(): File {
-        return File(downloadsDir(), "adrop")
-    }
-
-    private fun androidDefaultExportsDir(): File {
-        return File(defaultPikapikaDir(), "exports")
-    }
-
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -91,9 +78,6 @@ class MainActivity : FlutterActivity() {
                     "androidAppInfo" -> {
                         goAppInfo()
                     }
-                    "androidDefaultExportsDir" -> {
-                        androidDefaultExportsDir().absolutePath
-                    }
                     else -> {
                         notImplementedToken
                     }
@@ -106,7 +90,7 @@ class MainActivity : FlutterActivity() {
         BitmapFactory.decodeFile(path)?.let { bitmap ->
             val contentValues = ContentValues().apply {
                 put(MediaStore.MediaColumns.DISPLAY_NAME, System.currentTimeMillis().toString())
-                put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { //this one
                     put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
                     put(MediaStore.MediaColumns.IS_PENDING, 1)
@@ -115,7 +99,7 @@ class MainActivity : FlutterActivity() {
             contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                 ?.let { uri ->
                     contentResolver.openOutputStream(uri)?.use { fos ->
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) { //this one
                         contentValues.clear()

@@ -55,7 +55,8 @@ class BoolConfig extends Config<bool> {
 
 final zipOnSend = BoolConfig._('zip_on_send', false);
 final saveToGallery = BoolConfig._('save_to_gallery', false);
-final deleteAfterSaveToGallery = BoolConfig._('delete_after_save_to_gallery', true);
+final deleteAfterSaveToGallery =
+    BoolConfig._('delete_after_save_to_gallery', true);
 
 initConfigs() async {
   await zipOnSend._init();
@@ -64,15 +65,17 @@ initConfigs() async {
 }
 
 Widget _propertySwitchListTile(
-    Config<bool> config,
-    String title,
-    IconData iconTrue,
-    IconData iconFalse,
-    ) {
+  Config<bool> config,
+  String title,
+  IconData iconTrue,
+  IconData iconFalse, {
+  Widget? subtitle,
+}) {
   return StatefulBuilder(
     builder: (BuildContext context, void Function(void Function()) setState) {
       return SwitchListTile(
         title: Text(title),
+        subtitle: subtitle,
         value: config.value,
         onChanged: (bool value) async {
           await config.setValue(value);
@@ -92,6 +95,7 @@ Widget saveToGallerySwitchListTile() {
     '下载成功后将媒体保存到相册',
     Icons.add_photo_alternate_rounded,
     Icons.add_photo_alternate_outlined,
+    subtitle: const Text("目前仅支持图片, 且会重新编码为PNG"),
   );
 }
 

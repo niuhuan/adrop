@@ -23,9 +23,9 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
         children: <Widget>[
           if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
             launchAtStartupSwitchListTile(),
-          if (Platform.isIOS)
+          if (Platform.isIOS || Platform.isAndroid)
             saveToGallerySwitchListTile(),
-          if (Platform.isIOS)
+          if (Platform.isIOS || Platform.isAndroid)
             deleteAfterSaveToGallerySwitchListTile(),
         ],
       ),
