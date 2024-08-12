@@ -1,6 +1,8 @@
+import 'dart:io';
+
 import 'package:adrop/components/a_drop_icon.dart';
 import 'package:adrop/cross.dart';
-import 'package:adrop/screens/app_screen.dart';
+import 'package:adrop/screens/app_screen/app_screen.dart';
 import 'package:adrop/screens/download_settings_screen.dart';
 import 'package:adrop/screens/space_choose_screen.dart';
 import 'package:adrop/src/rust/api/init.dart';
@@ -66,6 +68,11 @@ class _InitScreenState extends State<InitScreen> {
               ),
             );
           } else {
+            if (Platform.isIOS) {
+              // simulate the iOS document directory maybe change
+              final dd = await cross.iosDocumentDirectory();
+              await setDownloadConfigOnlyPath(path: dd);
+            }
             navigator.pushReplacement(
               MaterialPageRoute(
                 builder: (context) => const AppScreen(),

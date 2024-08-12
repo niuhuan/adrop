@@ -13,6 +13,9 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 Future<DownloadConfig?> downloadInfo() =>
     RustLib.instance.api.crateApiDownloadDownloadInfo();
 
+Future<void> setDownloadConfigOnlyPath({required String path}) =>
+    RustLib.instance.api.crateApiDownloadSetDownloadConfigOnlyPath(path: path);
+
 Future<void> saveDownloadInfo({required DownloadConfig downloadConfig}) =>
     RustLib.instance.api
         .crateApiDownloadSaveDownloadInfo(downloadConfig: downloadConfig);

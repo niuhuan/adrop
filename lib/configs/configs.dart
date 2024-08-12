@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import '../src/rust/api/property.dart' as rustProperty;
 
 abstract class Config<T> {
@@ -52,7 +54,52 @@ class BoolConfig extends Config<bool> {
 }
 
 final zipOnSend = BoolConfig._('zip_on_send', false);
+final saveToGallery = BoolConfig._('save_to_gallery', false);
+final deleteAfterSaveToGallery = BoolConfig._('delete_after_save_to_gallery', true);
 
 initConfigs() async {
   await zipOnSend._init();
+  await saveToGallery._init();
+  await deleteAfterSaveToGallery._init();
+}
+
+Widget _propertySwitchListTile(
+    Config<bool> config,
+    String title,
+    IconData iconTrue,
+    IconData iconFalse,
+    ) {
+  return StatefulBuilder(
+    builder: (BuildContext context, void Function(void Function()) setState) {
+      return SwitchListTile(
+        title: Text(title),
+        value: config.value,
+        onChanged: (bool value) async {
+          await config.setValue(value);
+          setState(() {});
+        },
+        secondary: Icon(
+          config.value ? iconTrue : iconFalse,
+        ),
+      );
+    },
+  );
+}
+
+Widget saveToGallerySwitchListTile() {
+  return _propertySwitchListTile(
+    saveToGallery,
+    '下载成功后将媒体保存到相册',
+    Icons.add_photo_alternate_rounded,
+    Icons.add_photo_alternate_outlined,
+  );
+}
+
+Widget deleteAfterSaveToGallerySwitchListTile() {
+  return _propertySwitchListTile(
+    deleteAfterSaveToGallery,
+    '保存到相册后删除原文件',
+    Icons.delete_rounded,
+    Icons.delete_outline,
+  );
 }

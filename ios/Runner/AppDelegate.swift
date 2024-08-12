@@ -3,21 +3,33 @@ import UIKit
 
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
+
+  func createDirectoryIfNotExists(path: String) {
+    if !FileManager.default.fileExists(atPath: path) {
+      do {
+        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true, attributes: nil)
+      } catch {
+        print("Error creating directory: \(error)")
+      }
+    }
+  }
+    
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
       let controller = self.window.rootViewController as! FlutterViewController
+      let appSupDir = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true)[0]
+      let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+      createDirectoryIfNotExists(path: appSupDir)
+      createDirectoryIfNotExists(path: documentsPath)
       let channel = FlutterMethodChannel.init(name: "cross", binaryMessenger: controller as! FlutterBinaryMessenger)
       channel.setMethodCallHandler { (call, result) in
           Thread {
               if call.method == "root" {
-                  let documentsPath = NSSearchPathForDirectoriesInDomains(.applicationSupportDirectory, .userDomainMask, true)[0]
-                  result(documentsPath)
+                  result(appSupDir)
               }
               else if call.method == "documentDirectory" {
-                  let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-                  try? FileManager.default.createDirectory(atPath: documentsPath, withIntermediateDirectories: true, attributes: nil)
                   result(documentsPath)
               }
               else if call.method == "saveImageToGallery"{

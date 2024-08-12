@@ -7,7 +7,7 @@ import 'package:adrop/src/rust/data_obj/enums.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-import 'app_screen.dart';
+import 'app_screen/app_screen.dart';
 
 class DownloadSettingsScreen extends StatefulWidget {
   const DownloadSettingsScreen({super.key});

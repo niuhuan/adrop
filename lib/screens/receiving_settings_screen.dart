@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../components/launch_at_startup.dart';
+import '../configs/configs.dart';
 
 class ReceivingSettingsScreen extends StatefulWidget {
   const ReceivingSettingsScreen({super.key});
@@ -22,6 +23,10 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
         children: <Widget>[
           if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
             launchAtStartupSwitchListTile(),
+          if (Platform.isIOS)
+            saveToGallerySwitchListTile(),
+          if (Platform.isIOS)
+            deleteAfterSaveToGallerySwitchListTile(),
         ],
       ),
     );

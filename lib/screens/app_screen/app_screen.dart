@@ -3,20 +3,20 @@ import 'dart:io';
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/components/device_type.dart';
 import 'package:adrop/configs/configs.dart';
-import 'package:adrop/screens/receiving_settings_screen.dart';
+import 'package:adrop/screens/app_screen/receive_file.dart';
 import 'package:adrop/src/rust/api/nope.dart';
 import 'package:adrop/src/rust/api/sending.dart';
 import 'package:adrop/src/rust/api/space.dart';
 import 'package:adrop/src/rust/data_obj.dart';
 import 'package:adrop/src/rust/data_obj/enums.dart';
-import 'package:adrop/src/rust/api/receiving.dart';
 import 'package:desktop_drop_for_t/desktop_drop_for_t.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
-import '../components/common.dart';
+import '../../components/common.dart';
+import 'common.dart';
 
 class AppScreen extends StatefulWidget {
   const AppScreen({super.key});
@@ -576,7 +576,7 @@ class _SendFileState extends State<SendFile> {
                 ..._list.map((file) {
                   return ListTile(
                     title: Text(file.name),
-                    leading: _iconOfFileType(file.fileItemType),
+                    leading: iconOfFileType(file.fileItemType),
                   );
                 }),
               ],
@@ -604,132 +604,6 @@ class _SendFileState extends State<SendFile> {
     setState(() {
       _list.clear();
     });
-  }
-}
-
-class ReceiveFile extends StatefulWidget {
-  const ReceiveFile({super.key});
-
-  @override
-  State<ReceiveFile> createState() => _ReceiveFileState();
-}
-
-class _ReceiveFileState extends State<ReceiveFile> {
-  final _tasks = <ReceivingTask>[];
-  final stream = registerReceivingTask();
-
-  @override
-  void initState() {
-    stream.listen((tasks) {
-      setState(() {
-        _tasks.clear();
-        _tasks.addAll(tasks);
-      });
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    unregisterReceivingTask();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('aDrop'),
-        elevation: 1,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) {
-                  return const ReceivingSettingsScreen();
-                }),
-              );
-            },
-            icon: const Icon(Icons.settings),
-          ),
-          MenuAnchor(
-            builder: (
-              BuildContext context,
-              MenuController controller,
-              Widget? child,
-            ) {
-              return IconButton(
-                icon: const Icon(Icons.clear_all),
-                onPressed: () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
-              );
-            },
-            menuChildren: [
-              MenuItemButton(
-                onPressed: () {
-                  clearReceivingTasks(clearTypes: [
-                    ReceivingTaskClearType.clearSuccess,
-                  ]);
-                },
-                child: const Text("清理接收成功的任务"),
-              ),
-              MenuItemButton(
-                onPressed: () {
-                  clearReceivingTasks(clearTypes: [
-                    ReceivingTaskClearType.retryFailed,
-                  ]);
-                },
-                child: const Text("重试接收失败的任务"),
-              ),
-              MenuItemButton(
-                onPressed: () {
-                  clearReceivingTasks(clearTypes: [
-                    ReceivingTaskClearType.cancelFailedAndDeleteCloud,
-                  ]);
-                },
-                child: const Text("取消接收失败的文件"),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: _tasksList(),
-    );
-  }
-
-  Widget _tasksList() {
-    return ListView.builder(
-      itemCount: _tasks.length,
-      itemBuilder: (BuildContext context, int index) {
-        var task = _tasks[index];
-        return Container(
-          margin: const EdgeInsets.only(
-            left: 3,
-            right: 5,
-            top: 1,
-            bottom: 1,
-          ),
-          decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(
-                color: _colorOfState("${task.taskState}"),
-                width: 2,
-              ),
-            ),
-          ),
-          child: ListTile(
-            title: Text(task.fileName),
-            subtitle: Text(task.taskState.toString()),
-            leading: _iconOfFileType(task.fileItemType),
-          ),
-        );
-      },
-    );
   }
 }
 
@@ -830,7 +704,7 @@ class _SendingState extends State<Sending> {
         final task = _tasks[index];
         final state = "${task.taskState}";
         final label = _sendingLabelOfState(state);
-        final color = _colorOfState(state);
+        final color = colorOfState(state);
         final size = sizeFormat(task.currentFileUploadSize);
         return Container(
           margin: const EdgeInsets.only(
@@ -885,7 +759,7 @@ class _SendingState extends State<Sending> {
                 ),
               ],
             )),
-            leading: _iconOfSendTask(task),
+            leading: iconOfSendTask(task),
           ),
         );
       },
@@ -916,22 +790,6 @@ class SendingController {
   void send(Device device, List<SelectionFile> files) {
     _state?._sendFiles(device, files);
   }
-}
-
-Color _colorOfState(String state) {
-  if (state.endsWith(".success")) {
-    return Colors.green;
-  }
-  if (state.endsWith(".error") ||
-      state.endsWith(".fail") ||
-      state.endsWith(".failed") ||
-      state.endsWith(".canceled")) {
-    return Colors.red;
-  }
-  if (state.endsWith(".canceling")) {
-    return Colors.yellow;
-  }
-  return Colors.blue;
 }
 
 String _sendingLabelOfState(String state) {
@@ -974,24 +832,6 @@ String sizeFormat(PlatformInt64 sizeBigInt) {
     return "${(size / mib).toStringAsFixed(2)} MiB";
   }
   return "${(size / gib).toStringAsFixed(2)} GiB";
-}
-
-Widget _iconOfSendTask(SendingTask task) {
-  if (task.sendingTaskType == SendingTaskType.packZip) {
-    return const Icon(Icons.folder_zip);
-  }
-  return _iconOfFileType(task.fileItemType);
-}
-
-Icon _iconOfFileType(FileItemType type) {
-  switch (type) {
-    case FileItemType.file:
-      return const Icon(Icons.insert_drive_file);
-    case FileItemType.folder:
-      return const Icon(Icons.folder);
-    default:
-      return const Icon(Icons.help);
-  }
 }
 
 IconData _deviceIcon(int type) {

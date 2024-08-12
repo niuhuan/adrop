@@ -1,3 +1,4 @@
+use anyhow::Context;
 use crate::data_obj::enums::AfterDownload;
 use crate::database::properties::property::{load_property, save_property};
 use serde_derive::{Deserialize, Serialize};
@@ -22,12 +23,19 @@ pub async fn download_info() -> anyhow::Result<Option<DownloadConfig>> {
     }
 }
 
+pub async fn set_download_config_only_path(path: String) -> anyhow::Result<()> {
+    let mut info = download_info().await?.with_context(|| "Failed to get download info")?;
+    info.download_to = path;
+    save_download_info(info).await?;
+    Ok(())
+}
+
 pub async fn save_download_info(download_config: DownloadConfig) -> anyhow::Result<()> {
     save_property(
         "download_config".to_owned(),
         serde_json::to_string(&download_config)?,
     )
-    .await?;
+        .await?;
     Ok(())
 }
 
