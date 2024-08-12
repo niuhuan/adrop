@@ -1,6 +1,10 @@
+import 'dart:ffi';
+import 'dart:io';
 
+import 'package:adrop/cross.dart';
 import 'package:flutter/material.dart';
 
+import '../../configs/configs.dart';
 import '../../src/rust/api/receiving.dart';
 import '../../src/rust/data_obj.dart';
 import '../../src/rust/data_obj/enums.dart';
@@ -16,23 +20,41 @@ class ReceiveFile extends StatefulWidget {
 
 class _ReceiveFileState extends State<ReceiveFile> {
   final _tasks = <ReceivingTask>[];
-  final stream = registerReceivingTask();
+  final _receivingStream = registerReceivingTask();
+  final _receivedStream = registerReceived();
 
   @override
   void initState() {
-    stream.listen((tasks) {
+    _receivingStream.listen((tasks) {
       setState(() {
         _tasks.clear();
         _tasks.addAll(tasks);
       });
     });
+    _receivedStream.listen(_onReceived);
     super.initState();
   }
 
   @override
   void dispose() {
     unregisterReceivingTask();
+    unregisterReceived();
     super.dispose();
+  }
+
+  _onReceived(ReceivingTask task) async {
+    if (task.fileItemType == FileItemType.file) {
+      final lower = task.filePath.toLowerCase();
+      if (lower.endsWith(".jpg") ||
+          lower.endsWith(".png") ||
+          lower.endsWith(".jpeg") ||
+          lower.endsWith(".bpm")) {
+        await cross.saveImageToGallery(task.filePath);
+        if (deleteAfterSaveToGallery.value) {
+          await File(task.filePath).delete();
+        }
+      }
+    }
   }
 
   @override
@@ -54,10 +76,10 @@ class _ReceiveFileState extends State<ReceiveFile> {
           ),
           MenuAnchor(
             builder: (
-                BuildContext context,
-                MenuController controller,
-                Widget? child,
-                ) {
+              BuildContext context,
+              MenuController controller,
+              Widget? child,
+            ) {
               return IconButton(
                 icon: const Icon(Icons.clear_all),
                 onPressed: () {
