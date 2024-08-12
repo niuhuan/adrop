@@ -43,6 +43,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
       dynamic raw);
 
   @protected
+  RustStreamSink<ReceivingTask> dco_decode_StreamSink_receiving_task_Sse(
+      dynamic raw);
+
+  @protected
   String dco_decode_String(dynamic raw);
 
   @protected
@@ -168,6 +172,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RustStreamSink<List<SendingTask>> sse_decode_StreamSink_list_sending_task_Sse(
+      SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<ReceivingTask> sse_decode_StreamSink_receiving_task_Sse(
       SseDeserializer deserializer);
 
   @protected
@@ -310,6 +318,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_StreamSink_list_sending_task_Sse(
       RustStreamSink<List<SendingTask>> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_receiving_task_Sse(
+      RustStreamSink<ReceivingTask> self, SseSerializer serializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);

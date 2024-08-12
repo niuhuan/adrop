@@ -9,14 +9,20 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `convert_err`, `down_to_file_with_password`, `download_file`, `download_folder`, `download_item`, `download_one_file`, `download_one_folder`, `exists_task_file_ids`, `first_init_receiving_tasks`, `list_files`, `receiving_job`, `remove_cloud_file`, `set_receiving_task_by_id`, `sync_tasks_to_dart`, `take_file_name`
-// These types are ignored because they are not used by any `pub` functions: `RECEIVING_CALL_BACKS`, `RECEIVING_TASKS`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `deref`, `deref`, `initialize`, `initialize`
+// These types are ignored because they are not used by any `pub` functions: `RECEIVED_CALL_BACKS`, `RECEIVING_CALL_BACKS`, `RECEIVING_TASKS`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `deref`, `deref`, `deref`, `initialize`, `initialize`, `initialize`
 
 Stream<List<ReceivingTask>> registerReceivingTask() =>
     RustLib.instance.api.crateApiReceivingRegisterReceivingTask();
 
 Future<void> unregisterReceivingTask() =>
     RustLib.instance.api.crateApiReceivingUnregisterReceivingTask();
+
+Stream<ReceivingTask> registerReceived() =>
+    RustLib.instance.api.crateApiReceivingRegisterReceived();
+
+Future<void> unregisterReceived() =>
+    RustLib.instance.api.crateApiReceivingUnregisterReceived();
 
 Future<List<ReceivingTask>> listReceivingTasks() =>
     RustLib.instance.api.crateApiReceivingListReceivingTasks();

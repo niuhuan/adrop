@@ -20,6 +20,8 @@ lazy_static! {
     static ref RECEIVING_TASKS: Mutex::<Vec<ReceivingTask>> = Mutex::new(Vec::new());
     static ref RECEIVING_CALL_BACKS: Mutex<Option<StreamSink<Vec<ReceivingTask>>>> =
         Mutex::new(None);
+    static ref RECEIVED_CALL_BACKS: Mutex<Option<StreamSink<ReceivingTask>>> =
+        Mutex::new(None);
 }
 
 pub async fn register_receiving_task(
@@ -34,6 +36,31 @@ pub async fn register_receiving_task(
 pub async fn unregister_receiving_task() -> anyhow::Result<()> {
     let mut rcb = RECEIVING_CALL_BACKS.lock().await;
     *rcb = None;
+    drop(rcb);
+    Ok(())
+}
+
+pub async fn register_received(
+    listener: StreamSink<ReceivingTask>,
+) -> anyhow::Result<()> {
+    let mut rcb = RECEIVED_CALL_BACKS.lock().await;
+    *rcb = Some(listener);
+    drop(rcb);
+    Ok(())
+}
+
+pub async fn unregister_received() -> anyhow::Result<()> {
+    let mut rcb = RECEIVED_CALL_BACKS.lock().await;
+    *rcb = None;
+    drop(rcb);
+    Ok(())
+}
+
+async fn notify_received(task: ReceivingTask) -> anyhow::Result<()> {
+    let rcb = RECEIVED_CALL_BACKS.lock().await;
+    if let Some(rcb) = rcb.deref() {
+        rcb.add(task).map_err(|e| anyhow::anyhow!(e))?;
+    }
     drop(rcb);
     Ok(())
 }
@@ -205,7 +232,7 @@ pub(crate) async fn receiving_job() {
             space_info.drive_id.as_str(),
             space_info.this_device_folder_file_id.as_str(),
         )
-        .await
+            .await
         {
             list_files
         } else {
@@ -294,6 +321,7 @@ pub(crate) async fn receiving_job() {
                         println!("设置任务状态失败 : {}", err);
                         break;
                     }
+                    let _ = notify_received(task).await;
                 }
             } else {
                 break;

@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.1.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -549254048;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1147944510;
 
 // Section: executor
 
@@ -442,6 +442,46 @@ fn wire__crate__api__receiving__list_receiving_tasks_impl(
         },
     )
 }
+fn wire__crate__api__receiving__register_received_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "register_received",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_listener = <StreamSink<
+                crate::data_obj::ReceivingTask,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok =
+                            crate::api::receiving::register_received(api_listener).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__receiving__register_receiving_task_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -474,6 +514,41 @@ fn wire__crate__api__receiving__register_receiving_task_impl(
                     (move || async move {
                         let output_ok =
                             crate::api::receiving::register_receiving_task(api_listener).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__receiving__unregister_received_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "unregister_received",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::receiving::unregister_received().await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -1458,6 +1533,16 @@ impl SseDecode
     }
 }
 
+impl SseDecode
+    for StreamSink<crate::data_obj::ReceivingTask, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
 impl SseDecode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1965,65 +2050,71 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        12 => wire__crate__api__receiving__register_receiving_task_impl(
+        12 => {
+            wire__crate__api__receiving__register_received_impl(port, ptr, rust_vec_len, data_len)
+        }
+        13 => wire__crate__api__receiving__register_receiving_task_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__api__receiving__unregister_receiving_task_impl(
+        14 => {
+            wire__crate__api__receiving__unregister_received_impl(port, ptr, rust_vec_len, data_len)
+        }
+        15 => wire__crate__api__receiving__unregister_receiving_task_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__api__sending__add_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
-        15 => {
+        16 => wire__crate__api__sending__add_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
+        17 => {
             wire__crate__api__sending__clear_sending_tasks_impl(port, ptr, rust_vec_len, data_len)
         }
-        16 => wire__crate__api__sending__list_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__sending__register_sending_listener_impl(
+        18 => wire__crate__api__sending__list_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
+        19 => wire__crate__api__sending__register_sending_listener_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__sending__unregister_sending_listener_impl(
+        20 => wire__crate__api__sending__unregister_sending_listener_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        20 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__space__adrive_user_get_drive_info_default_impl(
+        22 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__space__adrive_user_get_drive_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        22 => wire__crate__api__space__check_old_password_impl(port, ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__space__choose_old_device_impl(port, ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__space__create_new_device_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
-        29 => {
+        24 => wire__crate__api__space__check_old_password_impl(port, ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__space__choose_old_device_impl(port, ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__space__create_new_device_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
+        31 => {
             wire__crate__api__space__list_devices_by_config_impl(port, ptr, rust_vec_len, data_len)
         }
-        30 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__user_setting__start_login_service_impl(
+        32 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__user_setting__start_login_service_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        37 => wire__crate__api__user_setting__stop_login_service_impl(
+        39 => wire__crate__api__user_setting__stop_login_service_impl(
             port,
             ptr,
             rust_vec_len,
@@ -2041,7 +2132,7 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        19 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2463,6 +2554,15 @@ impl SseEncode
 
 impl SseEncode
     for StreamSink<Vec<crate::data_obj::SendingTask>, flutter_rust_bridge::for_generated::SseCodec>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
+impl SseEncode
+    for StreamSink<crate::data_obj::ReceivingTask, flutter_rust_bridge::for_generated::SseCodec>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
