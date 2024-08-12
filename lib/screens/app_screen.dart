@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:adrop/components/content_builder.dart';
 import 'package:adrop/components/device_type.dart';
 import 'package:adrop/configs/configs.dart';
+import 'package:adrop/screens/receiving_settings_screen.dart';
 import 'package:adrop/src/rust/api/nope.dart';
 import 'package:adrop/src/rust/api/sending.dart';
 import 'package:adrop/src/rust/api/space.dart';
@@ -16,7 +17,6 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:window_manager/window_manager.dart';
 import '../components/common.dart';
-import '../components/launch_at_startup.dart';
 
 class AppScreen extends StatefulWidget {
   const AppScreen({super.key});
@@ -642,7 +642,16 @@ class _ReceiveFileState extends State<ReceiveFile> {
         title: const Text('aDrop'),
         elevation: 1,
         actions: [
-          autoStartupIcon(),
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) {
+                  return const ReceivingSettingsScreen();
+                }),
+              );
+            },
+            icon: const Icon(Icons.settings),
+          ),
           MenuAnchor(
             builder: (
               BuildContext context,

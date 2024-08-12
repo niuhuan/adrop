@@ -46,3 +46,21 @@ Widget autoStartupIcon() {
     },
   );
 }
+
+Widget launchAtStartupSwitchListTile() {
+  return StatefulBuilder(
+    builder: (BuildContext context, void Function(void Function()) setState) {
+      return SwitchListTile(
+        title: const Text('开机时启动当前应用'),
+        value: autoStartup,
+        onChanged: (bool value) async {
+          await setAutoStartup(value, context);
+          setState(() {});
+        },
+        secondary: Icon(
+          autoStartup ? Icons.power : Icons.power_off,
+        ),
+      );
+    },
+  );
+}
