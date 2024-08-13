@@ -36,3 +36,4 @@ uuid = { version = "1.10.0", features = ["v4"] }
 tokio-util = { version = "0.7.11", features = ["compat"] }
 async_zip = { version = "0.0.17", features = ["chrono", "deflate", "async-compression", "zstd", "tokio", "tokio-util", "tokio-fs"] }
 chrono = "0.4.38"
+crc = "3.2.1"

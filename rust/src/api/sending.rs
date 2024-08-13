@@ -390,7 +390,8 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
         let download = download_info()
             .await?
             .with_context(|| "download info failed")?;
-        let uuid_name = uuid::Uuid::new_v4().to_string() + ".zip";
+        const CRC: crc::Crc<u32> = crc::Crc::<u32>::new(&crc::CRC_32_CKSUM);
+        let uuid_name = format!("adrop-{}.zip", CRC.checksum(uuid::Uuid::new_v4().as_bytes().as_slice()));
         let tmp_file_path_buf = Path::new(download.download_to.as_str()).join(uuid_name.as_str());
         let tmp_file_path = tmp_file_path_buf
             .to_str()
