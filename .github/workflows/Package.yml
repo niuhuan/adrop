@@ -137,7 +137,7 @@ jobs:
           echo "ASSET_NAME=windows.zip" >> $env:GITHUB_ENV
           echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
 
-      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'linux'
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
         name: build (ios)
         run: |
           rustup target install aarch64-apple-ios
