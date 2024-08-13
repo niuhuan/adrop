@@ -52,6 +52,7 @@ class _SendFileState extends State<SendFile> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('aDrop'),
+        centerTitle: false,
         elevation: 1,
         actions: [
           IconButton(

@@ -46,6 +46,7 @@ class _SendingState extends State<Sending> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('aDrop'),
+        centerTitle: false,
         elevation: 1,
         actions: [
           MenuAnchor(

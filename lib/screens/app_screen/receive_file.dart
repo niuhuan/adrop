@@ -62,6 +62,7 @@ class _ReceiveFileState extends State<ReceiveFile> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('aDrop'),
+        centerTitle: false,
         elevation: 1,
         actions: [
           IconButton(
