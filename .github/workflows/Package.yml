@@ -99,21 +99,21 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           architecture: x64
 
-      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'android')
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
         name: Setup java (Android)
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'android')
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
         name: Setup Android SDK (Android)
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 8512546
           packages: 'platform-tools ${{ env.ANDROID_PLATFORMS }} build-tools;${{ env.ANDROID_BUILD_TOOLS_VERSION }} ndk;${{ env.ANDROID_NDK_VERSION }}'
 
-      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'android')
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
         name: Setup ndk
         run: |
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
