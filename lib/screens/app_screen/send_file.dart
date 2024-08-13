@@ -1,5 +1,3 @@
-
-
 import 'dart:async';
 import 'dart:io';
 
@@ -18,7 +16,7 @@ import 'common.dart';
 
 class SendFile extends StatefulWidget {
   final FutureOr<dynamic> Function(Device device, List<SelectionFile> files)
-  sendFiles;
+      sendFiles;
 
   const SendFile({required this.sendFiles, super.key});
 
@@ -308,18 +306,23 @@ class _SendFileState extends State<SendFile> {
   Widget _addMediaButton() {
     return MaterialButton(
       onPressed: () async {
-        final List<AssetEntity>? result = await AssetPicker.pickAssets(context);
+        final List<AssetEntity>? result = await AssetPicker.pickAssets(
+          context,
+          pickerConfig: const AssetPickerConfig(
+            maxAssets: 999,
+          ),
+        );
         if (result == null) {
           return;
         }
         var addFiles = <SelectionFile>[];
         for (var ae in result) {
-          final file = await ae.file;
+          final file = await ae.originFile;
           if (file == null) {
             continue;
           }
           final path = file.path;
-          final name = file.path.split('/').last;
+          final name = await ae.titleAsync;
           var addFile = await matchSelectionFile(
             name: name,
             path: path,
@@ -345,9 +348,9 @@ class _SendFileState extends State<SendFile> {
       future: _devicesFuture,
       onRefresh: _refresh,
       successBuilder: (
-          BuildContext context,
-          AsyncSnapshot<List<Device>> snapshot,
-          ) {
+        BuildContext context,
+        AsyncSnapshot<List<Device>> snapshot,
+      ) {
         var devices = snapshot.data!;
         final tips = Container(
           padding: const EdgeInsets.all(15),
