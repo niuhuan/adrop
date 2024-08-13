@@ -20,7 +20,6 @@ use flutter_rust_bridge::for_generated::futures::AsyncWriteExt;
 use lazy_static::lazy_static;
 use sha1::Digest;
 use std::ops::{Deref, DerefMut};
-use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::io::AsyncReadExt;
@@ -687,8 +686,12 @@ async fn put_entry(
         in_zip_name.to_string()
     };
     let mut builder = ZipEntryBuilder::new(in_zip_name.into(), Compression::Deflate);
-    let mode = meta.permissions().mode();
-    builder = builder.unix_permissions(mode as u16);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mode = meta.permissions().mode();
+        builder = builder.unix_permissions(mode as u16);
+    }
     if let Ok(system_time) = meta.modified() {
         let local_time = chrono::DateTime::<chrono::Local>::from(system_time);
         // let utc_time = local_time.with_timezone(&chrono::Utc);
