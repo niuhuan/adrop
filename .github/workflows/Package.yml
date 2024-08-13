@@ -25,7 +25,7 @@ env:
   JAVA_DISTRIBUTION: 'temurin'
   ANDROID_NDK_VERSION: 25.2.9519653
   ANDROID_PLATFORMS: "platforms;android-33 platforms;android-34"
-  ANDROID_BUILD_TOOLS: "build-tools;33.0.1"
+  ANDROID_BUILD_TOOLS_VERSION: "33.0.1"
 
 jobs:
 
@@ -56,9 +56,15 @@ jobs:
 
     steps:
 
-      - name: CHECK BUILD
+      - if: startsWith(matrix.config.host, 'windows') == false
+        name: CHECK BUILD
         run: |
           echo "BUILD_TARGET=${{ github.event.inputs[matrix.config.target] }}" >> $GITHUB_ENV
+
+      - if: startsWith(matrix.config.host, 'windows')
+        name: CHECK BUILD (Windows)
+        run: |
+          echo "BUILD_TARGET=${{ github.event.inputs[matrix.config.target] }}" >> $env:GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true'
         name: Checkout
@@ -93,22 +99,31 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           architecture: x64
 
-      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'android-arm64'
-        name: Setup java
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'android')
+        name: Setup java (Android)
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
 
-      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'android-arm64'
-        name: Setup Android SDK
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'android')
+        name: Setup Android SDK (Android)
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 8512546
-          packages: 'platform-tools ${{ env.ANDROID_PLATFORMS }} ${{ env.ANDROID_BUILD_TOOLS }} ndk;${{ env.ANDROID_NDK_VERSION }}'
+          packages: 'platform-tools ${{ env.ANDROID_PLATFORMS }} build-tools;${{ env.ANDROID_BUILD_TOOLS_VERSION }} ndk;${{ env.ANDROID_NDK_VERSION }}'
+
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'android')
+        name: Setup ndk
+        run: |
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+          # if android-arm64
+          if [ $TARGET == ${{ env.ANDROID_NDK_VERSION }} ]; then
+            rustup target install aarch64-linux-android
+          fi
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'macos'
-        name: Build (macos)
+        name: Build (macOS)
         run: |
           rustup target install x86_64-apple-darwin
           rustup target install aarch64-apple-darwin
@@ -125,7 +140,7 @@ jobs:
           echo "ASSET_PATH=adrop/build/macos.dmg" >> $GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'windows'
-        name: build (windows)
+        name: Build (Windows)
         run: |
           flutter config --enable-windows-desktop
           cd adrop
@@ -138,7 +153,7 @@ jobs:
           echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
-        name: build (ios)
+        name: Build (iOS)
         run: |
           rustup target install aarch64-apple-ios
           cd adrop
@@ -154,16 +169,23 @@ jobs:
           echo "ASSET_NAME=nosign.ipa" >> $GITHUB_ENV
           echo "ASSET_PATH=adrop/build/nosign.ipa" >> $GITHUB_ENV
 
-
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'android-arm64'
-        name: build (android-arm64)
+        name: Build (Android-arm64)
         run: |
-          export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}
-          rustup target install aarch64-linux-android
           cd adrop
-          flutter build apk --target-platform android-arm64
+          flutter build apk --target-platform ${{ matrix.config.target }}
           echo "ASSET_NAME=app-release.apk" >> $GITHUB_ENV
           echo "ASSET_PATH=adrop/build/app/outputs/flutter-apk/app-release.apk" >> $GITHUB_ENV
+
+      - name: Sign APK (Android)
+        if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
+        env:
+          ANDROID_JKS_BASE64: ${{ secrets.ANDROID_JKS_BASE64 }}
+          ANDROID_JKS_PASSWORD: ${{ secrets.ANDROID_JKS_PASSWORD }}
+        run: |
+          echo $ANDROID_JKS_BASE64 > key.jks.base64
+          base64 -d key.jks.base64 > key.jks
+          echo $ANDROID_JKS_PASSWORD | $ANDROID_HOME/build-tools/$ANDROID_BUILD_TOOLS_VERSION/apksigner sign --ks key.jks $ASSET_PATH
 
       - if: env.BUILD_TARGET == 'true'
         name: Upload Asset
