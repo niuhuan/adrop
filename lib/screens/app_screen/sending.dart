@@ -178,8 +178,8 @@ class _SendingState extends State<Sending> {
   }
 
   String _mutilFile(SendingTask task) {
-    if (task.sendingFilePathList.isNotEmpty) {
-      return " (${task.sendingFilePathList.length}个文件(夹))";
+    if (task.packSelectionFiles.isNotEmpty) {
+      return " (${task.packSelectionFiles.length}个文件(夹))";
     }
     return "";
   }

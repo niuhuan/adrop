@@ -1381,12 +1381,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  List<String> dco_decode_list_String(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return (raw as List<dynamic>).map(dco_decode_String).toList();
-  }
-
-  @protected
   List<Device> dco_decode_list_device(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_device).toList();
@@ -1536,7 +1530,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       cloudFileId: dco_decode_String(arr[8]),
       currentFileUploadSize: dco_decode_i_64(arr[9]),
       sendingTaskType: dco_decode_sending_task_type(arr[10]),
-      sendingFilePathList: dco_decode_list_String(arr[11]),
+      packSelectionFiles: dco_decode_list_selection_file(arr[11]),
       tmpFilePath: dco_decode_String(arr[12]),
     );
   }
@@ -1721,18 +1715,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getPlatformInt64();
-  }
-
-  @protected
-  List<String> sse_decode_list_String(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-
-    var len_ = sse_decode_i_32(deserializer);
-    var ans_ = <String>[];
-    for (var idx_ = 0; idx_ < len_; ++idx_) {
-      ans_.add(sse_decode_String(deserializer));
-    }
-    return ans_;
   }
 
   @protected
@@ -1941,7 +1923,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_cloudFileId = sse_decode_String(deserializer);
     var var_currentFileUploadSize = sse_decode_i_64(deserializer);
     var var_sendingTaskType = sse_decode_sending_task_type(deserializer);
-    var var_sendingFilePathList = sse_decode_list_String(deserializer);
+    var var_packSelectionFiles = sse_decode_list_selection_file(deserializer);
     var var_tmpFilePath = sse_decode_String(deserializer);
     return SendingTask(
         taskId: var_taskId,
@@ -1955,7 +1937,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         cloudFileId: var_cloudFileId,
         currentFileUploadSize: var_currentFileUploadSize,
         sendingTaskType: var_sendingTaskType,
-        sendingFilePathList: var_sendingFilePathList,
+        packSelectionFiles: var_packSelectionFiles,
         tmpFilePath: var_tmpFilePath);
   }
 
@@ -2153,15 +2135,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_list_String(List<String> self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.length, serializer);
-    for (final item in self) {
-      sse_encode_String(item, serializer);
-    }
-  }
-
-  @protected
   void sse_encode_list_device(List<Device> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -2331,7 +2304,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.cloudFileId, serializer);
     sse_encode_i_64(self.currentFileUploadSize, serializer);
     sse_encode_sending_task_type(self.sendingTaskType, serializer);
-    sse_encode_list_String(self.sendingFilePathList, serializer);
+    sse_encode_list_selection_file(self.packSelectionFiles, serializer);
     sse_encode_String(self.tmpFilePath, serializer);
   }
 

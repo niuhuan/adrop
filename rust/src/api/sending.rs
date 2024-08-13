@@ -70,7 +70,7 @@ pub async fn add_sending_tasks(
                 error_type: SendingTaskErrorType::Unset,
                 current_file_upload_size: 0,
                 sending_task_type,
-                sending_file_path_list: vec![],
+                pack_selection_files: vec![],
                 tmp_file_path: "".to_string(),
             })
             .collect::<Vec<SendingTask>>(),
@@ -87,7 +87,7 @@ pub async fn add_sending_tasks(
                 error_type: SendingTaskErrorType::Unset,
                 current_file_upload_size: 0,
                 sending_task_type,
-                sending_file_path_list: selection_files.into_iter().map(|x| x.path).collect(),
+                pack_selection_files: selection_files,
                 tmp_file_path: "".to_string(),
             }]
         }
@@ -382,7 +382,7 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
                 send_task.file_path.clone(),
                 send_task.device.clone(),
                 send_task.sending_task_type.clone(),
-                send_task.sending_file_path_list.clone(),
+                send_task.pack_selection_files.clone(),
             )
         })
         .await;
@@ -401,7 +401,7 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
                 send_task.tmp_file_path = tmp_file_path.to_string();
             })
             .await;
-        make_zip(tmp_file_path, s_list.iter().map(String::as_str).collect()).await?;
+        make_zip(tmp_file_path, s_list).await?;
         upload_file(
             uuid_name.as_str(),
             tmp_file_path,
@@ -655,15 +655,12 @@ async fn put_steam_with_password(
     Ok(())
 }
 
-async fn make_zip(file_path: &str, files: Vec<&str>) -> anyhow::Result<()> {
+async fn make_zip(file_path: &str, pack_selection_files: Vec<SelectionFile>) -> anyhow::Result<()> {
     let mut file = tokio::fs::File::create(file_path).await?;
     let mut writer = ZipFileWriter::with_tokio(&mut file);
-    for x in files {
-        let path = std::path::Path::new(x);
-        let in_zip_path = Path::new(
-            path.file_name()
-                .with_context(|| format!("file name failed: {:?}", path))?,
-        );
+    for x in pack_selection_files {
+        let path = Path::new(x.path.as_str());
+        let in_zip_path = Path::new(x.name.as_str());
         put_entry(&mut writer, in_zip_path, path).await?;
     }
     writer.close().await?;

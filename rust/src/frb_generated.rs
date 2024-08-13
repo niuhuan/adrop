@@ -1687,18 +1687,6 @@ impl SseDecode for i64 {
     }
 }
 
-impl SseDecode for Vec<String> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut len_ = <i32>::sse_decode(deserializer);
-        let mut ans_ = vec![];
-        for idx_ in 0..len_ {
-            ans_.push(<String>::sse_decode(deserializer));
-        }
-        return ans_;
-    }
-}
-
 impl SseDecode for Vec<crate::data_obj::Device> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1938,7 +1926,8 @@ impl SseDecode for crate::data_obj::SendingTask {
         let mut var_currentFileUploadSize = <i64>::sse_decode(deserializer);
         let mut var_sendingTaskType =
             <crate::data_obj::enums::SendingTaskType>::sse_decode(deserializer);
-        let mut var_sendingFilePathList = <Vec<String>>::sse_decode(deserializer);
+        let mut var_packSelectionFiles =
+            <Vec<crate::data_obj::SelectionFile>>::sse_decode(deserializer);
         let mut var_tmpFilePath = <String>::sse_decode(deserializer);
         return crate::data_obj::SendingTask {
             task_id: var_taskId,
@@ -1952,7 +1941,7 @@ impl SseDecode for crate::data_obj::SendingTask {
             cloud_file_id: var_cloudFileId,
             current_file_upload_size: var_currentFileUploadSize,
             sending_task_type: var_sendingTaskType,
-            sending_file_path_list: var_sendingFilePathList,
+            pack_selection_files: var_packSelectionFiles,
             tmp_file_path: var_tmpFilePath,
         };
     }
@@ -2451,7 +2440,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SendingTask {
             self.cloud_file_id.into_into_dart().into_dart(),
             self.current_file_upload_size.into_into_dart().into_dart(),
             self.sending_task_type.into_into_dart().into_dart(),
-            self.sending_file_path_list.into_into_dart().into_dart(),
+            self.pack_selection_files.into_into_dart().into_dart(),
             self.tmp_file_path.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -2704,16 +2693,6 @@ impl SseEncode for i64 {
     }
 }
 
-impl SseEncode for Vec<String> {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <i32>::sse_encode(self.len() as _, serializer);
-        for item in self {
-            <String>::sse_encode(item, serializer);
-        }
-    }
-}
-
 impl SseEncode for Vec<crate::data_obj::Device> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -2922,7 +2901,7 @@ impl SseEncode for crate::data_obj::SendingTask {
         <String>::sse_encode(self.cloud_file_id, serializer);
         <i64>::sse_encode(self.current_file_upload_size, serializer);
         <crate::data_obj::enums::SendingTaskType>::sse_encode(self.sending_task_type, serializer);
-        <Vec<String>>::sse_encode(self.sending_file_path_list, serializer);
+        <Vec<crate::data_obj::SelectionFile>>::sse_encode(self.pack_selection_files, serializer);
         <String>::sse_encode(self.tmp_file_path, serializer);
     }
 }
