@@ -51,6 +51,15 @@ import UIKit
                       result(FlutterError(code: "", message: "params error", details: ""))
                   }
               }
+              else if call.method == "getKeepScreenOn" {
+                  result(application.isIdleTimerDisabled)
+              }
+              else if call.method == "setKeepScreenOn" {
+                  if let args = call.arguments as? Bool {
+                      application.isIdleTimerDisabled = args
+                  }
+                  result(nil)
+              }
               else{
                   result(FlutterMethodNotImplemented)
               }

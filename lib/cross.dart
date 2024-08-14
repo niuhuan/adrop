@@ -53,4 +53,12 @@ class Cross {
   Future androidAppInfo() {
     return _channel.invokeMethod("androidAppInfo", "");
   }
+
+  Future<bool> getKeepScreenOn() async {
+    return await _channel.invokeMethod("getKeepScreenOn");
+  }
+
+  Future setKeepScreenOn(bool keepScreenOn) async {
+    return await _channel.invokeMethod("setKeepScreenOn", keepScreenOn);
+  }
 }

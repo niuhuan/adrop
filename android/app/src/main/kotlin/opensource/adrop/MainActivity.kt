@@ -13,13 +13,13 @@ import android.os.Looper
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.Display
+import android.view.WindowManager
 import androidx.annotation.NonNull
 import androidx.annotation.RequiresApi
 import io.flutter.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
-import java.io.File
 import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
@@ -39,9 +39,11 @@ class MainActivity : FlutterActivity() {
                         notImplementedToken -> {
                             notImplemented()
                         }
+
                         is Unit, null -> {
                             success(null)
                         }
+
                         else -> {
                             success(data)
                         }
@@ -71,13 +73,19 @@ class MainActivity : FlutterActivity() {
                     "androidGetModes" -> {
                         modes()
                     }
+
                     "androidSetMode" -> {
                         setMode(call.argument("mode")!!)
                     }
+
                     "androidGetVersion" -> Build.VERSION.SDK_INT
                     "androidAppInfo" -> {
                         goAppInfo()
                     }
+
+                    "getKeepScreenOn" -> getKeepScreenOn()
+                    "setKeepScreenOn" -> setKeepScreenOn(call.arguments as Boolean)
+
                     else -> {
                         notImplementedToken
                     }
@@ -161,10 +169,19 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    fun goAppInfo() {
+    private fun goAppInfo() {
         var packageURI = Uri.fromParts("package", packageName, null)
         var intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, packageURI)
         startActivity(intent)
     }
+
+    private fun getKeepScreenOn() =
+        WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON.and(window.attributes.flags) > 0
+
+    private fun setKeepScreenOn(value: Boolean) =
+        if (value)
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
 }
