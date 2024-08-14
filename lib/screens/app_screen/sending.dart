@@ -1,4 +1,4 @@
-
+import 'package:adrop/configs/screen_keep_on.dart';
 import 'package:flutter/material.dart';
 
 import '../../components/common.dart';
@@ -24,12 +24,7 @@ class _SendingState extends State<Sending> {
   @override
   void initState() {
     widget.controller._state = this;
-    stream.listen((tasks) {
-      setState(() {
-        _tasks.clear();
-        _tasks.addAll(tasks);
-      });
-    });
+    stream.listen(_tasksSet);
     super.initState();
   }
 
@@ -39,6 +34,19 @@ class _SendingState extends State<Sending> {
       widget.controller._state = null;
     }
     super.dispose();
+  }
+
+  _tasksSet(List<SendingTask> tasks) async {
+    setState(() {
+      _tasks.clear();
+      _tasks.addAll(tasks);
+    });
+    if (keepScreenUpOnSending.value) {
+      var keep = _tasks
+          .map((i) => "${i.taskState}".toLowerCase().contains("sending"))
+          .reduce((a, b) => a || b);
+      setKeepScreenUpOnSending(keep);
+    }
   }
 
   @override
@@ -51,10 +59,10 @@ class _SendingState extends State<Sending> {
         actions: [
           MenuAnchor(
             builder: (
-                BuildContext context,
-                MenuController controller,
-                Widget? child,
-                ) {
+              BuildContext context,
+              MenuController controller,
+              Widget? child,
+            ) {
               return IconButton(
                 icon: const Icon(Icons.clear_all),
                 onPressed: () {
@@ -173,7 +181,7 @@ class _SendingState extends State<Sending> {
       device: device,
       selectionFiles: files,
       sendingTaskType:
-      zipOnSend.value ? SendingTaskType.packZip : SendingTaskType.single,
+          zipOnSend.value ? SendingTaskType.packZip : SendingTaskType.single,
     );
     defaultToast(context, "已添加到发送队列");
   }

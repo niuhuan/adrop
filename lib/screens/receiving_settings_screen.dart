@@ -27,6 +27,8 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
             saveToGallerySwitchListTile(),
           if (Platform.isIOS || Platform.isAndroid)
             deleteAfterSaveToGallerySwitchListTile(),
+          if (Platform.isIOS || Platform.isAndroid)
+            keepScreenUpOnReceivingSwitchListTile(),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:adrop/screens/sending_settings_screen.dart';
 import 'package:desktop_drop_for_t/desktop_drop_for_t.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -57,16 +58,12 @@ class _SendFileState extends State<SendFile> {
         actions: [
           IconButton(
             onPressed: () async {
-              await zipOnSend.setValue(!zipOnSend.value);
-              defaultToast(
-                context,
-                zipOnSend.value ? '已开启压缩发送' : '已关闭压缩发送',
-              );
-              setState(() {});
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) =>
+                    const SendingSettingsScreen(),
+              ));
             },
-            icon: Icon(
-              zipOnSend.value ? Icons.folder_zip : Icons.folder_zip_outlined,
-            ),
+            icon: const Icon(Icons.settings),
           ),
         ],
       ),

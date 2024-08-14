@@ -5,6 +5,7 @@ import 'package:adrop/cross.dart';
 import 'package:flutter/material.dart';
 
 import '../../configs/configs.dart';
+import '../../configs/screen_keep_on.dart';
 import '../../src/rust/api/receiving.dart';
 import '../../src/rust/data_obj.dart';
 import '../../src/rust/data_obj/enums.dart';
@@ -25,12 +26,7 @@ class _ReceiveFileState extends State<ReceiveFile> {
 
   @override
   void initState() {
-    _receivingStream.listen((tasks) {
-      setState(() {
-        _tasks.clear();
-        _tasks.addAll(tasks);
-      });
-    });
+    _receivingStream.listen(_tasksSet);
     _receivedStream.listen(_onReceived);
     super.initState();
   }
@@ -40,6 +36,19 @@ class _ReceiveFileState extends State<ReceiveFile> {
     unregisterReceivingTask();
     unregisterReceived();
     super.dispose();
+  }
+
+  _tasksSet(List<ReceivingTask> tasks) async {
+    setState(() {
+      _tasks.clear();
+      _tasks.addAll(tasks);
+    });
+    if (keepScreenUpOnReceiving.value) {
+      var keep = _tasks
+          .map((i) => "${i.taskState}".toLowerCase().contains("receiving"))
+          .reduce((a, b) => a || b);
+      setKeepScreenUpOnReceiving(keep);
+    }
   }
 
   _onReceived(ReceivingTask task) async {

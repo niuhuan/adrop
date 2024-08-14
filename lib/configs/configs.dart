@@ -1,3 +1,4 @@
+import 'package:adrop/configs/screen_keep_on.dart';
 import 'package:flutter/material.dart';
 
 import '../src/rust/api/property.dart' as rustProperty;
@@ -5,7 +6,9 @@ import '../src/rust/api/property.dart' as rustProperty;
 abstract class Config<T> {
   T _value;
 
-  Config._(this._value);
+  Function? callback;
+
+  Config._(this._value, {this.callback});
 
   String propertyName();
 
@@ -21,6 +24,7 @@ abstract class Config<T> {
       value: serialize(value),
     );
     _value = value;
+    callback?.call();
   }
 
   _init() async {
@@ -34,7 +38,8 @@ class BoolConfig extends Config<bool> {
   final String _name;
   final bool _defaultValue;
 
-  BoolConfig._(this._name, this._defaultValue) : super._(false);
+  BoolConfig._(this._name, this._defaultValue, {super.callback})
+      : super._(false);
 
   @override
   String propertyName() => _name;
@@ -58,10 +63,27 @@ final saveToGallery = BoolConfig._('save_to_gallery', false);
 final deleteAfterSaveToGallery =
     BoolConfig._('delete_after_save_to_gallery', true);
 
+final keepScreenUpOnSending = BoolConfig._(
+  'keep_screen_up_on_sending',
+  true,
+  callback: () {
+    setKeepScreenUpOnSending(false);
+  },
+);
+final keepScreenUpOnReceiving = BoolConfig._(
+  'keep_screen_up_on_receiving',
+  true,
+  callback: () {
+    setKeepScreenUpOnReceiving(false);
+  },
+);
+
 initConfigs() async {
   await zipOnSend._init();
   await saveToGallery._init();
   await deleteAfterSaveToGallery._init();
+  await keepScreenUpOnSending._init();
+  await keepScreenUpOnReceiving._init();
 }
 
 Widget _propertySwitchListTile(
@@ -89,6 +111,15 @@ Widget _propertySwitchListTile(
   );
 }
 
+Widget zipOnSendSwitchListTile() {
+  return _propertySwitchListTile(
+    zipOnSend,
+    '发送文件前压缩',
+    Icons.folder_zip,
+    Icons.folder_zip_outlined,
+  );
+}
+
 Widget saveToGallerySwitchListTile() {
   return _propertySwitchListTile(
     saveToGallery,
@@ -105,5 +136,23 @@ Widget deleteAfterSaveToGallerySwitchListTile() {
     '保存到相册后删除原文件',
     Icons.delete_rounded,
     Icons.delete_outline,
+  );
+}
+
+Widget keepScreenUpOnSendingSwitchListTile() {
+  return _propertySwitchListTile(
+    keepScreenUpOnSending,
+    '发送文件时保持屏幕常亮',
+    Icons.screen_lock_portrait_rounded,
+    Icons.screen_lock_portrait_outlined,
+  );
+}
+
+Widget keepScreenUpOnReceivingSwitchListTile() {
+  return _propertySwitchListTile(
+    keepScreenUpOnReceiving,
+    '接收文件时保持屏幕常亮',
+    Icons.screen_lock_portrait_rounded,
+    Icons.screen_lock_portrait_outlined,
   );
 }
