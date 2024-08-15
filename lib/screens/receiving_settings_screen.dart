@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../components/launch_at_startup.dart';
+import '../configs/launch_at_startup.dart';
 import '../configs/configs.dart';
 
 class ReceivingSettingsScreen extends StatefulWidget {

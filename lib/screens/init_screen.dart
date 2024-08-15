@@ -47,8 +47,9 @@ class _InitScreenState extends State<InitScreen> {
 
   Future<dynamic> _init() async {
     var navigator = Navigator.of(context);
-    var root = await cross.root();
-    await initPath(localPath: root);
+    if (Platform.isIOS || Platform.isAndroid) {
+      await initPath(localPath: await cross.root());
+    }
     await initConfigs();
     var li = await loginInfo();
     switch (li.state) {
