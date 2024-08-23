@@ -5,11 +5,11 @@ import 'package:adrop/screens/sending_settings_screen.dart';
 import 'package:desktop_drop_for_t/desktop_drop_for_t.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:share_handler/share_handler.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 import '../../components/common.dart';
 import '../../components/content_builder.dart';
-import '../../configs/configs.dart';
 import '../../src/rust/api/nope.dart';
 import '../../src/rust/api/space.dart';
 import '../../src/rust/data_obj.dart';
@@ -26,9 +26,46 @@ class SendFile extends StatefulWidget {
 }
 
 class _SendFileState extends State<SendFile> {
+  final handler = ShareHandlerPlatform.instance;
   late Future<List<Device>> _devicesFuture;
   late Key _key;
   final List<SelectionFile> _list = [];
+
+  Future _initMedia() async {
+    handler.sharedMediaStream.listen(processMedia);
+    processMedia(await handler.getInitialSharedMedia());
+  }
+
+  Future processMedia(SharedMedia? media) async {
+    if (media != null) {
+      if (media.attachments != null) {
+        var attachments = media.attachments!;
+        var addFiles = <SelectionFile>[];
+        for (var value in attachments) {
+          if (value != null) {
+            try {
+              print(value.path);
+              var sp = value.path.split("/");
+              var addFile = await matchSelectionFile(
+                name: sp[sp.length - 1],
+                path: value.path,
+              );
+              addFiles.add(addFile);
+            } catch (e) {
+              print(e);
+              defaultToast(context, '文件解析失败 $e');
+            }
+          }
+        }
+        if (addFiles.isNotEmpty) {
+          setState(() {
+            _list.addAll(addFiles);
+          });
+          defaultToast(context, '已添加 ${addFiles.length} 个文件');
+        }
+      }
+    }
+  }
 
   Future _refresh() async {
     setState(() {
@@ -40,6 +77,7 @@ class _SendFileState extends State<SendFile> {
   @override
   void initState() {
     _refresh();
+    _initMedia();
     super.initState();
   }
 

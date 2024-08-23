@@ -25,6 +25,7 @@ dependencies:
   package_info_plus: ^8.0.1
   wechat_assets_picker: ^9.2.0
   desktop_drop_for_t: ^0.4.6
+  share_handler: ^0.0.21
 
 dev_dependencies:
   flutter_test:

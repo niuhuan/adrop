@@ -56,7 +56,9 @@ import UIKit
               }
               else if call.method == "setKeepScreenOn" {
                   if let args = call.arguments as? Bool {
-                      application.isIdleTimerDisabled = args
+                      DispatchQueue.main.async { () -> Void in
+                          application.isIdleTimerDisabled = args
+                      }
                   }
                   result(nil)
               }
