@@ -156,11 +156,35 @@ class _ReceiveFileState extends State<ReceiveFile> {
           ),
           child: ListTile(
             title: Text(task.fileName),
-            subtitle: Text(task.taskState.toString()),
+            subtitle: Text(_receivingLabelOfState(task.taskState.toString())),
             leading: iconOfFileType(task.fileItemType),
           ),
         );
       },
     );
   }
+}
+
+String _receivingLabelOfState(String state) {
+  if (state.endsWith(".init")) {
+    return "队列中";
+  }
+  if (state.endsWith(".receiving")) {
+    return "下载中";
+  }
+  if (state.endsWith(".success")) {
+    return "下载传成功";
+  }
+  if (state.endsWith(".error") ||
+      state.endsWith(".fail") ||
+      state.endsWith(".failed")) {
+    return "下载失败";
+  }
+  if (state.endsWith(".canceled")) {
+    return "已取消";
+  }
+  if (state.endsWith(".canceling")) {
+    return "取消中";
+  }
+  return "未知";
 }
