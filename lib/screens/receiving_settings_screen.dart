@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import '../configs/download_to.dart';
 import '../configs/launch_at_startup.dart';
 import '../configs/configs.dart';
 
@@ -29,6 +30,7 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
             deleteAfterSaveToGallerySwitchListTile(),
           if (Platform.isIOS || Platform.isAndroid)
             keepScreenUpOnReceivingSwitchListTile(),
+          const DownloadToSetting(),
         ],
       ),
     );

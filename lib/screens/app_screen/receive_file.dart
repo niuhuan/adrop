@@ -159,25 +159,28 @@ class _ReceiveFileState extends State<ReceiveFile> {
             title: Text(task.fileName),
             subtitle: Text(_receivingLabelOfState(task.taskState.toString())),
             leading: iconOfFileType(task.fileItemType),
-            trailing: Column(children: [
-              if (task.taskState == ReceivingTaskState.success ||
-                  (Platform.isWindows ||
-                      Platform.isWindows ||
-                      Platform.isLinux)) ...[
-                IconButton(
-                  onPressed: () async {
-                    showFileInExplorer(path: task.filePath);
-                  },
-                  icon: const Icon(Icons.folder),
-                ),
-                IconButton(
-                  onPressed: () async {
-                    openFile(path: task.filePath);
-                  },
-                  icon: const Icon(Icons.play_arrow),
-                ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (task.taskState == ReceivingTaskState.success ||
+                    (Platform.isWindows ||
+                        Platform.isWindows ||
+                        Platform.isLinux)) ...[
+                  IconButton(
+                    onPressed: () async {
+                      showFileInExplorer(path: task.filePath);
+                    },
+                    icon: const Icon(Icons.folder),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      openFile(path: task.filePath);
+                    },
+                    icon: const Icon(Icons.play_arrow),
+                  ),
+                ],
               ],
-            ]),
+            ),
           ),
         );
       },
