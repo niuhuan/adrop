@@ -8,3 +8,9 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 Future<void> openByBrowser({required String url}) =>
     RustLib.instance.api.crateApiSystemOpenByBrowser(url: url);
+
+Future<void> openFile({required String path}) =>
+    RustLib.instance.api.crateApiSystemOpenFile(path: path);
+
+Future<void> showFileInExplorer({required String path}) =>
+    RustLib.instance.api.crateApiSystemShowFileInExplorer(path: path);
