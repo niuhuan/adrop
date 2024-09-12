@@ -168,14 +168,10 @@ class _ReceiveFileState extends State<ReceiveFile> {
                     (Platform.isIOS || Platform.isAndroid)) ...[
                   IconButton(
                     onPressed: () async {
-                      print("AAA");
                       if (Platform.isAndroid) {
-                        print("BBB");
                         final mes = await Permission.manageExternalStorage
                             .request()
                             .isGranted;
-                        print(
-                            "await Permission.manageExternalStorage.request().isGranted : $mes");
                         if (!mes) {
                           defaultToast(context, "请授予存储权限");
                           return;

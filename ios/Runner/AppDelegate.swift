@@ -36,8 +36,7 @@ import UIKit
                   if let args = call.arguments as? String{
                       do {
                           let fileURL: URL = URL(fileURLWithPath: args)
-                              let imageData = try Data(contentsOf: fileURL)
-
+                          let imageData = try Data(contentsOf: fileURL)
                           if let uiImage = UIImage(data: imageData) {
                               UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
                               result("OK")
