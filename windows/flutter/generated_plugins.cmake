@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_drop_for_t
+  permission_handler_windows
   screen_retriever
   tray_manager
   url_launcher_windows

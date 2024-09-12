@@ -1,10 +1,10 @@
 import 'dart:ffi';
 import 'dart:io';
-
+import 'package:adrop/components/common.dart';
 import 'package:adrop/cross.dart';
 import 'package:adrop/src/rust/api/system.dart';
 import 'package:flutter/material.dart';
-
+import 'package:permission_handler/permission_handler.dart';
 import '../../configs/configs.dart';
 import '../../configs/screen_keep_on.dart';
 import '../../src/rust/api/receiving.dart';
@@ -12,6 +12,8 @@ import '../../src/rust/data_obj.dart';
 import '../../src/rust/data_obj/enums.dart';
 import '../receiving_settings_screen.dart';
 import 'common.dart';
+import 'package:path/path.dart' as path;
+import 'package:open_file/open_file.dart';
 
 class ReceiveFile extends StatefulWidget {
   const ReceiveFile({super.key});
@@ -162,7 +164,29 @@ class _ReceiveFileState extends State<ReceiveFile> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (task.taskState == ReceivingTaskState.success ||
+                if (task.taskState == ReceivingTaskState.success &&
+                    (Platform.isIOS || Platform.isAndroid)) ...[
+                  IconButton(
+                    onPressed: () async {
+                      print("AAA");
+                      if (Platform.isAndroid) {
+                        print("BBB");
+                        final mes = await Permission.manageExternalStorage
+                            .request()
+                            .isGranted;
+                        print(
+                            "await Permission.manageExternalStorage.request().isGranted : $mes");
+                        if (!mes) {
+                          defaultToast(context, "请授予存储权限");
+                          return;
+                        }
+                      }
+                      final result = await OpenFile.open(task.filePath);
+                    },
+                    icon: const Icon(Icons.play_arrow),
+                  ),
+                ],
+                if (task.taskState == ReceivingTaskState.success &&
                     (Platform.isWindows ||
                         Platform.isWindows ||
                         Platform.isLinux)) ...[
@@ -196,7 +220,7 @@ String _receivingLabelOfState(String state) {
     return "下载中";
   }
   if (state.endsWith(".success")) {
-    return "下载传成功";
+    return "下载成功";
   }
   if (state.endsWith(".error") ||
       state.endsWith(".fail") ||
@@ -211,3 +235,141 @@ String _receivingLabelOfState(String state) {
   }
   return "未知";
 }
+
+String? getMimeType(String extension) {
+  if (Platform.isAndroid) {
+    Map<String, String> map = {};
+    for (List<String> item in mimeAndroid) {
+      map[item[0]] = item[1];
+    }
+    if (map.containsKey(extension)) {
+      return map[extension];
+    }
+    return map[""];
+  }
+  if (Platform.isIOS) {
+    Map<String, String> map = {};
+    for (List<String> item in mimeIos) {
+      map[item[0]] = item[1];
+    }
+    if (map.containsKey(extension)) {
+      return map[extension];
+    }
+  }
+  return null;
+}
+
+const mimeAndroid = [
+  [".3gp", "video/3gpp"],
+  [".torrent", "application/x-bittorrent"],
+  [".kml", "application/vnd.google-earth.kml+xml"],
+  [".gpx", "application/gpx+xml"],
+  [".csv", "application/vnd.ms-excel"],
+  [".apk", "application/vnd.android.package-archive"],
+  [".asf", "video/x-ms-asf"],
+  [".avi", "video/x-msvideo"],
+  [".bin", "application/octet-stream"],
+  [".bmp", "image/bmp"],
+  [".c", "text/plain"],
+  [".class", "application/octet-stream"],
+  [".conf", "text/plain"],
+  [".cpp", "text/plain"],
+  [".doc", "application/msword"],
+  [
+    ".docx",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ],
+  [".xls", "application/vnd.ms-excel"],
+  [
+    ".xlsx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  ],
+  [".exe", "application/octet-stream"],
+  [".gif", "image/gif"],
+  [".gtar", "application/x-gtar"],
+  [".gz", "application/x-gzip"],
+  [".h", "text/plain"],
+  [".htm", "text/html"],
+  [".html", "text/html"],
+  [".jar", "application/java-archive"],
+  [".java", "text/plain"],
+  [".jpeg", "image/jpeg"],
+  [".jpg", "image/jpeg"],
+  [".js", "application/x-javascript"],
+  [".log", "text/plain"],
+  [".m3u", "audio/x-mpegurl"],
+  [".m4a", "audio/mp4a-latm"],
+  [".m4b", "audio/mp4a-latm"],
+  [".m4p", "audio/mp4a-latm"],
+  [".m4u", "video/vnd.mpegurl"],
+  [".m4v", "video/x-m4v"],
+  [".mov", "video/quicktime"],
+  [".mp2", "audio/x-mpeg"],
+  [".mp3", "audio/x-mpeg"],
+  [".mp4", "video/mp4"],
+  [".mpc", "application/vnd.mpohun.certificate"],
+  [".mpe", "video/mpeg"],
+  [".mpeg", "video/mpeg"],
+  [".mpg", "video/mpeg"],
+  [".mpg4", "video/mp4"],
+  [".mpga", "audio/mpeg"],
+  [".msg", "application/vnd.ms-outlook"],
+  [".ogg", "audio/ogg"],
+  [".pdf", "application/pdf"],
+  [".png", "image/png"],
+  [".pps", "application/vnd.ms-powerpoint"],
+  [".ppt", "application/vnd.ms-powerpoint"],
+  [
+    ".pptx",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+  ],
+  [".prop", "text/plain"],
+  [".rc", "text/plain"],
+  [".rmvb", "audio/x-pn-realaudio"],
+  [".rtf", "application/rtf"],
+  [".sh", "text/plain"],
+  [".tar", "application/x-tar"],
+  [".tgz", "application/x-compressed"],
+  [".txt", "text/plain"],
+  [".wav", "audio/x-wav"],
+  [".wma", "audio/x-ms-wma"],
+  [".wmv", "audio/x-ms-wmv"],
+  [".wps", "application/vnd.ms-works"],
+  [".xml", "text/plain"],
+  [".z", "application/x-compress"],
+  [".zip", "application/x-zip-compressed"],
+  ["", "*/*"]
+];
+
+const mimeIos = [
+  [".rtf", "public.rtf"],
+  [".txt", "public.plain-text"],
+  [".html", "public.html"],
+  [".htm", "public.html"],
+  [".xml", "public.xml"],
+  [".tar", "public.tar-archive"],
+  [".gz", "org.gnu.gnu-zip-archive"],
+  [".gzip", "org.gnu.gnu-zip-archive"],
+  [".tgz", "org.gnu.gnu-zip-tar-archive"],
+  [".jpg", "public.jpeg"],
+  [".jpeg", "public.jpeg"],
+  [".png", "public.png"],
+  [".avi", "public.avi"],
+  [".mpg", "public.mpeg"],
+  [".mpeg", "public.mpeg"],
+  [".mp4", "public.mpeg-4"],
+  [".3gpp", "public.3gpp"],
+  [".3gp", "public.3gpp"],
+  [".mp3", "public.mp3"],
+  [".zip", "com.pkware.zip-archive"],
+  [".gif", "com.compuserve.gif"],
+  [".bmp", "com.microsoft.bmp"],
+  [".ico", "com.microsoft.ico"],
+  [".doc", "com.microsoft.word.doc"],
+  [".xls", "com.microsoft.excel.xls"],
+  [".ppt", "com.microsoft.powerpoint.ppt"],
+  [".wav", "com.microsoft.waveform-audio"],
+  [".wm", "com.microsoft.windows-media-wm"],
+  [".wmv", "com.microsoft.windows-media-wmv"],
+  [".pdf", "com.adobe.pdf"]
+];

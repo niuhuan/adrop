@@ -1,7 +1,7 @@
 import Flutter
 import UIKit
 
-@UIApplicationMain
+@main
 @objc class AppDelegate: FlutterAppDelegate {
 
   func createDirectoryIfNotExists(path: String) {
