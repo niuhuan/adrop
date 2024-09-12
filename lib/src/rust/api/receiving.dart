@@ -31,3 +31,8 @@ Future<void> clearReceivingTasks(
         {required List<ReceivingTaskClearType> clearTypes}) =>
     RustLib.instance.api
         .crateApiReceivingClearReceivingTasks(clearTypes: clearTypes);
+
+Future<void> receivingTaskSetRemoved(
+        {required String taskId, required PlatformInt64 reason}) =>
+    RustLib.instance.api.crateApiReceivingReceivingTaskSetRemoved(
+        taskId: taskId, reason: reason);

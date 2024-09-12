@@ -3,7 +3,6 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
-
 // Static analysis wrongly picks the IO variant, thus ignore this
 // ignore_for_file: argument_type_not_assignable
 
@@ -26,282 +25,442 @@ import 'data_obj/enums.dart';
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_web.dart';
 
+abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
+  RustLibApiImplPlatform({
+    required super.handler,
+    required super.wire,
+    required super.generalizedFrbRustBinding,
+    required super.portManager,
+  });
 
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw);
 
+  @protected
+  RustStreamSink<List<ReceivingTask>>
+      dco_decode_StreamSink_list_receiving_task_Sse(dynamic raw);
 
-                abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
-                  RustLibApiImplPlatform({
-                    required super.handler,
-                    required super.wire,
-                    required super.generalizedFrbRustBinding,
-                    required super.portManager,
-                  });
+  @protected
+  RustStreamSink<List<SendingTask>> dco_decode_StreamSink_list_sending_task_Sse(
+      dynamic raw);
 
-                  
+  @protected
+  RustStreamSink<ReceivingTask> dco_decode_StreamSink_receiving_task_Sse(
+      dynamic raw);
 
-                  @protected AnyhowException dco_decode_AnyhowException(dynamic raw);
+  @protected
+  String dco_decode_String(dynamic raw);
 
-@protected RustStreamSink<List<ReceivingTask>> dco_decode_StreamSink_list_receiving_task_Sse(dynamic raw);
+  @protected
+  AdriveUserGetDriveInfo dco_decode_adrive_user_get_drive_info(dynamic raw);
 
-@protected RustStreamSink<List<SendingTask>> dco_decode_StreamSink_list_sending_task_Sse(dynamic raw);
+  @protected
+  AfterDownload dco_decode_after_download(dynamic raw);
 
-@protected RustStreamSink<ReceivingTask> dco_decode_StreamSink_receiving_task_Sse(dynamic raw);
+  @protected
+  Device dco_decode_box_autoadd_device(dynamic raw);
 
-@protected String dco_decode_String(dynamic raw);
+  @protected
+  DownloadConfig dco_decode_box_autoadd_download_config(dynamic raw);
 
-@protected AdriveUserGetDriveInfo dco_decode_adrive_user_get_drive_info(dynamic raw);
+  @protected
+  SpaceInfo dco_decode_box_autoadd_space_info(dynamic raw);
 
-@protected AfterDownload dco_decode_after_download(dynamic raw);
+  @protected
+  Device dco_decode_device(dynamic raw);
 
-@protected Device dco_decode_box_autoadd_device(dynamic raw);
+  @protected
+  DownloadConfig dco_decode_download_config(dynamic raw);
 
-@protected DownloadConfig dco_decode_box_autoadd_download_config(dynamic raw);
+  @protected
+  FileItem dco_decode_file_item(dynamic raw);
 
-@protected SpaceInfo dco_decode_box_autoadd_space_info(dynamic raw);
+  @protected
+  FileItemType dco_decode_file_item_type(dynamic raw);
 
-@protected Device dco_decode_device(dynamic raw);
+  @protected
+  int dco_decode_i_32(dynamic raw);
 
-@protected DownloadConfig dco_decode_download_config(dynamic raw);
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw);
 
-@protected FileItem dco_decode_file_item(dynamic raw);
+  @protected
+  List<Device> dco_decode_list_device(dynamic raw);
 
-@protected FileItemType dco_decode_file_item_type(dynamic raw);
+  @protected
+  List<FileItem> dco_decode_list_file_item(dynamic raw);
 
-@protected int dco_decode_i_32(dynamic raw);
+  @protected
+  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
-@protected PlatformInt64 dco_decode_i_64(dynamic raw);
+  @protected
+  List<ReceivingTask> dco_decode_list_receiving_task(dynamic raw);
 
-@protected List<Device> dco_decode_list_device(dynamic raw);
+  @protected
+  List<ReceivingTaskClearType> dco_decode_list_receiving_task_clear_type(
+      dynamic raw);
 
-@protected List<FileItem> dco_decode_list_file_item(dynamic raw);
+  @protected
+  List<SelectionFile> dco_decode_list_selection_file(dynamic raw);
 
-@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+  @protected
+  List<SendingTask> dco_decode_list_sending_task(dynamic raw);
 
-@protected List<ReceivingTask> dco_decode_list_receiving_task(dynamic raw);
+  @protected
+  List<SendingTaskClearType> dco_decode_list_sending_task_clear_type(
+      dynamic raw);
 
-@protected List<ReceivingTaskClearType> dco_decode_list_receiving_task_clear_type(dynamic raw);
+  @protected
+  LoginInfo dco_decode_login_info(dynamic raw);
 
-@protected List<SelectionFile> dco_decode_list_selection_file(dynamic raw);
+  @protected
+  LoginState dco_decode_login_state(dynamic raw);
 
-@protected List<SendingTask> dco_decode_list_sending_task(dynamic raw);
+  @protected
+  String? dco_decode_opt_String(dynamic raw);
 
-@protected List<SendingTaskClearType> dco_decode_list_sending_task_clear_type(dynamic raw);
+  @protected
+  DownloadConfig? dco_decode_opt_box_autoadd_download_config(dynamic raw);
 
-@protected LoginInfo dco_decode_login_info(dynamic raw);
+  @protected
+  SpaceInfo? dco_decode_opt_box_autoadd_space_info(dynamic raw);
 
-@protected LoginState dco_decode_login_state(dynamic raw);
+  @protected
+  ReceivingTask dco_decode_receiving_task(dynamic raw);
 
-@protected String? dco_decode_opt_String(dynamic raw);
+  @protected
+  ReceivingTaskClearType dco_decode_receiving_task_clear_type(dynamic raw);
 
-@protected DownloadConfig? dco_decode_opt_box_autoadd_download_config(dynamic raw);
+  @protected
+  ReceivingTaskState dco_decode_receiving_task_state(dynamic raw);
 
-@protected SpaceInfo? dco_decode_opt_box_autoadd_space_info(dynamic raw);
+  @protected
+  SelectionFile dco_decode_selection_file(dynamic raw);
 
-@protected ReceivingTask dco_decode_receiving_task(dynamic raw);
+  @protected
+  SendingTask dco_decode_sending_task(dynamic raw);
 
-@protected ReceivingTaskClearType dco_decode_receiving_task_clear_type(dynamic raw);
+  @protected
+  SendingTaskClearType dco_decode_sending_task_clear_type(dynamic raw);
 
-@protected ReceivingTaskState dco_decode_receiving_task_state(dynamic raw);
+  @protected
+  SendingTaskErrorType dco_decode_sending_task_error_type(dynamic raw);
 
-@protected SelectionFile dco_decode_selection_file(dynamic raw);
+  @protected
+  SendingTaskState dco_decode_sending_task_state(dynamic raw);
 
-@protected SendingTask dco_decode_sending_task(dynamic raw);
+  @protected
+  SendingTaskType dco_decode_sending_task_type(dynamic raw);
 
-@protected SendingTaskClearType dco_decode_sending_task_clear_type(dynamic raw);
+  @protected
+  SpaceInfo dco_decode_space_info(dynamic raw);
 
-@protected SendingTaskErrorType dco_decode_sending_task_error_type(dynamic raw);
+  @protected
+  int dco_decode_u_8(dynamic raw);
 
-@protected SendingTaskState dco_decode_sending_task_state(dynamic raw);
+  @protected
+  void dco_decode_unit(dynamic raw);
 
-@protected SendingTaskType dco_decode_sending_task_type(dynamic raw);
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
-@protected SpaceInfo dco_decode_space_info(dynamic raw);
+  @protected
+  RustStreamSink<List<ReceivingTask>>
+      sse_decode_StreamSink_list_receiving_task_Sse(
+          SseDeserializer deserializer);
 
-@protected int dco_decode_u_8(dynamic raw);
+  @protected
+  RustStreamSink<List<SendingTask>> sse_decode_StreamSink_list_sending_task_Sse(
+      SseDeserializer deserializer);
 
-@protected void dco_decode_unit(dynamic raw);
+  @protected
+  RustStreamSink<ReceivingTask> sse_decode_StreamSink_receiving_task_Sse(
+      SseDeserializer deserializer);
 
-@protected AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+  @protected
+  String sse_decode_String(SseDeserializer deserializer);
 
-@protected RustStreamSink<List<ReceivingTask>> sse_decode_StreamSink_list_receiving_task_Sse(SseDeserializer deserializer);
+  @protected
+  AdriveUserGetDriveInfo sse_decode_adrive_user_get_drive_info(
+      SseDeserializer deserializer);
 
-@protected RustStreamSink<List<SendingTask>> sse_decode_StreamSink_list_sending_task_Sse(SseDeserializer deserializer);
+  @protected
+  AfterDownload sse_decode_after_download(SseDeserializer deserializer);
 
-@protected RustStreamSink<ReceivingTask> sse_decode_StreamSink_receiving_task_Sse(SseDeserializer deserializer);
+  @protected
+  Device sse_decode_box_autoadd_device(SseDeserializer deserializer);
 
-@protected String sse_decode_String(SseDeserializer deserializer);
+  @protected
+  DownloadConfig sse_decode_box_autoadd_download_config(
+      SseDeserializer deserializer);
 
-@protected AdriveUserGetDriveInfo sse_decode_adrive_user_get_drive_info(SseDeserializer deserializer);
+  @protected
+  SpaceInfo sse_decode_box_autoadd_space_info(SseDeserializer deserializer);
 
-@protected AfterDownload sse_decode_after_download(SseDeserializer deserializer);
+  @protected
+  Device sse_decode_device(SseDeserializer deserializer);
 
-@protected Device sse_decode_box_autoadd_device(SseDeserializer deserializer);
+  @protected
+  DownloadConfig sse_decode_download_config(SseDeserializer deserializer);
 
-@protected DownloadConfig sse_decode_box_autoadd_download_config(SseDeserializer deserializer);
+  @protected
+  FileItem sse_decode_file_item(SseDeserializer deserializer);
 
-@protected SpaceInfo sse_decode_box_autoadd_space_info(SseDeserializer deserializer);
+  @protected
+  FileItemType sse_decode_file_item_type(SseDeserializer deserializer);
 
-@protected Device sse_decode_device(SseDeserializer deserializer);
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer);
 
-@protected DownloadConfig sse_decode_download_config(SseDeserializer deserializer);
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
-@protected FileItem sse_decode_file_item(SseDeserializer deserializer);
+  @protected
+  List<Device> sse_decode_list_device(SseDeserializer deserializer);
 
-@protected FileItemType sse_decode_file_item_type(SseDeserializer deserializer);
+  @protected
+  List<FileItem> sse_decode_list_file_item(SseDeserializer deserializer);
 
-@protected int sse_decode_i_32(SseDeserializer deserializer);
+  @protected
+  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
-@protected PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+  @protected
+  List<ReceivingTask> sse_decode_list_receiving_task(
+      SseDeserializer deserializer);
 
-@protected List<Device> sse_decode_list_device(SseDeserializer deserializer);
+  @protected
+  List<ReceivingTaskClearType> sse_decode_list_receiving_task_clear_type(
+      SseDeserializer deserializer);
 
-@protected List<FileItem> sse_decode_list_file_item(SseDeserializer deserializer);
+  @protected
+  List<SelectionFile> sse_decode_list_selection_file(
+      SseDeserializer deserializer);
 
-@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+  @protected
+  List<SendingTask> sse_decode_list_sending_task(SseDeserializer deserializer);
 
-@protected List<ReceivingTask> sse_decode_list_receiving_task(SseDeserializer deserializer);
+  @protected
+  List<SendingTaskClearType> sse_decode_list_sending_task_clear_type(
+      SseDeserializer deserializer);
 
-@protected List<ReceivingTaskClearType> sse_decode_list_receiving_task_clear_type(SseDeserializer deserializer);
+  @protected
+  LoginInfo sse_decode_login_info(SseDeserializer deserializer);
 
-@protected List<SelectionFile> sse_decode_list_selection_file(SseDeserializer deserializer);
+  @protected
+  LoginState sse_decode_login_state(SseDeserializer deserializer);
 
-@protected List<SendingTask> sse_decode_list_sending_task(SseDeserializer deserializer);
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer);
 
-@protected List<SendingTaskClearType> sse_decode_list_sending_task_clear_type(SseDeserializer deserializer);
+  @protected
+  DownloadConfig? sse_decode_opt_box_autoadd_download_config(
+      SseDeserializer deserializer);
 
-@protected LoginInfo sse_decode_login_info(SseDeserializer deserializer);
+  @protected
+  SpaceInfo? sse_decode_opt_box_autoadd_space_info(
+      SseDeserializer deserializer);
 
-@protected LoginState sse_decode_login_state(SseDeserializer deserializer);
+  @protected
+  ReceivingTask sse_decode_receiving_task(SseDeserializer deserializer);
 
-@protected String? sse_decode_opt_String(SseDeserializer deserializer);
+  @protected
+  ReceivingTaskClearType sse_decode_receiving_task_clear_type(
+      SseDeserializer deserializer);
 
-@protected DownloadConfig? sse_decode_opt_box_autoadd_download_config(SseDeserializer deserializer);
+  @protected
+  ReceivingTaskState sse_decode_receiving_task_state(
+      SseDeserializer deserializer);
 
-@protected SpaceInfo? sse_decode_opt_box_autoadd_space_info(SseDeserializer deserializer);
+  @protected
+  SelectionFile sse_decode_selection_file(SseDeserializer deserializer);
 
-@protected ReceivingTask sse_decode_receiving_task(SseDeserializer deserializer);
+  @protected
+  SendingTask sse_decode_sending_task(SseDeserializer deserializer);
 
-@protected ReceivingTaskClearType sse_decode_receiving_task_clear_type(SseDeserializer deserializer);
+  @protected
+  SendingTaskClearType sse_decode_sending_task_clear_type(
+      SseDeserializer deserializer);
 
-@protected ReceivingTaskState sse_decode_receiving_task_state(SseDeserializer deserializer);
+  @protected
+  SendingTaskErrorType sse_decode_sending_task_error_type(
+      SseDeserializer deserializer);
 
-@protected SelectionFile sse_decode_selection_file(SseDeserializer deserializer);
+  @protected
+  SendingTaskState sse_decode_sending_task_state(SseDeserializer deserializer);
 
-@protected SendingTask sse_decode_sending_task(SseDeserializer deserializer);
+  @protected
+  SendingTaskType sse_decode_sending_task_type(SseDeserializer deserializer);
 
-@protected SendingTaskClearType sse_decode_sending_task_clear_type(SseDeserializer deserializer);
+  @protected
+  SpaceInfo sse_decode_space_info(SseDeserializer deserializer);
 
-@protected SendingTaskErrorType sse_decode_sending_task_error_type(SseDeserializer deserializer);
+  @protected
+  int sse_decode_u_8(SseDeserializer deserializer);
 
-@protected SendingTaskState sse_decode_sending_task_state(SseDeserializer deserializer);
+  @protected
+  void sse_decode_unit(SseDeserializer deserializer);
 
-@protected SendingTaskType sse_decode_sending_task_type(SseDeserializer deserializer);
+  @protected
+  bool sse_decode_bool(SseDeserializer deserializer);
 
-@protected SpaceInfo sse_decode_space_info(SseDeserializer deserializer);
+  @protected
+  void sse_encode_AnyhowException(
+      AnyhowException self, SseSerializer serializer);
 
-@protected int sse_decode_u_8(SseDeserializer deserializer);
+  @protected
+  void sse_encode_StreamSink_list_receiving_task_Sse(
+      RustStreamSink<List<ReceivingTask>> self, SseSerializer serializer);
 
-@protected void sse_decode_unit(SseDeserializer deserializer);
+  @protected
+  void sse_encode_StreamSink_list_sending_task_Sse(
+      RustStreamSink<List<SendingTask>> self, SseSerializer serializer);
 
-@protected bool sse_decode_bool(SseDeserializer deserializer);
+  @protected
+  void sse_encode_StreamSink_receiving_task_Sse(
+      RustStreamSink<ReceivingTask> self, SseSerializer serializer);
 
-@protected void sse_encode_AnyhowException(AnyhowException self, SseSerializer serializer);
+  @protected
+  void sse_encode_String(String self, SseSerializer serializer);
 
-@protected void sse_encode_StreamSink_list_receiving_task_Sse(RustStreamSink<List<ReceivingTask>> self, SseSerializer serializer);
+  @protected
+  void sse_encode_adrive_user_get_drive_info(
+      AdriveUserGetDriveInfo self, SseSerializer serializer);
 
-@protected void sse_encode_StreamSink_list_sending_task_Sse(RustStreamSink<List<SendingTask>> self, SseSerializer serializer);
+  @protected
+  void sse_encode_after_download(AfterDownload self, SseSerializer serializer);
 
-@protected void sse_encode_StreamSink_receiving_task_Sse(RustStreamSink<ReceivingTask> self, SseSerializer serializer);
+  @protected
+  void sse_encode_box_autoadd_device(Device self, SseSerializer serializer);
 
-@protected void sse_encode_String(String self, SseSerializer serializer);
+  @protected
+  void sse_encode_box_autoadd_download_config(
+      DownloadConfig self, SseSerializer serializer);
 
-@protected void sse_encode_adrive_user_get_drive_info(AdriveUserGetDriveInfo self, SseSerializer serializer);
+  @protected
+  void sse_encode_box_autoadd_space_info(
+      SpaceInfo self, SseSerializer serializer);
 
-@protected void sse_encode_after_download(AfterDownload self, SseSerializer serializer);
+  @protected
+  void sse_encode_device(Device self, SseSerializer serializer);
 
-@protected void sse_encode_box_autoadd_device(Device self, SseSerializer serializer);
+  @protected
+  void sse_encode_download_config(
+      DownloadConfig self, SseSerializer serializer);
 
-@protected void sse_encode_box_autoadd_download_config(DownloadConfig self, SseSerializer serializer);
+  @protected
+  void sse_encode_file_item(FileItem self, SseSerializer serializer);
 
-@protected void sse_encode_box_autoadd_space_info(SpaceInfo self, SseSerializer serializer);
+  @protected
+  void sse_encode_file_item_type(FileItemType self, SseSerializer serializer);
 
-@protected void sse_encode_device(Device self, SseSerializer serializer);
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer);
 
-@protected void sse_encode_download_config(DownloadConfig self, SseSerializer serializer);
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
-@protected void sse_encode_file_item(FileItem self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_device(List<Device> self, SseSerializer serializer);
 
-@protected void sse_encode_file_item_type(FileItemType self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_file_item(List<FileItem> self, SseSerializer serializer);
 
-@protected void sse_encode_i_32(int self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_prim_u_8_strict(
+      Uint8List self, SseSerializer serializer);
 
-@protected void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_receiving_task(
+      List<ReceivingTask> self, SseSerializer serializer);
 
-@protected void sse_encode_list_device(List<Device> self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_receiving_task_clear_type(
+      List<ReceivingTaskClearType> self, SseSerializer serializer);
 
-@protected void sse_encode_list_file_item(List<FileItem> self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_selection_file(
+      List<SelectionFile> self, SseSerializer serializer);
 
-@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_sending_task(
+      List<SendingTask> self, SseSerializer serializer);
 
-@protected void sse_encode_list_receiving_task(List<ReceivingTask> self, SseSerializer serializer);
+  @protected
+  void sse_encode_list_sending_task_clear_type(
+      List<SendingTaskClearType> self, SseSerializer serializer);
 
-@protected void sse_encode_list_receiving_task_clear_type(List<ReceivingTaskClearType> self, SseSerializer serializer);
+  @protected
+  void sse_encode_login_info(LoginInfo self, SseSerializer serializer);
 
-@protected void sse_encode_list_selection_file(List<SelectionFile> self, SseSerializer serializer);
+  @protected
+  void sse_encode_login_state(LoginState self, SseSerializer serializer);
 
-@protected void sse_encode_list_sending_task(List<SendingTask> self, SseSerializer serializer);
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer);
 
-@protected void sse_encode_list_sending_task_clear_type(List<SendingTaskClearType> self, SseSerializer serializer);
+  @protected
+  void sse_encode_opt_box_autoadd_download_config(
+      DownloadConfig? self, SseSerializer serializer);
 
-@protected void sse_encode_login_info(LoginInfo self, SseSerializer serializer);
+  @protected
+  void sse_encode_opt_box_autoadd_space_info(
+      SpaceInfo? self, SseSerializer serializer);
 
-@protected void sse_encode_login_state(LoginState self, SseSerializer serializer);
+  @protected
+  void sse_encode_receiving_task(ReceivingTask self, SseSerializer serializer);
 
-@protected void sse_encode_opt_String(String? self, SseSerializer serializer);
+  @protected
+  void sse_encode_receiving_task_clear_type(
+      ReceivingTaskClearType self, SseSerializer serializer);
 
-@protected void sse_encode_opt_box_autoadd_download_config(DownloadConfig? self, SseSerializer serializer);
+  @protected
+  void sse_encode_receiving_task_state(
+      ReceivingTaskState self, SseSerializer serializer);
 
-@protected void sse_encode_opt_box_autoadd_space_info(SpaceInfo? self, SseSerializer serializer);
+  @protected
+  void sse_encode_selection_file(SelectionFile self, SseSerializer serializer);
 
-@protected void sse_encode_receiving_task(ReceivingTask self, SseSerializer serializer);
+  @protected
+  void sse_encode_sending_task(SendingTask self, SseSerializer serializer);
 
-@protected void sse_encode_receiving_task_clear_type(ReceivingTaskClearType self, SseSerializer serializer);
+  @protected
+  void sse_encode_sending_task_clear_type(
+      SendingTaskClearType self, SseSerializer serializer);
 
-@protected void sse_encode_receiving_task_state(ReceivingTaskState self, SseSerializer serializer);
+  @protected
+  void sse_encode_sending_task_error_type(
+      SendingTaskErrorType self, SseSerializer serializer);
 
-@protected void sse_encode_selection_file(SelectionFile self, SseSerializer serializer);
+  @protected
+  void sse_encode_sending_task_state(
+      SendingTaskState self, SseSerializer serializer);
 
-@protected void sse_encode_sending_task(SendingTask self, SseSerializer serializer);
+  @protected
+  void sse_encode_sending_task_type(
+      SendingTaskType self, SseSerializer serializer);
 
-@protected void sse_encode_sending_task_clear_type(SendingTaskClearType self, SseSerializer serializer);
+  @protected
+  void sse_encode_space_info(SpaceInfo self, SseSerializer serializer);
 
-@protected void sse_encode_sending_task_error_type(SendingTaskErrorType self, SseSerializer serializer);
+  @protected
+  void sse_encode_u_8(int self, SseSerializer serializer);
 
-@protected void sse_encode_sending_task_state(SendingTaskState self, SseSerializer serializer);
+  @protected
+  void sse_encode_unit(void self, SseSerializer serializer);
 
-@protected void sse_encode_sending_task_type(SendingTaskType self, SseSerializer serializer);
-
-@protected void sse_encode_space_info(SpaceInfo self, SseSerializer serializer);
-
-@protected void sse_encode_u_8(int self, SseSerializer serializer);
-
-@protected void sse_encode_unit(void self, SseSerializer serializer);
-
-@protected void sse_encode_bool(bool self, SseSerializer serializer);
-                }
-                
-
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer);
+}
 
 // Section: wire_class
 
 class RustLibWire implements BaseWire {
-            RustLibWire.fromExternalLibrary(ExternalLibrary lib);
+  RustLibWire.fromExternalLibrary(ExternalLibrary lib);
+}
 
-            
-        }
-        @JS('wasm_bindgen') external RustLibWasmModule get wasmModule;
+@JS('wasm_bindgen')
+external RustLibWasmModule get wasmModule;
 
-        @JS() @anonymous extension type RustLibWasmModule._(JSObject _) implements JSObject {
-            
-        }
-        
+@JS()
+@anonymous
+extension type RustLibWasmModule._(JSObject _) implements JSObject {}

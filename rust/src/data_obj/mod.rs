@@ -66,6 +66,7 @@ pub struct ReceivingTask {
     pub file_item_type: FileItemType,
     pub task_state: ReceivingTaskState,
     pub error_msg: String,
+    pub file_removed: i64,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

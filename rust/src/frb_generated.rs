@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.1.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 2036759412;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1323035539;
 
 // Section: executor
 
@@ -471,6 +471,47 @@ fn wire__crate__api__receiving__list_receiving_tasks_impl(
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || async move {
                         let output_ok = crate::api::receiving::list_receiving_tasks().await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__receiving__receiving_task_set_removed_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "receiving_task_set_removed",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_task_id = <String>::sse_decode(&mut deserializer);
+            let api_reason = <i64>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::receiving::receiving_task_set_removed(
+                            api_task_id,
+                            api_reason,
+                        )
+                        .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -1923,6 +1964,7 @@ impl SseDecode for crate::data_obj::ReceivingTask {
         let mut var_taskState =
             <crate::data_obj::enums::ReceivingTaskState>::sse_decode(deserializer);
         let mut var_errorMsg = <String>::sse_decode(deserializer);
+        let mut var_fileRemoved = <i64>::sse_decode(deserializer);
         return crate::data_obj::ReceivingTask {
             task_id: var_taskId,
             drive_id: var_driveId,
@@ -1932,6 +1974,7 @@ impl SseDecode for crate::data_obj::ReceivingTask {
             file_item_type: var_fileItemType,
             task_state: var_taskState,
             error_msg: var_errorMsg,
+            file_removed: var_fileRemoved,
         };
     }
 }
@@ -2153,75 +2196,81 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        13 => {
+        13 => wire__crate__api__receiving__receiving_task_set_removed_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        14 => {
             wire__crate__api__receiving__register_received_impl(port, ptr, rust_vec_len, data_len)
         }
-        14 => wire__crate__api__receiving__register_receiving_task_impl(
+        15 => wire__crate__api__receiving__register_receiving_task_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        15 => {
+        16 => {
             wire__crate__api__receiving__unregister_received_impl(port, ptr, rust_vec_len, data_len)
         }
-        16 => wire__crate__api__receiving__unregister_receiving_task_impl(
+        17 => wire__crate__api__receiving__unregister_receiving_task_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        17 => wire__crate__api__sending__add_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
-        18 => {
+        18 => wire__crate__api__sending__add_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
+        19 => {
             wire__crate__api__sending__clear_sending_tasks_impl(port, ptr, rust_vec_len, data_len)
         }
-        19 => wire__crate__api__sending__list_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__sending__register_sending_listener_impl(
+        20 => wire__crate__api__sending__list_sending_tasks_impl(port, ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__sending__register_sending_listener_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__api__sending__unregister_sending_listener_impl(
+        22 => wire__crate__api__sending__unregister_sending_listener_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__space__adrive_user_get_drive_info_default_impl(
+        24 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__space__adrive_user_get_drive_info_default_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => wire__crate__api__space__check_old_password_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__space__choose_old_device_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__space__create_new_device_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
-        32 => {
+        26 => wire__crate__api__space__check_old_password_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__space__choose_old_device_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__space__create_folder_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__space__create_new_device_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__space__file_item_default_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__space__has_set_password_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__space__list_devices_impl(port, ptr, rust_vec_len, data_len),
+        33 => {
             wire__crate__api__space__list_devices_by_config_impl(port, ptr, rust_vec_len, data_len)
         }
-        33 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__system__open_file_impl(port, ptr, rust_vec_len, data_len),
-        39 => {
+        34 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__system__open_file_impl(port, ptr, rust_vec_len, data_len),
+        40 => {
             wire__crate__api__system__show_file_in_explorer_impl(port, ptr, rust_vec_len, data_len)
         }
-        40 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__user_setting__start_login_service_impl(
+        41 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__user_setting__start_login_service_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => wire__crate__api__user_setting__stop_login_service_impl(
+        43 => wire__crate__api__user_setting__stop_login_service_impl(
             port,
             ptr,
             rust_vec_len,
@@ -2239,7 +2288,7 @@ fn pde_ffi_dispatcher_sync_impl(
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        22 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
+        23 => wire__crate__api__simple__greet_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2415,6 +2464,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::ReceivingTask {
             self.file_item_type.into_into_dart().into_dart(),
             self.task_state.into_into_dart().into_dart(),
             self.error_msg.into_into_dart().into_dart(),
+            self.file_removed.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -2912,6 +2962,7 @@ impl SseEncode for crate::data_obj::ReceivingTask {
         <crate::data_obj::enums::FileItemType>::sse_encode(self.file_item_type, serializer);
         <crate::data_obj::enums::ReceivingTaskState>::sse_encode(self.task_state, serializer);
         <String>::sse_encode(self.error_msg, serializer);
+        <i64>::sse_encode(self.file_removed, serializer);
     }
 }
 

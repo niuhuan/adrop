@@ -59,6 +59,7 @@ class ReceivingTask {
   final FileItemType fileItemType;
   final ReceivingTaskState taskState;
   final String errorMsg;
+  final PlatformInt64 fileRemoved;
 
   const ReceivingTask({
     required this.taskId,
@@ -69,6 +70,7 @@ class ReceivingTask {
     required this.fileItemType,
     required this.taskState,
     required this.errorMsg,
+    required this.fileRemoved,
   });
 
   @override
@@ -80,7 +82,8 @@ class ReceivingTask {
       filePath.hashCode ^
       fileItemType.hashCode ^
       taskState.hashCode ^
-      errorMsg.hashCode;
+      errorMsg.hashCode ^
+      fileRemoved.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -94,7 +97,8 @@ class ReceivingTask {
           filePath == other.filePath &&
           fileItemType == other.fileItemType &&
           taskState == other.taskState &&
-          errorMsg == other.errorMsg;
+          errorMsg == other.errorMsg &&
+          fileRemoved == other.fileRemoved;
 }
 
 class SelectionFile {

@@ -64,6 +64,10 @@ class _ReceiveFileState extends State<ReceiveFile> {
         await cross.saveImageToGallery(task.filePath);
         if (deleteAfterSaveToGallery.value) {
           await File(task.filePath).delete();
+          await receivingTaskSetRemoved(
+            taskId: task.taskId,
+            reason: 1,
+          );
         }
       }
     }
@@ -168,6 +172,14 @@ class _ReceiveFileState extends State<ReceiveFile> {
                     (Platform.isIOS || Platform.isAndroid)) ...[
                   IconButton(
                     onPressed: () async {
+                      if (task.fileRemoved > 0) {
+                        if (task.fileRemoved == 1) {
+                          defaultToast(context, "文件已存入相册，请打开相册查看");
+                        } else {
+                          defaultToast(context, "文件已删除");
+                        }
+                        return;
+                      }
                       if (Platform.isAndroid) {
                         final mes = await Permission.manageExternalStorage
                             .request()
@@ -188,12 +200,28 @@ class _ReceiveFileState extends State<ReceiveFile> {
                         Platform.isLinux)) ...[
                   IconButton(
                     onPressed: () async {
+                      if (task.fileRemoved > 0) {
+                        if (task.fileRemoved == 1) {
+                          defaultToast(context, "文件已存入相册，请打开相册查看");
+                        } else {
+                          defaultToast(context, "文件已删除");
+                        }
+                        return;
+                      }
                       showFileInExplorer(path: task.filePath);
                     },
                     icon: const Icon(Icons.folder),
                   ),
                   IconButton(
                     onPressed: () async {
+                      if (task.fileRemoved > 0) {
+                        if (task.fileRemoved == 1) {
+                          defaultToast(context, "文件已存入相册，请打开相册查看");
+                        } else {
+                          defaultToast(context, "文件已删除");
+                        }
+                        return;
+                      }
                       openFile(path: task.filePath);
                     },
                     icon: const Icon(Icons.play_arrow),

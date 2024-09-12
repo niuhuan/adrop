@@ -146,6 +146,20 @@ pub async fn clear_receiving_tasks(clear_types: Vec<ReceivingTaskClearType>) -> 
     Ok(())
 }
 
+pub async fn receiving_task_set_removed(task_id: String, reason: i64) -> anyhow::Result<()> {
+    let mut lock = RECEIVING_TASKS.lock().await;
+    for x in lock.deref_mut() {
+        if x.task_id == task_id {
+            x.file_removed = reason;
+            break;
+        }
+    }
+    let sync = lock.deref().clone();
+    drop(lock);
+    let _ = sync_tasks_to_dart(sync).await;
+    Ok(())
+}
+
 async fn sync_tasks_to_dart(tasks: Vec<ReceivingTask>) -> anyhow::Result<()> {
     let rcb = RECEIVING_CALL_BACKS.lock().await;
     if let Some(rcb) = rcb.deref() {
@@ -287,6 +301,7 @@ pub(crate) async fn receiving_job() {
                 },
                 task_state: ReceivingTaskState::Init,
                 error_msg: "".to_string(),
+                file_removed: 0,
             });
         }
         if !add_tasks.is_empty() {
