@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.1.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1323035539;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1663729197;
 
 // Section: executor
 
@@ -1361,6 +1361,49 @@ fn wire__crate__api__space__oauth_derive_info_impl(
         },
     )
 }
+fn wire__crate__api__space__rename_device_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "rename_device",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_file_id = <String>::sse_decode(&mut deserializer);
+            let api_new_device_name = <String>::sse_decode(&mut deserializer);
+            let api_new_device_type = <i32>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let output_ok = crate::api::space::rename_device(
+                            api_file_id,
+                            api_new_device_name,
+                            api_new_device_type,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__api__space__set_new_password_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -2260,21 +2303,22 @@ fn pde_ffi_dispatcher_primary_impl(
         }
         34 => wire__crate__api__space__list_folder_impl(port, ptr, rust_vec_len, data_len),
         35 => wire__crate__api__space__oauth_derive_info_impl(port, ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__system__open_file_impl(port, ptr, rust_vec_len, data_len),
-        40 => {
+        36 => wire__crate__api__space__rename_device_impl(port, ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__space__set_new_password_impl(port, ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__space__space_info_impl(port, ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__system__open_by_browser_impl(port, ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__system__open_file_impl(port, ptr, rust_vec_len, data_len),
+        41 => {
             wire__crate__api__system__show_file_in_explorer_impl(port, ptr, rust_vec_len, data_len)
         }
-        41 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__user_setting__start_login_service_impl(
+        42 => wire__crate__api__user__login_info_impl(port, ptr, rust_vec_len, data_len),
+        43 => wire__crate__api__user_setting__start_login_service_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        43 => wire__crate__api__user_setting__stop_login_service_impl(
+        44 => wire__crate__api__user_setting__stop_login_service_impl(
             port,
             ptr,
             rust_vec_len,

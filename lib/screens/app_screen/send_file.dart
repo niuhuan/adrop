@@ -13,6 +13,7 @@ import '../../components/content_builder.dart';
 import '../../src/rust/api/nope.dart';
 import '../../src/rust/api/space.dart';
 import '../../src/rust/data_obj.dart';
+import '../device_edit_screen.dart';
 import 'common.dart';
 
 class SendFile extends StatefulWidget {
@@ -452,6 +453,9 @@ class _SendFileState extends State<SendFile> {
         onTap: () async {
           _sendFiles(device);
         },
+        onLongPress: () async {
+          _deviceMenu(context, device);
+        },
         title: Text(device.name + (device.thisDevice ? " (本机)" : "")),
         leading: Icon(
           deviceIcon(device.deviceType),
@@ -465,6 +469,9 @@ class _SendFileState extends State<SendFile> {
     return MaterialButton(
       onPressed: () {
         _sendFiles(device);
+      },
+      onLongPress: () async {
+        _deviceMenu(context, device);
       },
       child: Container(
         margin: const EdgeInsets.only(
@@ -572,5 +579,35 @@ class _SendFileState extends State<SendFile> {
     setState(() {
       _list.clear();
     });
+  }
+
+  Future _deviceMenu(BuildContext context, Device device) async {
+    final result = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text("设备操作"),
+          children: [
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.of(context).pop(0);
+              },
+              child: const Text("编辑设备"),
+            ),
+          ],
+        );
+      },
+    );
+    if (result == null) {
+      return;
+    }
+    if (result == 0) {
+      final result = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) => DeviceEditScreen(device: device),
+      ));
+      if (result != null) {
+        _refresh();
+      }
+    }
   }
 }

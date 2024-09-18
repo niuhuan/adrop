@@ -318,6 +318,27 @@ pub async fn choose_old_device(
     Ok(())
 }
 
+pub async fn rename_device(
+    file_id: String,
+    new_device_name: String,
+    new_device_type: i32,
+) -> anyhow::Result<()> {
+    let space_info = ram_space_info().await?;
+    let true_pass = base64::prelude::BASE64_URL_SAFE.decode(space_info.true_pass_base64.as_bytes())?;
+    let enc_device_name = encrypt_buff_to_base64(new_device_name.as_bytes(), true_pass.as_slice())?;
+    let enc_device_name = format!("{}.{}.device", enc_device_name, new_device_type);
+    let client = get_alipan_client();
+    let _ = client.adrive_open_file_update()
+        .await
+        .drive_id(space_info.drive_id.as_str())
+        .file_id(file_id.as_str())
+        .name(enc_device_name.as_str())
+        .check_name_mode(CheckNameMode::Refuse)
+        .request()
+        .await?;
+    Ok(())
+}
+
 fn random_string(len: usize) -> Vec<u8> {
     use rand::distributions::Alphanumeric;
     use rand::{thread_rng, Rng};

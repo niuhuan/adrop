@@ -86,6 +86,15 @@ Future<void> chooseOldDevice(
         truePassBase64: truePassBase64,
         thisDeviceFolderFileId: thisDeviceFolderFileId);
 
+Future<void> renameDevice(
+        {required String fileId,
+        required String newDeviceName,
+        required int newDeviceType}) =>
+    RustLib.instance.api.crateApiSpaceRenameDevice(
+        fileId: fileId,
+        newDeviceName: newDeviceName,
+        newDeviceType: newDeviceType);
+
 class AdriveUserGetDriveInfo {
   final String userId;
   final String name;
