@@ -9,6 +9,7 @@ pub struct PutResource {
 }
 
 impl PutResource {
+    #[allow(dead_code)]
     pub async fn put(self) -> anyhow::Result<()> {
         let _text = self
             .agent
@@ -24,6 +25,7 @@ impl PutResource {
 }
 
 impl PutResource {
+    #[allow(dead_code)]
     pub async fn file_resource(path: &str) -> anyhow::Result<Body> {
         let file = tokio::fs::read(path).await?;
         Ok(Body::from(file))
@@ -35,6 +37,7 @@ impl PutResource {
         (sender, body)
     }
 
+    #[allow(dead_code)]
     pub fn bytes_body(bytes: Vec<u8>) -> Body {
         Body::from(bytes)
     }

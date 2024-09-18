@@ -12,7 +12,6 @@ import '../../src/rust/data_obj.dart';
 import '../../src/rust/data_obj/enums.dart';
 import '../receiving_settings_screen.dart';
 import 'common.dart';
-import 'package:path/path.dart' as path;
 import 'package:open_file/open_file.dart';
 
 class ReceiveFile extends StatefulWidget {

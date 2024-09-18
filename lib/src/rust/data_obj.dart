@@ -11,16 +11,21 @@ class Device {
   final String name;
   final String folderFileId;
   final int deviceType;
+  final bool thisDevice;
 
   const Device({
     required this.name,
     required this.folderFileId,
     required this.deviceType,
+    required this.thisDevice,
   });
 
   @override
   int get hashCode =>
-      name.hashCode ^ folderFileId.hashCode ^ deviceType.hashCode;
+      name.hashCode ^
+      folderFileId.hashCode ^
+      deviceType.hashCode ^
+      thisDevice.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -29,7 +34,8 @@ class Device {
           runtimeType == other.runtimeType &&
           name == other.name &&
           folderFileId == other.folderFileId &&
-          deviceType == other.deviceType;
+          deviceType == other.deviceType &&
+          thisDevice == other.thisDevice;
 }
 
 class LoginInfo {

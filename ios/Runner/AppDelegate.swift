@@ -1,4 +1,5 @@
 import Flutter
+import Photos
 import UIKit
 
 @main
@@ -45,6 +46,29 @@ import UIKit
                           }
                       } catch {
                               result(FlutterError(code: "", message: "Error loading image : \(error)", details: ""))
+                      }
+                  }else{
+                      result(FlutterError(code: "", message: "params error", details: ""))
+                  }
+              }
+              else if call.method == "saveVideoToGallery"{
+                  if let args = call.arguments as? String{
+                      PHPhotoLibrary.requestAuthorization { status in
+                          // Return if unauthorized
+                          guard status == .authorized else {
+                              result(FlutterError(code: "", message: "Error saving video: unauthorized access", details: ""))
+                              return
+                          }
+
+                          PHPhotoLibrary.shared().performChanges({
+                              PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: NSURL(fileURLWithPath: args) as URL)
+                          }) { success, error in
+                              if success {
+                                  result("OK")
+                              } else {
+                                  result(FlutterError(code: "", message: "saving error", details: "Error saving video: \(String(describing: error))"))
+                              }
+                          }
                       }
                   }else{
                       result(FlutterError(code: "", message: "params error", details: ""))

@@ -37,6 +37,7 @@ pub struct Device {
     pub name: String,
     pub folder_file_id: String,
     pub device_type: i32,
+    pub this_device: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

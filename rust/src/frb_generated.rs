@@ -1232,6 +1232,7 @@ fn wire__crate__api__space__list_devices_impl(
             let api_drive_id = <String>::sse_decode(&mut deserializer);
             let api_parent_folder_file_id = <String>::sse_decode(&mut deserializer);
             let api_true_pass_base64 = <String>::sse_decode(&mut deserializer);
+            let api_this_device_folder_file_id = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -1240,6 +1241,7 @@ fn wire__crate__api__space__list_devices_impl(
                             api_drive_id,
                             api_parent_folder_file_id,
                             api_true_pass_base64,
+                            api_this_device_folder_file_id,
                         )
                         .await?;
                         Ok(output_ok)
@@ -1732,16 +1734,25 @@ impl SseDecode for crate::data_obj::enums::AfterDownload {
     }
 }
 
+impl SseDecode for bool {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_u8().unwrap() != 0
+    }
+}
+
 impl SseDecode for crate::data_obj::Device {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_name = <String>::sse_decode(deserializer);
         let mut var_folderFileId = <String>::sse_decode(deserializer);
         let mut var_deviceType = <i32>::sse_decode(deserializer);
+        let mut var_thisDevice = <bool>::sse_decode(deserializer);
         return crate::data_obj::Device {
             name: var_name,
             folder_file_id: var_folderFileId,
             device_type: var_deviceType,
+            this_device: var_thisDevice,
         };
     }
 }
@@ -2143,13 +2154,6 @@ impl SseDecode for () {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {}
 }
 
-impl SseDecode for bool {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        deserializer.cursor.read_u8().unwrap() != 0
-    }
-}
-
 fn pde_ffi_dispatcher_primary_impl(
     func_id: i32,
     port: flutter_rust_bridge::for_generated::MessagePort,
@@ -2348,6 +2352,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::Device {
             self.name.into_into_dart().into_dart(),
             self.folder_file_id.into_into_dart().into_dart(),
             self.device_type.into_into_dart().into_dart(),
+            self.this_device.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -2762,12 +2767,20 @@ impl SseEncode for crate::data_obj::enums::AfterDownload {
     }
 }
 
+impl SseEncode for bool {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_u8(self as _).unwrap();
+    }
+}
+
 impl SseEncode for crate::data_obj::Device {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.name, serializer);
         <String>::sse_encode(self.folder_file_id, serializer);
         <i32>::sse_encode(self.device_type, serializer);
+        <bool>::sse_encode(self.this_device, serializer);
     }
 }
 
@@ -3122,13 +3135,6 @@ impl SseEncode for u8 {
 impl SseEncode for () {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {}
-}
-
-impl SseEncode for bool {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        serializer.cursor.write_u8(self as _).unwrap();
-    }
 }
 
 #[cfg(not(target_family = "wasm"))]

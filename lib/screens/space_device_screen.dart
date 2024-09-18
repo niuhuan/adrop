@@ -234,6 +234,7 @@ class _DeviceChooserState extends State<DeviceChooser> {
         driveId: widget.driveId,
         parentFolderFileId: widget.folderId,
         truePassBase64: widget.password,
+        thisDeviceFolderFileId: "",
       );
       _key = UniqueKey();
     });

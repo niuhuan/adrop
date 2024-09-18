@@ -204,6 +204,7 @@ pub async fn list_devices_by_config() -> anyhow::Result<Vec<Device>> {
         space_info.drive_id,
         space_info.devices_root_folder_file_id,
         space_info.true_pass_base64,
+        space_info.this_device_folder_file_id,
     )
     .await
 }
@@ -212,6 +213,7 @@ pub async fn list_devices(
     drive_id: String,
     parent_folder_file_id: String,
     true_pass_base64: String,
+    this_device_folder_file_id: String,
 ) -> anyhow::Result<Vec<Device>> {
     let true_pass = base64::prelude::BASE64_URL_SAFE.decode(true_pass_base64.as_bytes())?;
     let mut files = vec![];
@@ -253,6 +255,7 @@ pub async fn list_devices(
         let device_type = cap.get(2).unwrap().as_str().parse::<i32>().unwrap();
         if let Ok(device_name) = decrypt_file_name(enc_device_name, true_pass.as_slice()) {
             devices.push(Device {
+                this_device: file.file_id == this_device_folder_file_id,
                 name: device_name,
                 folder_file_id: file.file_id,
                 device_type,

@@ -452,7 +452,7 @@ class _SendFileState extends State<SendFile> {
         onTap: () async {
           _sendFiles(device);
         },
-        title: Text(device.name),
+        title: Text(device.name + (device.thisDevice ? " (本机)" : "")),
         leading: Icon(
           deviceIcon(device.deviceType),
           size: 40,

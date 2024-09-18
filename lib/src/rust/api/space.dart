@@ -54,11 +54,13 @@ Future<List<Device>> listDevicesByConfig() =>
 Future<List<Device>> listDevices(
         {required String driveId,
         required String parentFolderFileId,
-        required String truePassBase64}) =>
+        required String truePassBase64,
+        required String thisDeviceFolderFileId}) =>
     RustLib.instance.api.crateApiSpaceListDevices(
         driveId: driveId,
         parentFolderFileId: parentFolderFileId,
-        truePassBase64: truePassBase64);
+        truePassBase64: truePassBase64,
+        thisDeviceFolderFileId: thisDeviceFolderFileId);
 
 Future<void> createNewDevice(
         {required String driveId,

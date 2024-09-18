@@ -56,6 +56,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AfterDownload dco_decode_after_download(dynamic raw);
 
   @protected
+  bool dco_decode_bool(dynamic raw);
+
+  @protected
   Device dco_decode_box_autoadd_device(dynamic raw);
 
   @protected
@@ -186,6 +189,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AfterDownload sse_decode_after_download(SseDeserializer deserializer);
 
   @protected
+  bool sse_decode_bool(SseDeserializer deserializer);
+
+  @protected
   Device sse_decode_box_autoadd_device(SseDeserializer deserializer);
 
   @protected
@@ -299,9 +305,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_decode_unit(SseDeserializer deserializer);
 
   @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
-
-  @protected
   void sse_encode_AnyhowException(
       AnyhowException self, SseSerializer serializer);
 
@@ -326,6 +329,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_after_download(AfterDownload self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
   void sse_encode_box_autoadd_device(Device self, SseSerializer serializer);
@@ -445,9 +451,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_unit(void self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
 }
 
 // Section: wire_class

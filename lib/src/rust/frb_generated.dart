@@ -171,7 +171,8 @@ abstract class RustLibApi extends BaseApi {
   Future<List<Device>> crateApiSpaceListDevices(
       {required String driveId,
       required String parentFolderFileId,
-      required String truePassBase64});
+      required String truePassBase64,
+      required String thisDeviceFolderFileId});
 
   Future<List<Device>> crateApiSpaceListDevicesByConfig();
 
@@ -1037,13 +1038,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<List<Device>> crateApiSpaceListDevices(
       {required String driveId,
       required String parentFolderFileId,
-      required String truePassBase64}) {
+      required String truePassBase64,
+      required String thisDeviceFolderFileId}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_String(driveId, serializer);
         sse_encode_String(parentFolderFileId, serializer);
         sse_encode_String(truePassBase64, serializer);
+        sse_encode_String(thisDeviceFolderFileId, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 32, port: port_);
       },
@@ -1052,14 +1055,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiSpaceListDevicesConstMeta,
-      argValues: [driveId, parentFolderFileId, truePassBase64],
+      argValues: [
+        driveId,
+        parentFolderFileId,
+        truePassBase64,
+        thisDeviceFolderFileId
+      ],
       apiImpl: this,
     ));
   }
 
   TaskConstMeta get kCrateApiSpaceListDevicesConstMeta => const TaskConstMeta(
         debugName: "list_devices",
-        argNames: ["driveId", "parentFolderFileId", "truePassBase64"],
+        argNames: [
+          "driveId",
+          "parentFolderFileId",
+          "truePassBase64",
+          "thisDeviceFolderFileId"
+        ],
       );
 
   @override
@@ -1390,6 +1403,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool dco_decode_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as bool;
+  }
+
+  @protected
   Device dco_decode_box_autoadd_device(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_device(raw);
@@ -1411,12 +1430,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Device dco_decode_device(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return Device(
       name: dco_decode_String(arr[0]),
       folderFileId: dco_decode_String(arr[1]),
       deviceType: dco_decode_i_32(arr[2]),
+      thisDevice: dco_decode_bool(arr[3]),
     );
   }
 
@@ -1732,6 +1752,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  bool sse_decode_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
   Device sse_decode_box_autoadd_device(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_device(deserializer));
@@ -1756,10 +1782,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_name = sse_decode_String(deserializer);
     var var_folderFileId = sse_decode_String(deserializer);
     var var_deviceType = sse_decode_i_32(deserializer);
+    var var_thisDevice = sse_decode_bool(deserializer);
     return Device(
         name: var_name,
         folderFileId: var_folderFileId,
-        deviceType: var_deviceType);
+        deviceType: var_deviceType,
+        thisDevice: var_thisDevice);
   }
 
   @protected
@@ -2083,12 +2111,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  bool sse_decode_bool(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getUint8() != 0;
-  }
-
-  @protected
   void sse_encode_AnyhowException(
       AnyhowException self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -2159,6 +2181,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
   void sse_encode_box_autoadd_device(Device self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_device(self, serializer);
@@ -2184,6 +2212,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_String(self.name, serializer);
     sse_encode_String(self.folderFileId, serializer);
     sse_encode_i_32(self.deviceType, serializer);
+    sse_encode_bool(self.thisDevice, serializer);
   }
 
   @protected
@@ -2441,11 +2470,5 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   void sse_encode_unit(void self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-  }
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putUint8(self ? 1 : 0);
   }
 }
