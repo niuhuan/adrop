@@ -70,6 +70,15 @@ pub async fn list_receiving_tasks() -> anyhow::Result<Vec<ReceivingTask>> {
 }
 
 pub async fn clear_receiving_tasks(clear_types: Vec<ReceivingTaskClearType>) -> anyhow::Result<()> {
+    let download_info = if let Ok(download_info) = download_info().await {
+        if let Some(download_info) = download_info {
+            download_info
+        } else {
+            return Err(anyhow::anyhow!("download info is empty"));
+        }
+    } else {
+        return Err(anyhow::anyhow!("download info is failed"));
+    };
     let mut lock = RECEIVING_TASKS.lock().await;
     for clear_type in clear_types {
         match clear_type {
@@ -89,6 +98,11 @@ pub async fn clear_receiving_tasks(clear_types: Vec<ReceivingTaskClearType>) -> 
                                 let _ = tokio::fs::remove_dir_all(x.file_path.as_str()).await;
                             }
                         }
+                        if let Ok((_name, path, _tmp_path)) =
+                            take_file_name(download_info.download_to.as_str(), x.file_name.as_str()).await
+                        {
+                            x.file_path = path;
+                        };
                     }
                 }
             }
