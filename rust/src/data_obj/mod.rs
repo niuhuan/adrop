@@ -54,6 +54,7 @@ pub struct SendingTask {
     pub current_file_upload_size: i64,
     pub sending_task_type: SendingTaskType,
     pub pack_selection_files: Vec<SelectionFile>,
+    pub tmp_file_name: String,
     pub tmp_file_path: String,
 }
 

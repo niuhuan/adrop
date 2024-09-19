@@ -125,7 +125,8 @@ abstract class RustLibApi extends BaseApi {
   Future<void> crateApiSendingAddSendingTasks(
       {required Device device,
       required List<SelectionFile> selectionFiles,
-      required SendingTaskType sendingTaskType});
+      required SendingTaskType sendingTaskType,
+      required String packName});
 
   Future<void> crateApiSendingClearSendingTasks(
       {required List<SendingTaskClearType> clearTypes});
@@ -647,13 +648,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<void> crateApiSendingAddSendingTasks(
       {required Device device,
       required List<SelectionFile> selectionFiles,
-      required SendingTaskType sendingTaskType}) {
+      required SendingTaskType sendingTaskType,
+      required String packName}) {
     return handler.executeNormal(NormalTask(
       callFfi: (port_) {
         final serializer = SseSerializer(generalizedFrbRustBinding);
         sse_encode_box_autoadd_device(device, serializer);
         sse_encode_list_selection_file(selectionFiles, serializer);
         sse_encode_sending_task_type(sendingTaskType, serializer);
+        sse_encode_String(packName, serializer);
         pdeCallFfi(generalizedFrbRustBinding, serializer,
             funcId: 18, port: port_);
       },
@@ -662,7 +665,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         decodeErrorData: sse_decode_AnyhowException,
       ),
       constMeta: kCrateApiSendingAddSendingTasksConstMeta,
-      argValues: [device, selectionFiles, sendingTaskType],
+      argValues: [device, selectionFiles, sendingTaskType, packName],
       apiImpl: this,
     ));
   }
@@ -670,7 +673,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiSendingAddSendingTasksConstMeta =>
       const TaskConstMeta(
         debugName: "add_sending_tasks",
-        argNames: ["device", "selectionFiles", "sendingTaskType"],
+        argNames: ["device", "selectionFiles", "sendingTaskType", "packName"],
       );
 
   @override
@@ -1654,8 +1657,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   SendingTask dco_decode_sending_task(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 13)
-      throw Exception('unexpected arr length: expect 13 but see ${arr.length}');
+    if (arr.length != 14)
+      throw Exception('unexpected arr length: expect 14 but see ${arr.length}');
     return SendingTask(
       taskId: dco_decode_String(arr[0]),
       device: dco_decode_device(arr[1]),
@@ -1669,7 +1672,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       currentFileUploadSize: dco_decode_i_64(arr[9]),
       sendingTaskType: dco_decode_sending_task_type(arr[10]),
       packSelectionFiles: dco_decode_list_selection_file(arr[11]),
-      tmpFilePath: dco_decode_String(arr[12]),
+      tmpFileName: dco_decode_String(arr[12]),
+      tmpFilePath: dco_decode_String(arr[13]),
     );
   }
 
@@ -2072,6 +2076,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_currentFileUploadSize = sse_decode_i_64(deserializer);
     var var_sendingTaskType = sse_decode_sending_task_type(deserializer);
     var var_packSelectionFiles = sse_decode_list_selection_file(deserializer);
+    var var_tmpFileName = sse_decode_String(deserializer);
     var var_tmpFilePath = sse_decode_String(deserializer);
     return SendingTask(
         taskId: var_taskId,
@@ -2086,6 +2091,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         currentFileUploadSize: var_currentFileUploadSize,
         sendingTaskType: var_sendingTaskType,
         packSelectionFiles: var_packSelectionFiles,
+        tmpFileName: var_tmpFileName,
         tmpFilePath: var_tmpFilePath);
   }
 
@@ -2455,6 +2461,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_i_64(self.currentFileUploadSize, serializer);
     sse_encode_sending_task_type(self.sendingTaskType, serializer);
     sse_encode_list_selection_file(self.packSelectionFiles, serializer);
+    sse_encode_String(self.tmpFileName, serializer);
     sse_encode_String(self.tmpFilePath, serializer);
   }
 

@@ -46,7 +46,7 @@ pub async fn unregister_sending_listener() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn list_sending_tasks() -> anyhow::Result<Vec<crate::data_obj::SendingTask>> {
+pub async fn list_sending_tasks() -> anyhow::Result<Vec<SendingTask>> {
     Ok(SENDING_TASKS.lock().await.clone())
 }
 
@@ -54,6 +54,7 @@ pub async fn add_sending_tasks(
     device: Device,
     selection_files: Vec<SelectionFile>,
     sending_task_type: SendingTaskType,
+    pack_name: String,
 ) -> anyhow::Result<()> {
     let tasks = match sending_task_type {
         SendingTaskType::Single => selection_files
@@ -71,10 +72,29 @@ pub async fn add_sending_tasks(
                 current_file_upload_size: 0,
                 sending_task_type,
                 pack_selection_files: vec![],
+                tmp_file_name: "".to_string(),
                 tmp_file_path: "".to_string(),
             })
             .collect::<Vec<SendingTask>>(),
         SendingTaskType::PackZip => {
+            let download = download_info()
+                .await?
+                .with_context(|| "download info failed")?;
+            let (tmp_file_name, tmp_file_path) = if pack_name.is_empty() {
+                const CRC: crc::Crc<u32> = crc::Crc::<u32>::new(&crc::CRC_32_CKSUM);
+                let uuid_name = format!("adrop-{}.zip", CRC.checksum(uuid::Uuid::new_v4().as_bytes().as_slice()));
+                let tmp_file_path_buf = Path::new(download.download_to.as_str()).join(uuid_name.as_str());
+                let tmp_file_path = tmp_file_path_buf
+                    .to_str()
+                    .with_context(|| "tmp file path failed")?;
+                (uuid_name, tmp_file_path.to_string())
+            } else {
+                let tmp_file_path_buf = Path::new(download.download_to.as_str()).join(pack_name.as_str());
+                let tmp_file_path = tmp_file_path_buf
+                    .to_str()
+                    .with_context(|| "tmp file path failed")?;
+                (pack_name, tmp_file_path.to_string())
+            };
             vec![SendingTask {
                 task_id: uuid::Uuid::new_v4().to_string(),
                 device: device.clone(),
@@ -88,7 +108,8 @@ pub async fn add_sending_tasks(
                 current_file_upload_size: 0,
                 sending_task_type,
                 pack_selection_files: selection_files,
-                tmp_file_path: "".to_string(),
+                tmp_file_name,
+                tmp_file_path,
             }]
         }
     };
@@ -375,7 +396,7 @@ pub(crate) async fn sending_job() {
 }
 
 async fn send_file(controller: SendingController) -> anyhow::Result<()> {
-    let (file_name, file_path, device, s_type, s_list) = controller
+    let (file_name, file_path, device, s_type, s_list, tmp_file_name, tmp_file_path) = controller
         .get_data(|send_task| {
             (
                 send_task.file_name.clone(),
@@ -383,34 +404,21 @@ async fn send_file(controller: SendingController) -> anyhow::Result<()> {
                 send_task.device.clone(),
                 send_task.sending_task_type.clone(),
                 send_task.pack_selection_files.clone(),
+                send_task.tmp_file_name.clone(),
+                send_task.tmp_file_path.clone(),
             )
         })
         .await;
     if s_type == SendingTaskType::PackZip {
-        let download = download_info()
-            .await?
-            .with_context(|| "download info failed")?;
-        const CRC: crc::Crc<u32> = crc::Crc::<u32>::new(&crc::CRC_32_CKSUM);
-        let uuid_name = format!("adrop-{}.zip", CRC.checksum(uuid::Uuid::new_v4().as_bytes().as_slice()));
-        let tmp_file_path_buf = Path::new(download.download_to.as_str()).join(uuid_name.as_str());
-        let tmp_file_path = tmp_file_path_buf
-            .to_str()
-            .with_context(|| "tmp file path failed")?;
-        controller
-            .set_data(|send_task: &mut SendingTask| {
-                send_task.file_name = uuid_name.clone();
-                send_task.tmp_file_path = tmp_file_path.to_string();
-            })
-            .await;
-        make_zip(tmp_file_path, s_list).await?;
+        make_zip(tmp_file_path.as_str(), s_list).await?;
         upload_file(
-            uuid_name.as_str(),
-            tmp_file_path,
+            tmp_file_name.as_str(),
+            tmp_file_path.as_str(),
             device.folder_file_id.as_str(),
             Some(Box::new(SetTaskFileId(controller))),
         )
             .await?;
-        let _ = tokio::fs::remove_file(tmp_file_path).await;
+        let _ = tokio::fs::remove_file(tmp_file_path.as_str()).await;
         return Ok(());
     }
     let file_state = tokio::fs::metadata(file_path.as_str()).await;

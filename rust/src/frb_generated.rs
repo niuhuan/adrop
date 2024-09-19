@@ -697,6 +697,7 @@ fn wire__crate__api__sending__add_sending_tasks_impl(
                 <Vec<crate::data_obj::SelectionFile>>::sse_decode(&mut deserializer);
             let api_sending_task_type =
                 <crate::data_obj::enums::SendingTaskType>::sse_decode(&mut deserializer);
+            let api_pack_name = <String>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -705,6 +706,7 @@ fn wire__crate__api__sending__add_sending_tasks_impl(
                             api_device,
                             api_selection_files,
                             api_sending_task_type,
+                            api_pack_name,
                         )
                         .await?;
                         Ok(output_ok)
@@ -2096,6 +2098,7 @@ impl SseDecode for crate::data_obj::SendingTask {
             <crate::data_obj::enums::SendingTaskType>::sse_decode(deserializer);
         let mut var_packSelectionFiles =
             <Vec<crate::data_obj::SelectionFile>>::sse_decode(deserializer);
+        let mut var_tmpFileName = <String>::sse_decode(deserializer);
         let mut var_tmpFilePath = <String>::sse_decode(deserializer);
         return crate::data_obj::SendingTask {
             task_id: var_taskId,
@@ -2110,6 +2113,7 @@ impl SseDecode for crate::data_obj::SendingTask {
             current_file_upload_size: var_currentFileUploadSize,
             sending_task_type: var_sendingTaskType,
             pack_selection_files: var_packSelectionFiles,
+            tmp_file_name: var_tmpFileName,
             tmp_file_path: var_tmpFilePath,
         };
     }
@@ -2615,6 +2619,7 @@ impl flutter_rust_bridge::IntoDart for crate::data_obj::SendingTask {
             self.current_file_upload_size.into_into_dart().into_dart(),
             self.sending_task_type.into_into_dart().into_dart(),
             self.pack_selection_files.into_into_dart().into_dart(),
+            self.tmp_file_name.into_into_dart().into_dart(),
             self.tmp_file_path.into_into_dart().into_dart(),
         ]
         .into_dart()
@@ -3085,6 +3090,7 @@ impl SseEncode for crate::data_obj::SendingTask {
         <i64>::sse_encode(self.current_file_upload_size, serializer);
         <crate::data_obj::enums::SendingTaskType>::sse_encode(self.sending_task_type, serializer);
         <Vec<crate::data_obj::SelectionFile>>::sse_encode(self.pack_selection_files, serializer);
+        <String>::sse_encode(self.tmp_file_name, serializer);
         <String>::sse_encode(self.tmp_file_path, serializer);
     }
 }

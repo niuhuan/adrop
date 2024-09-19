@@ -144,6 +144,7 @@ class SendingTask {
   final PlatformInt64 currentFileUploadSize;
   final SendingTaskType sendingTaskType;
   final List<SelectionFile> packSelectionFiles;
+  final String tmpFileName;
   final String tmpFilePath;
 
   const SendingTask({
@@ -159,6 +160,7 @@ class SendingTask {
     required this.currentFileUploadSize,
     required this.sendingTaskType,
     required this.packSelectionFiles,
+    required this.tmpFileName,
     required this.tmpFilePath,
   });
 
@@ -176,6 +178,7 @@ class SendingTask {
       currentFileUploadSize.hashCode ^
       sendingTaskType.hashCode ^
       packSelectionFiles.hashCode ^
+      tmpFileName.hashCode ^
       tmpFilePath.hashCode;
 
   @override
@@ -195,6 +198,7 @@ class SendingTask {
           currentFileUploadSize == other.currentFileUploadSize &&
           sendingTaskType == other.sendingTaskType &&
           packSelectionFiles == other.packSelectionFiles &&
+          tmpFileName == other.tmpFileName &&
           tmpFilePath == other.tmpFilePath;
 }
 
