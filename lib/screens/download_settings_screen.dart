@@ -130,7 +130,7 @@ class _DownloadSettingsScreenState extends State<DownloadSettingsScreen> {
                     builder: (context) => const AppScreen(),
                   ),
                 );
-              } catch (e, s) {
+              } catch (e) {
                 defaultToast(context, e.toString());
               }
             },

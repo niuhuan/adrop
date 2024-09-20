@@ -135,7 +135,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
                     ),
                   ),
                 );
-              } catch (e, s) {
+              } catch (e) {
                 defaultToast(context, "设置密码失败\n$e");
               }
             },
@@ -182,7 +182,7 @@ class _SpaceConfigScreenState extends State<SpaceConfigScreen> {
                     ),
                   ),
                 );
-              } catch (e, s) {
+              } catch (e) {
                 if (e is AnyhowException) {
                   AnyhowException ex = e;
                   defaultToast(context, ex.message);

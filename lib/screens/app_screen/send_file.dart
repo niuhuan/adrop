@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:adrop/screens/sending_settings_screen.dart';
-import 'package:desktop_drop_for_t/desktop_drop_for_t.dart';
+import 'package:desktop_drop/desktop_drop.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:share_handler/share_handler.dart';

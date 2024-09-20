@@ -3,7 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  desktop_drop_for_t
+  desktop_drop
   open_file_linux
   screen_retriever
   tray_manager

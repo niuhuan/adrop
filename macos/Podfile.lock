@@ -1,5 +1,5 @@
 PODS:
-  - desktop_drop_for_t (0.0.1):
+  - desktop_drop (0.0.1):
     - FlutterMacOS
   - flutter_inappwebview_macos (0.0.1):
     - FlutterMacOS
@@ -31,7 +31,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
-  - desktop_drop_for_t (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop_for_t/macos`)
+  - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
   - flutter_inappwebview_macos (from `Flutter/ephemeral/.symlinks/plugins/flutter_inappwebview_macos/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - open_file_mac (from `Flutter/ephemeral/.symlinks/plugins/open_file_mac/macos`)
@@ -50,8 +50,8 @@ SPEC REPOS:
     - OrderedSet
 
 EXTERNAL SOURCES:
-  desktop_drop_for_t:
-    :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop_for_t/macos
+  desktop_drop:
+    :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
   flutter_inappwebview_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_inappwebview_macos/macos
   FlutterMacOS:
@@ -78,7 +78,7 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
 
 SPEC CHECKSUMS:
-  desktop_drop_for_t: f747e72749528e5a191744e334d473b72c1348ec
+  desktop_drop: 69eeff437544aa619c8db7f4481b3a65f7696898
   flutter_inappwebview_macos: 9600c9df9fdb346aaa8933812009f8d94304203d
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   open_file_mac: 0e554648e2a87ce59e9438e3e5ca3e552e90d89a
