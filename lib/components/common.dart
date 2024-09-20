@@ -45,3 +45,42 @@ Future<bool?> showConfirmDialog(
     },
   );
 }
+
+Future<String?> showInputDialog({
+  required BuildContext context,
+  required String title,
+  required String hint,
+  required String init,
+}) async {
+  final controller = TextEditingController(text: init);
+  final result = await showDialog<String>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(controller.text);
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      );
+    },
+  );
+  controller.dispose();
+  return result;
+}

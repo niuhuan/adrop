@@ -33,8 +33,16 @@ class _SendFileState extends State<SendFile> {
   final List<SelectionFile> _list = [];
 
   Future _initMedia() async {
-    handler.sharedMediaStream.listen(processMedia);
-    processMedia(await handler.getInitialSharedMedia());
+    if (Platform.isAndroid || Platform.isIOS) {
+      handler.sharedMediaStream.listen(processMedia);
+      processMedia(await handler.getInitialSharedMedia());
+    }
+  }
+
+  Future _disposeMedia() async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      // remove listen
+    }
   }
 
   Future processMedia(SharedMedia? media) async {
@@ -84,6 +92,7 @@ class _SendFileState extends State<SendFile> {
 
   @override
   void dispose() {
+    _disposeMedia();
     super.dispose();
   }
 

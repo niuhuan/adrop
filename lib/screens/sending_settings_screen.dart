@@ -20,6 +20,7 @@ class _SendingSettingsScreenState extends State<SendingSettingsScreen> {
       body: ListView(
         children: <Widget>[
           zipOnSendSwitchListTile(),
+          zipOnSendRenameSwitchListTile(),
           if (Platform.isIOS || Platform.isAndroid)
             keepScreenUpOnSendingSwitchListTile(),
         ],

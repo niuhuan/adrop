@@ -1,8 +1,13 @@
+import 'dart:io';
+
 import 'package:adrop/cross.dart';
 
 bool _screenKeepOn = false;
 
 Future _setKeepScreenOn(bool keepScreenOn) async {
+  if (!(Platform.isAndroid || Platform.isIOS)) {
+    return;
+  }
   if (_screenKeepOn == keepScreenOn) {
     return;
   }

@@ -59,6 +59,7 @@ class BoolConfig extends Config<bool> {
 }
 
 final zipOnSend = BoolConfig._('zip_on_send', false);
+final zipOnSendRename = BoolConfig._('zip_on_send_rename', false);
 final saveToGallery = BoolConfig._('save_to_gallery', false);
 final deleteAfterSaveToGallery =
     BoolConfig._('delete_after_save_to_gallery', true);
@@ -80,6 +81,7 @@ final keepScreenUpOnReceiving = BoolConfig._(
 
 initConfigs() async {
   await zipOnSend._init();
+  await zipOnSendRename._init();
   await saveToGallery._init();
   await deleteAfterSaveToGallery._init();
   await keepScreenUpOnSending._init();
@@ -117,6 +119,15 @@ Widget zipOnSendSwitchListTile() {
     '发送文件前压缩',
     Icons.folder_zip,
     Icons.folder_zip_outlined,
+  );
+}
+
+Widget zipOnSendRenameSwitchListTile() {
+  return _propertySwitchListTile(
+    zipOnSendRename,
+    '压缩文件时进行命名',
+    Icons.abc,
+    Icons.abc_outlined,
   );
 }
 

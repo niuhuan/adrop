@@ -177,12 +177,46 @@ class _SendingState extends State<Sending> {
   }
 
   _sendFiles(Device device, List<SelectionFile> files) async {
+    if (files.isEmpty) {
+      defaultToast(context, "选择要发送的文件");
+      return;
+    }
+    if (files.length <= 1) {
+      await addSendingTasks(
+        device: device,
+        selectionFiles: files,
+        sendingTaskType: SendingTaskType.single,
+        packName: "",
+      );
+      defaultToast(context, "已添加到发送队列");
+      return;
+    }
+    SendingTaskType? taskType;
+    String? packName;
+    if (zipOnSend.value) {
+      taskType = SendingTaskType.packZip;
+      if (zipOnSendRename.value) {
+        packName = await showInputDialog(
+          context: context,
+          title: "输入压缩包名称",
+          hint: "压缩包名称",
+          init: "压缩包",
+        );
+        if (packName == null) {
+          return;
+        }
+        packName = packName.trim();
+        if (packName.isEmpty) {
+          return;
+        }
+      }
+    }
+    // zipOnSendRename
     await addSendingTasks(
       device: device,
       selectionFiles: files,
-      sendingTaskType:
-          zipOnSend.value ? SendingTaskType.packZip : SendingTaskType.single,
-      packName: "",
+      sendingTaskType: taskType ?? SendingTaskType.single,
+      packName: packName ?? "",
     );
     defaultToast(context, "已添加到发送队列");
   }

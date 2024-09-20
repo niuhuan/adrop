@@ -80,20 +80,18 @@ pub async fn add_sending_tasks(
             let download = download_info()
                 .await?
                 .with_context(|| "download info failed")?;
-            let (tmp_file_name, tmp_file_path) = if pack_name.is_empty() {
-                const CRC: crc::Crc<u32> = crc::Crc::<u32>::new(&crc::CRC_32_CKSUM);
-                let uuid_name = format!("adrop-{}.zip", CRC.checksum(uuid::Uuid::new_v4().as_bytes().as_slice()));
+            let base_name = if pack_name.is_empty() {
+                "adrop".to_string()
+            } else {
+                format!("{}", pack_name)
+            };
+            let (tmp_file_name, tmp_file_path) = {
+                let uuid_name = format!("{}-{}.zip", base_name, crc::Crc::<u32>::new(&crc::CRC_32_CKSUM).checksum(uuid::Uuid::new_v4().as_bytes().as_slice()));
                 let tmp_file_path_buf = Path::new(download.download_to.as_str()).join(uuid_name.as_str());
                 let tmp_file_path = tmp_file_path_buf
                     .to_str()
                     .with_context(|| "tmp file path failed")?;
                 (uuid_name, tmp_file_path.to_string())
-            } else {
-                let tmp_file_path_buf = Path::new(download.download_to.as_str()).join(pack_name.as_str());
-                let tmp_file_path = tmp_file_path_buf
-                    .to_str()
-                    .with_context(|| "tmp file path failed")?;
-                (pack_name, tmp_file_path.to_string())
             };
             vec![SendingTask {
                 task_id: uuid::Uuid::new_v4().to_string(),
