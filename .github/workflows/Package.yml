@@ -9,6 +9,9 @@ on:
       windows:
         description: 'Build Windows'
         type: boolean
+      linux:
+        description: 'Build Linux'
+        type: boolean
       ios:
         description: 'Build iOS'
         type: boolean
@@ -47,6 +50,8 @@ jobs:
             host: macos-latest
           - target: windows
             host: windows-latest
+          - target: linux
+            host: ubuntu-latest
           - target: ios
             host: macos-latest
           - target: android-arm64
@@ -151,6 +156,16 @@ jobs:
           cd ../../../../..
           echo "ASSET_NAME=windows.zip" >> $env:GITHUB_ENV
           echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
+
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'linux'
+        name: Build (Windows)
+        run: |
+          flutter config --enable-linux-desktop
+          cd adrop
+          flutter pub get
+          flutter build linux
+          echo "ASSET_NAME=adrop" >> $GITHUB_ENV
+          echo "ASSET_PATH=build/linux/x64/release/bundle/adrop" >> $GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
         name: Build (iOS)
