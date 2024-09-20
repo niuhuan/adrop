@@ -1548,6 +1548,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71e2746dc3a24dd78b3cfcb7be93368c6de9963d30f43a6a73998a9cf4b17b46"
+dependencies = [
+ "bitflags 2.6.0",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+]
+
+[[package]]
 name = "nom"
 version = "7.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2228,7 +2240,9 @@ dependencies = [
  "flutter_rust_bridge",
  "hex",
  "lazy_static",
+ "libc",
  "md5",
+ "nix",
  "once_cell",
  "opener",
  "rand",
@@ -2239,12 +2253,15 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "sha1",
+ "thiserror",
  "tokio",
  "tokio-stream",
  "tokio-util",
  "toml",
  "uuid",
  "warp",
+ "widestring",
+ "winapi",
 ]
 
 [[package]]
@@ -3538,6 +3555,12 @@ dependencies = [
  "redox_syscall 0.4.1",
  "wasite",
 ]
+
+[[package]]
+name = "widestring"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7219d36b6eac893fa81e84ebe06485e7dcbb616177469b142df14f1f4deb1311"
 
 [[package]]
 name = "winapi"
