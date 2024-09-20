@@ -27,7 +27,7 @@ pub async fn show_file_in_explorer(path: String) -> anyhow::Result<()> {
     #[cfg(target_os = "linux")]
     {
         tokio::process::Command::new("xdg-open")
-            .arg(format("--select={path}"))
+            .arg(format!("--select={path}"))
             .status()
             .await?;
     }

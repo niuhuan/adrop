@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 import 'package:adrop/components/common.dart';
 import 'package:adrop/cross.dart';

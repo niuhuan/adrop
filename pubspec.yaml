@@ -13,7 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   rust_lib_adrop:
     path: rust_builder
-  flutter_rust_bridge: 2.1.0
+  flutter_rust_bridge: 2.4.0
   url_launcher: ^6.3.0
   flutter_inappwebview: ^6.0.0
   flutter_styled_toast: ^2.2.1
@@ -24,7 +24,7 @@ dependencies:
   launch_at_startup: ^0.3.1
   package_info_plus: ^8.0.1
   wechat_assets_picker: ^9.2.0
-  desktop_drop_for_t: ^0.4.6
+  desktop_drop: ^0.5.0
   share_handler: ^0.0.21
   open_file: ^3.5.3
   permission_handler: ^11.3.1

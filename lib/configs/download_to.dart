@@ -22,6 +22,7 @@ class _DownloadToSettingState extends State<DownloadToSetting> {
       _future = downloadInfo().then((value) {
         _path = value?.downloadTo ?? "";
         setState(() {});
+        return null;
       });
     }
     super.initState();

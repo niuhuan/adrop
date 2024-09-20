@@ -8,11 +8,11 @@ class ContentBuilder<T> extends StatelessWidget {
   final AsyncWidgetBuilder<T> successBuilder;
 
   const ContentBuilder({
-    required Key? key,
+    required super.key,
     required this.future,
     required this.onRefresh,
     required this.successBuilder,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

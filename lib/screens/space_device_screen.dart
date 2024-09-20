@@ -111,7 +111,7 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
               .pushReplacement(MaterialPageRoute(builder: (context) {
             return const DownloadSettingsScreen();
           }));
-        } catch (e, s) {
+        } catch (e) {
           defaultToast(context, "选择失败\n$e");
         }
       },
@@ -177,7 +177,7 @@ class _SpaceDeviceScreenState extends State<SpaceDeviceScreen> {
                 .pushReplacement(MaterialPageRoute(builder: (context) {
               return const DownloadSettingsScreen();
             }));
-          } catch (e, s) {
+          } catch (e) {
             defaultToast(context, "创建失败\n$e");
           }
         },
