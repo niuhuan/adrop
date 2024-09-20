@@ -11,6 +11,7 @@ import 'api/property.dart';
 import 'api/receiving.dart';
 import 'api/sending.dart';
 import 'api/simple.dart';
+import 'api/single_instance_stream.dart';
 import 'api/space.dart';
 import 'api/system.dart';
 import 'api/user.dart';
@@ -45,6 +46,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   RustStreamSink<ReceivingTask> dco_decode_StreamSink_receiving_task_Sse(
       dynamic raw);
+
+  @protected
+  RustStreamSink<void> dco_decode_StreamSink_unit_Sse(dynamic raw);
 
   @protected
   String dco_decode_String(dynamic raw);
@@ -176,6 +180,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   RustStreamSink<ReceivingTask> sse_decode_StreamSink_receiving_task_Sse(
+      SseDeserializer deserializer);
+
+  @protected
+  RustStreamSink<void> sse_decode_StreamSink_unit_Sse(
       SseDeserializer deserializer);
 
   @protected
@@ -319,6 +327,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_StreamSink_receiving_task_Sse(
       RustStreamSink<ReceivingTask> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_StreamSink_unit_Sse(
+      RustStreamSink<void> self, SseSerializer serializer);
 
   @protected
   void sse_encode_String(String self, SseSerializer serializer);

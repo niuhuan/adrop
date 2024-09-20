@@ -10,3 +10,4 @@ pub mod user_setting;
 pub mod receiving;
 pub mod nope;
 pub mod property;
+pub mod single_instance_stream;
