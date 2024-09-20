@@ -161,7 +161,7 @@ jobs:
         name: Build (Linux)
         run: |
           sudo apt-get update
-          sudo apt install -y ninja-build liblzma-dev libgtk-3-dev libgl1-mesa-dev xorg-dev
+          sudo apt install -y ninja-build liblzma-dev libgtk-3-dev libgl1-mesa-dev xorg-dev libayatana-appindicator3-dev
           flutter config --enable-linux-desktop
           cd adrop
           flutter pub get
