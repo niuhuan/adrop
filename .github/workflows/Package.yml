@@ -158,8 +158,10 @@ jobs:
           echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'linux'
-        name: Build (Windows)
+        name: Build (Linux)
         run: |
+          sudo apt-get update
+          sudo apt install -y ninja-build liblzma-dev libgtk-3-dev libgl1-mesa-dev xorg-dev
           flutter config --enable-linux-desktop
           cd adrop
           flutter pub get
