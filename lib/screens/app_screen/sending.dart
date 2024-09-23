@@ -42,9 +42,13 @@ class _SendingState extends State<Sending> {
       _tasks.addAll(tasks);
     });
     if (keepScreenUpOnSending.value && _tasks.isNotEmpty) {
-      var keep = _tasks
-          .map((i) => "${i.taskState}".toLowerCase().contains("sending"))
-          .reduce((a, b) => a || b);
+      var keep = false;
+      for (final task in _tasks) {
+        if ("${task.taskState}".toLowerCase().contains("sending")) {
+          keep = true;
+          break;
+        }
+      }
       setKeepScreenUpOnSending(keep);
     } else {
       setKeepScreenUpOnSending(false);
