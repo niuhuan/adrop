@@ -176,10 +176,10 @@ class _SendingState extends State<Sending> {
     );
   }
 
-  _sendFiles(Device device, List<SelectionFile> files) async {
+  Future<bool> _sendFiles(Device device, List<SelectionFile> files) async {
     if (files.isEmpty) {
       defaultToast(context, "选择要发送的文件");
-      return;
+      return false;
     }
     if (files.length <= 1) {
       await addSendingTasks(
@@ -189,7 +189,7 @@ class _SendingState extends State<Sending> {
         packName: "",
       );
       defaultToast(context, "已添加到发送队列");
-      return;
+      return true;
     }
     SendingTaskType? taskType;
     String? packName;
@@ -203,11 +203,11 @@ class _SendingState extends State<Sending> {
           init: "压缩包",
         );
         if (packName == null) {
-          return;
+          return false;
         }
         packName = packName.trim();
         if (packName.isEmpty) {
-          return;
+          return false;
         }
       }
     }
@@ -216,9 +216,10 @@ class _SendingState extends State<Sending> {
       device: device,
       selectionFiles: files,
       sendingTaskType: taskType ?? SendingTaskType.single,
-      packName: packName ?? "",
+      packName: "",
     );
     defaultToast(context, "已添加到发送队列");
+    return true;
   }
 
   String _mutilFile(SendingTask task) {
@@ -232,8 +233,8 @@ class _SendingState extends State<Sending> {
 class SendingController {
   _SendingState? _state;
 
-  void send(Device device, List<SelectionFile> files) {
-    _state?._sendFiles(device, files);
+  Future<bool> send(Device device, List<SelectionFile> files) async {
+    return await _state?._sendFiles(device, files) ?? false;
   }
 }
 
@@ -259,4 +260,43 @@ String _sendingLabelOfState(String state) {
     return "取消中";
   }
   return "未知";
+}
+
+Future<String?> showInputDialog({
+  required BuildContext context,
+  required String title,
+  required String hint,
+  required String init,
+}) async {
+  final controller = TextEditingController();
+  final result = await showDialog<String>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hint,
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(controller.text);
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      );
+    },
+  );
+  controller.dispose();
+  return result;
 }

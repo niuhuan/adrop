@@ -67,10 +67,13 @@ class _AppScreenState extends State<AppScreen> with WindowListener {
     );
   }
 
-  Future _sendFiles(Device device, List<SelectionFile> files) async {
-    _sendingController.send(device, files);
-    setState(() {
-      _currentIndex = 0;
-    });
+  Future<bool> _sendFiles(Device device, List<SelectionFile> files) async {
+    final response = await _sendingController.send(device, files);
+    if (response) {
+      setState(() {
+        _currentIndex = 0;
+      });
+    }
+    return response;
   }
 }
