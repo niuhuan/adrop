@@ -223,7 +223,7 @@ class _SendingState extends State<Sending> {
       selectionFiles: files,
       sendingTaskType:
           zipOnSend.value ? SendingTaskType.packZip : SendingTaskType.single,
-      packName: "",
+      packName: packName ?? "",
     );
     defaultToast(context, "已添加到发送队列");
     return true;
