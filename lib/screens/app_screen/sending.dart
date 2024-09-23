@@ -133,7 +133,7 @@ class _SendingState extends State<Sending> {
           ),
           child: ListTile(
             title: Text(
-              "${task.fileName}${_mutilFile(task)}",
+              "${task.fileName}${_moreFile(task)}",
             ),
             subtitle: Text.rich(TextSpan(
               children: [
@@ -215,16 +215,17 @@ class _SendingState extends State<Sending> {
     await addSendingTasks(
       device: device,
       selectionFiles: files,
-      sendingTaskType: taskType ?? SendingTaskType.single,
+      sendingTaskType:
+          zipOnSend.value ? SendingTaskType.packZip : SendingTaskType.single,
       packName: "",
     );
     defaultToast(context, "已添加到发送队列");
     return true;
   }
 
-  String _mutilFile(SendingTask task) {
+  String _moreFile(SendingTask task) {
     if (task.packSelectionFiles.isNotEmpty) {
-      return " (${task.packSelectionFiles.length}个文件(夹))";
+      return "${task.tmpFileName} (${task.packSelectionFiles.length}个文件(夹))";
     }
     return "";
   }
@@ -268,7 +269,13 @@ Future<String?> showInputDialog({
   required String hint,
   required String init,
 }) async {
-  final controller = TextEditingController();
+  final controller = TextEditingController(text: init);
+  controller.selection = TextSelection(
+    baseOffset: 0,
+    extentOffset: init.length,
+  );
+  final focusNode = FocusNode();
+  focusNode.requestFocus();
   final result = await showDialog<String>(
     context: context,
     builder: (BuildContext context) {
@@ -279,6 +286,7 @@ Future<String?> showInputDialog({
           decoration: InputDecoration(
             hintText: hint,
           ),
+          focusNode: focusNode,
         ),
         actions: <Widget>[
           TextButton(
@@ -297,6 +305,7 @@ Future<String?> showInputDialog({
       );
     },
   );
+  focusNode.dispose();
   controller.dispose();
   return result;
 }
