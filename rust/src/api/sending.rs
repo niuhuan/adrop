@@ -83,7 +83,7 @@ pub async fn add_sending_tasks(
             let base_name = if pack_name.is_empty() {
                 "adrop".to_string()
             } else {
-                format!("{}", pack_name)
+                pack_name.to_string()
             };
             let (tmp_file_name, tmp_file_path) = {
                 let uuid_name = format!("{}-{}.zip", base_name, crc::Crc::<u32>::new(&crc::CRC_32_CKSUM).checksum(uuid::Uuid::new_v4().as_bytes().as_slice()));

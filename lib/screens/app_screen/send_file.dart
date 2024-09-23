@@ -17,7 +17,7 @@ import '../device_edit_screen.dart';
 import 'common.dart';
 
 class SendFile extends StatefulWidget {
-  final FutureOr<dynamic> Function(Device device, List<SelectionFile> files)
+  final FutureOr<bool> Function(Device device, List<SelectionFile> files)
       sendFiles;
 
   const SendFile({required this.sendFiles, super.key});
@@ -584,10 +584,12 @@ class _SendFileState extends State<SendFile> {
       defaultToast(context, '请选择要发送的文件');
       return;
     }
-    await widget.sendFiles(device, _list);
-    setState(() {
-      _list.clear();
-    });
+    final response = await widget.sendFiles(device, _list);
+    if (response) {
+      setState(() {
+        _list.clear();
+      });
+    }
   }
 
   Future _deviceMenu(BuildContext context, Device device) async {
