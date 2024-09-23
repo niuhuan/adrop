@@ -44,7 +44,7 @@ class _SendingState extends State<Sending> {
     if (keepScreenUpOnSending.value && _tasks.isNotEmpty) {
       var keep = false;
       for (final task in _tasks) {
-        if ("${task.taskState}".toLowerCase().contains("sending")) {
+        if ("${task.taskState}".toLowerCase().contains(".sending")) {
           keep = true;
           break;
         }

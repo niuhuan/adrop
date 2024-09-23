@@ -47,7 +47,7 @@ class _ReceiveFileState extends State<ReceiveFile> {
     if (keepScreenUpOnReceiving.value && tasks.isNotEmpty) {
       var keep = false;
       for (var i in tasks) {
-        if (i.taskState.toString().toLowerCase().contains("receiving")) {
+        if (i.taskState.toString().toLowerCase().contains(".receiving")) {
           keep = true;
           break;
         }
