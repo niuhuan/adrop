@@ -44,11 +44,13 @@ class _ReceiveFileState extends State<ReceiveFile> {
       _tasks.clear();
       _tasks.addAll(tasks);
     });
-    if (keepScreenUpOnReceiving.value) {
+    if (keepScreenUpOnReceiving.value && tasks.isNotEmpty) {
       var keep = _tasks
           .map((i) => "${i.taskState}".toLowerCase().contains("receiving"))
           .reduce((a, b) => a || b);
       setKeepScreenUpOnReceiving(keep);
+    } else {
+      setKeepScreenUpOnReceiving(false);
     }
   }
 
