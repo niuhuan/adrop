@@ -241,6 +241,6 @@ jobs:
         name: Upload Asset
         uses: AButler/upload-release-assets@v3.0
         with:
-          release_id: ${{ env.RELEASE_ID }}
+          release-id: ${{ env.RELEASE_ID }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           files: ${{ env.ASSET_PATH }}
