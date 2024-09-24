@@ -1,0 +1,240 @@
+name: Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      macos:
+        description: 'Build macOS'
+        type: boolean
+      windows:
+        description: 'Build Windows'
+        type: boolean
+      linux:
+        description: 'Build Linux'
+        type: boolean
+      ios:
+        description: 'Build iOS'
+        type: boolean
+      android-arm64:
+        description: 'Build Android'
+        type: boolean
+
+env:
+  LLVM_VERSION: '10.0'
+  RUST_TOOLCHAIN: nightly-2024-07-09
+  FLUTTER_VERSION: '3.22.3'
+  FLUTTER_CHANNEL: 'stable'
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
+  ANDROID_NDK_VERSION: 25.2.9519653
+  ANDROID_PLATFORMS: "platforms;android-33 platforms;android-34"
+  ANDROID_BUILD_TOOLS_VERSION: "33.0.1"
+
+jobs:
+
+  ci-pass:
+    name: CI is green
+    runs-on: ubuntu-latest
+    needs:
+      - build_release_assets
+    steps:
+      - run: exit 0
+
+  build_release_assets:
+    name: Build release assets
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - target: macos
+            host: macos-latest
+          - target: windows
+            host: windows-latest
+          - target: linux
+            host: ubuntu-latest
+          - target: ios
+            host: macos-latest
+          - target: android-arm64
+            host: ubuntu-latest
+
+    runs-on: ${{ matrix.config.host }}
+
+    steps:
+
+      # Check if the build target is true
+
+      - if: startsWith(matrix.config.host, 'windows') == false
+        name: CHECK BUILD
+        run: |
+          echo "BUILD_TARGET=${{ github.event.inputs[matrix.config.target] }}" >> $GITHUB_ENV
+
+      - if: startsWith(matrix.config.host, 'windows')
+        name: CHECK BUILD (Windows)
+        run: |
+          echo "BUILD_TARGET=${{ github.event.inputs[matrix.config.target] }}" >> $env:GITHUB_ENV
+
+      # Environment setup
+
+      - if: env.BUILD_TARGET == 'true'
+        name: Cargo cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-
+
+      - if: env.BUILD_TARGET == 'true'
+        name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          components: rustfmt
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          override: true
+
+      - if: env.BUILD_TARGET == 'true'
+        name: Setup flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: ${{ env.FLUTTER_CHANNEL }}
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          architecture: x64
+
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
+        name: Setup java (Android)
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
+        name: Setup Android SDK (Android)
+        uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 8512546
+          packages: 'platform-tools ${{ env.ANDROID_PLATFORMS }} build-tools;${{ env.ANDROID_BUILD_TOOLS_VERSION }} ndk;${{ env.ANDROID_NDK_VERSION }}'
+
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
+        name: Setup ndk
+        run: |
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
+          # if android-arm64
+          if [ $TARGET == ${{ env.ANDROID_NDK_VERSION }} ]; then
+            rustup target install aarch64-linux-android
+          fi
+
+      # Get latest release
+
+      - if: env.BUILD_TARGET == 'true'
+        name: Get latest release
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+              const { data: releases } = await github.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 1
+              });
+              const id = releases[0].id;
+              console.log(`::set-output name=release_id::${id}`);
+
+      # Checkout
+
+      - if: env.BUILD_TARGET == 'true'
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: 'adrop'
+
+      # Build
+
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'macos'
+        name: Build (macOS)
+        run: |
+          rustup target install x86_64-apple-darwin
+          rustup target install aarch64-apple-darwin
+          flutter config --enable-macos-desktop
+          cd adrop
+          flutter pub get
+          flutter build macos --release
+          cd build
+          mkdir appimage
+          mv macos/Build/Products/Release/adrop.app appimage/
+          ln -sf /Applications appimage/
+          hdiutil create -volname adrop -srcfolder appimage -ov -format UDBZ macos.dmg
+          echo "ASSET_NAME=macos.dmg" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/macos.dmg" >> $GITHUB_ENV
+
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'windows'
+        name: Build (Windows)
+        run: |
+          flutter config --enable-windows-desktop
+          cd adrop
+          flutter pub get
+          flutter build windows
+          cd build/windows/x64/runner/Release
+          Compress-Archive * ../../../../../build/windows.zip
+          cd ../../../../..
+          echo "ASSET_NAME=windows.zip" >> $env:GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
+
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'linux'
+        name: Build (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt install -y ninja-build liblzma-dev libgtk-3-dev libgl1-mesa-dev xorg-dev libappindicator3-dev
+          flutter config --enable-linux-desktop
+          cd adrop
+          flutter pub get
+          flutter build linux
+          echo "ASSET_NAME=adrop" >> $GITHUB_ENV
+          echo "ASSET_PATH=build/linux/x64/release/bundle/adrop" >> $GITHUB_ENV
+
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
+        name: Build (iOS)
+        run: |
+          rustup target install aarch64-apple-ios
+          cd adrop
+          flutter pub get
+          flutter build ios --no-simulator --no-codesign --release
+          cd build
+          rm -rf Payload
+          mkdir Payload
+          mv ios/iphoneos/Runner.app Payload/
+          sh ../scripts/thin-payload.sh Payload
+          zip -r -9 nosign.ipa Payload
+          cd ..
+          echo "ASSET_NAME=nosign.ipa" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/nosign.ipa" >> $GITHUB_ENV
+
+      - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'android-arm64'
+        name: Build (Android-arm64)
+        run: |
+          cd adrop
+          flutter build apk --target-platform ${{ matrix.config.target }}
+          echo "ASSET_NAME=app-release.apk" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/app/outputs/flutter-apk/app-release.apk" >> $GITHUB_ENV
+
+      # Post build
+
+      - name: Sign APK (Android)
+        if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.target, 'android')
+        env:
+          ANDROID_JKS_BASE64: ${{ secrets.ANDROID_JKS_BASE64 }}
+          ANDROID_JKS_PASSWORD: ${{ secrets.ANDROID_JKS_PASSWORD }}
+        run: |
+          echo $ANDROID_JKS_BASE64 > key.jks.base64
+          base64 -d key.jks.base64 > key.jks
+          echo $ANDROID_JKS_PASSWORD | $ANDROID_HOME/build-tools/$ANDROID_BUILD_TOOLS_VERSION/apksigner sign --ks key.jks $ASSET_PATH
+
+      # Upload
+
+      - if: env.BUILD_TARGET == 'true'
+        name: Upload Asset
+        uses: AButler/upload-release-assets@v3.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ env.ASSET_PATH }}
