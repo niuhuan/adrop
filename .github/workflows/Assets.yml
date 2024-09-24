@@ -198,7 +198,7 @@ jobs:
           flutter pub get
           flutter build linux
           echo "ASSET_NAME=adrop" >> $GITHUB_ENV
-          echo "ASSET_PATH=build/linux/x64/release/bundle/adrop" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/linux/x64/release/bundle/adrop" >> $GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
         name: Build (iOS)
