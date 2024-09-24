@@ -141,7 +141,7 @@ jobs:
               per_page: 1
               });
               const id = releases[0].id;
-              return "releases[0].id";
+              return releases[0].id;
 
       - if: env.BUILD_TARGET == 'true'
         run: |
