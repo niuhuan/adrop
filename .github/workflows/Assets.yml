@@ -143,10 +143,16 @@ jobs:
               const id = releases[0].id;
               return releases[0].id;
 
-      - if: env.BUILD_TARGET == 'true'
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'windows') == false
         run: |
           echo "RELEASE_ID=${{ steps.get_latest_release.outputs.result }}"
           echo "RELEASE_ID=${{ steps.get_latest_release.outputs.result }}" >> $GITHUB_ENV
+
+      - if: env.BUILD_TARGET == 'true' && startsWith(matrix.config.host, 'windows') == true
+        run: |
+          echo "RELEASE_ID=${{ steps.get_latest_release.outputs.result }}"
+          echo "RELEASE_ID=${{ steps.get_latest_release.outputs.result }}" >> $env:GITHUB_ENV
+
 
       # Checkout
 
