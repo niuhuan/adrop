@@ -210,7 +210,7 @@ jobs:
           cp linux/appimage/* build/linux/x64/release/bundle/
           ../appimagetool build/linux/x64/release/bundle/
           mv *.AppImage build/adrop.AppImage
-          echo "ASSET_NAME=adrop/build/adrop.AppImage" >> $GITHUB_ENV
+          echo "ASSET_NAME=adrop.AppImage" >> $GITHUB_ENV
           echo "ASSET_PATH=adrop/build/adrop.AppImage" >> $GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
