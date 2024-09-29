@@ -169,10 +169,10 @@ jobs:
           flutter build linux
           mv build/linux/x64/release/bundle/{adrop,AppRun}
           cp linux/appimage/* build/linux/x64/release/bundle/
-          ./appimagetool build/linux/x64/release/bundle/
+          ../appimagetool build/linux/x64/release/bundle/
           mv *.AppImage build/adrop.AppImage
-          echo "ASSET_NAME=adrop.AppImage" >> $GITHUB_ENV
-          echo "ASSET_PATH=adrop.AppImage" >> $GITHUB_ENV
+          echo "ASSET_NAME=adrop/build/adrop.AppImage" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/adrop.AppImage" >> $GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
         name: Build (iOS)
