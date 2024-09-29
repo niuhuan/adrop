@@ -123,7 +123,7 @@ jobs:
         run: |
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${{ env.ANDROID_NDK_VERSION }}" >> $GITHUB_ENV
           # if android-arm64
-          if [ $TARGET == ${{ env.ANDROID_NDK_VERSION }} ]; then
+          if [ $TARGET == 'android-arm64' ]; then
             rustup target install aarch64-linux-android
           fi
 
@@ -152,22 +152,27 @@ jobs:
           flutter pub get
           flutter build windows
           cd build/windows/x64/runner/Release
-          Compress-Archive * ../../../../../build/windows.zip
-          cd ../../../../..
           echo "ASSET_NAME=windows.zip" >> $env:GITHUB_ENV
-          echo "ASSET_PATH=adrop/build/windows.zip" >> $env:GITHUB_ENV
+          echo "ASSET_PATH=adrop/build/windows/x64/runner/Release" >> $env:GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'linux'
         name: Build (Linux)
         run: |
           sudo apt-get update
           sudo apt install -y ninja-build liblzma-dev libgtk-3-dev libgl1-mesa-dev xorg-dev libappindicator3-dev
+          curl -JOL https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod a+x appimagetool-x86_64.AppImage
+          mv appimagetool-x86_64.AppImage appimagetool
           flutter config --enable-linux-desktop
           cd adrop
           flutter pub get
           flutter build linux
-          echo "ASSET_NAME=adrop" >> $GITHUB_ENV
-          echo "ASSET_PATH=build/linux/x64/release/bundle/adrop" >> $GITHUB_ENV
+          mv build/linux/x64/release/bundle/{adrop,AppRun}
+          cp linux/appimage/* build/linux/x64/release/bundle/
+          ./appimagetool build/linux/x64/release/bundle/
+          mv *.AppImage build/adrop.AppImage
+          echo "ASSET_NAME=adrop.AppImage" >> $GITHUB_ENV
+          echo "ASSET_PATH=adrop.AppImage" >> $GITHUB_ENV
 
       - if: env.BUILD_TARGET == 'true' && matrix.config.target == 'ios'
         name: Build (iOS)
