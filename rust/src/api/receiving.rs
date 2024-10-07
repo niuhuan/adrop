@@ -629,6 +629,9 @@ async fn down_to_file_with_password(
                 .map_err(|e| anyhow::anyhow!("解密时出错(3): {}", e))?;
             file.write_all(&item).await?;
             file.flush().await?;
+            file.shutdown().await?;
+            drop(file);
+            drop(reader);
             break;
         }
         if position == buffer.len() {
