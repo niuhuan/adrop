@@ -6,7 +6,7 @@ use crate::define::{get_alipan_client, ram_space_info};
 use crate::frb_generated::StreamSink;
 use crate::utils::join_paths;
 use alipan::response::AdriveOpenFile;
-use alipan::{AdriveOpenFileType, ErrorInfo};
+use alipan::{AdriveClient, AdriveOpenFileType, ErrorInfo};
 use async_recursion::async_recursion;
 use base64::Engine;
 use flutter_rust_bridge::for_generated::futures::TryStreamExt;
@@ -469,16 +469,39 @@ async fn download_file(
 ) -> anyhow::Result<()> {
     println!("download file: {}", file_path);
     let client = get_alipan_client();
-    let url = client
-        .adrive_open_file_get_download_url()
-        .await
-        .drive_id(cloud_file.drive_id.as_str())
-        .file_id(cloud_file.file_id.as_str())
-        .request()
-        .await?
-        .url;
+    let url = get_download_url(client, cloud_file.drive_id.as_str(), cloud_file.file_id.as_str()).await?;
     down_to_file_with_password(url, file_path, password).await?;
     Ok(())
+}
+
+async fn get_download_url(client: &AdriveClient, drive_id: &str, file_id: &str) -> anyhow::Result<String> {
+    loop {
+        let response = client
+            .adrive_open_file_get_download_url()
+            .await
+            .drive_id(drive_id)
+            .file_id(file_id)
+            .request()
+            .await;
+        match response {
+            Ok(response) => {
+                return Ok(response.url);
+            }
+            Err(err) => {
+                match err.inner {
+                    ErrorInfo::ServerError(err) => {
+                        if err.code.eq("TooManyRequests") {
+                            tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+                            continue;
+                        }
+                    }
+                    err => {
+                        return Err(anyhow::anyhow!("获取下载链接失败: {}", err));
+                    }
+                }
+            }
+        }
+    }
 }
 
 #[async_recursion]
