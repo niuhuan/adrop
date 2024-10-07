@@ -15,6 +15,7 @@ use std::ops::{Deref, DerefMut};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 use tokio_util::io::StreamReader;
+use crate::database::properties::property::load_int_default_property;
 
 lazy_static! {
     static ref RECEIVING_TASKS: Mutex::<Vec<ReceivingTask>> = Mutex::new(Vec::new());
@@ -22,6 +23,8 @@ lazy_static! {
         Mutex::new(None);
     static ref RECEIVED_CALL_BACKS: Mutex<Option<StreamSink<ReceivingTask>>> =
         Mutex::new(None);
+    static ref RECEIVE_LIMIT_TIME_WIDTH: Mutex<i64> = Mutex::new(60);
+    static ref RECEIVE_LIMIT_TIME_FILE: Mutex<i64> = Mutex::new(3);
 }
 
 pub async fn register_receiving_task(
@@ -236,6 +239,24 @@ async fn set_receiving_task_by_id(task: &ReceivingTask) -> anyhow::Result<()> {
 pub(crate) async fn receiving_job() {
     loop {
         tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
+        let mut lock = RECEIVE_LIMIT_TIME_WIDTH.lock().await;
+        *lock = match load_int_default_property("receive_limit_time_width", 60).await {
+            Ok(value) => value,
+            Err(err) => {
+                println!("load receive_limit_time_width failed: {}", err);
+                return
+            },
+        };
+        drop(lock);
+        let mut lock = RECEIVE_LIMIT_TIME_FILE.lock().await;
+        *lock = match load_int_default_property("receive_limit_time_file", 3).await {
+            Ok(value) => value,
+            Err(err) => {
+                println!("load receive_limit_time_file failed: {}", err);
+                return
+            },
+        };
+        drop(lock);
         let space_info = if let Ok(space_info) = ram_space_info().await {
             if space_info.drive_id.is_empty() {
                 continue;

@@ -52,3 +52,15 @@ pub async fn load_property(k: &str) -> anyhow::Result<String> {
         "".to_owned()
     })
 }
+
+
+pub async fn load_int_default_property(k: &str, default_value: i64) -> anyhow::Result<i64> {
+    let in_db = Entity::find_by_id(k)
+        .one(PROPERTIES_DATABASE.get().unwrap().lock().await.deref())
+        .await?;
+    Ok(if let Some(in_db) = in_db {
+        in_db.v.parse().unwrap_or(default_value)
+    } else {
+        default_value
+    })
+}

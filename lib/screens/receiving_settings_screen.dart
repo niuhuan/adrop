@@ -31,6 +31,8 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
           if (Platform.isIOS || Platform.isAndroid)
             keepScreenUpOnReceivingSwitchListTile(),
           const DownloadToSetting(),
+          receiveLimitTimeWidthListTile(),
+          receiveLimitTimeFileListTile(),
         ],
       ),
     );
