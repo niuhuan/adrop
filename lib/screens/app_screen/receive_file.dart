@@ -172,6 +172,37 @@ class _ReceiveFileState extends State<ReceiveFile> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (task.taskState == ReceivingTaskState.failed) ...[
+                  IconButton(
+                    onPressed: () async {
+                      showGeneralDialog(
+                        context: context,
+                        pageBuilder: (
+                          BuildContext context,
+                          Animation<double> animation,
+                          Animation<double> secondaryAnimation,
+                        ) {
+                          return AlertDialog(
+                            title: const Text("错误信息"),
+                            content: SelectableText(
+                              task.errorMsg,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("确认"),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                    icon: const Icon(Icons.question_mark),
+                    color: Colors.red,
+                  ),
+                ],
                 if (task.taskState == ReceivingTaskState.success &&
                     (Platform.isIOS || Platform.isAndroid)) ...[
                   IconButton(

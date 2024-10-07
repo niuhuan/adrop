@@ -339,6 +339,7 @@ pub(crate) async fn receiving_job() {
                 if let Err(e) = download_item(&task, password.as_slice()).await {
                     println!("下载出错 : {} : {}", task.file_path, e);
                     task.task_state = ReceivingTaskState::Failed;
+                    task.error_msg = e.to_string();
                     if let Err(err) = set_receiving_task_by_id(&task).await {
                         println!("设置任务状态失败 : {}", err);
                         break;
