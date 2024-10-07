@@ -65,13 +65,15 @@ class _ReceiveFileState extends State<ReceiveFile> {
           lower.endsWith(".png") ||
           lower.endsWith(".jpeg") ||
           lower.endsWith(".bpm")) {
-        await cross.saveImageToGallery(task.filePath);
-        if (deleteAfterSaveToGallery.value) {
-          await File(task.filePath).delete();
-          await receivingTaskSetRemoved(
-            taskId: task.taskId,
-            reason: 1,
-          );
+        if (saveToGallery.value) {
+          await cross.saveImageToGallery(task.filePath);
+          if (deleteAfterSaveToGallery.value) {
+            await File(task.filePath).delete();
+            await receivingTaskSetRemoved(
+              taskId: task.taskId,
+              reason: 1,
+            );
+          }
         }
       }
     }
