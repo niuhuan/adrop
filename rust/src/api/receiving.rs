@@ -1,3 +1,4 @@
+use std::cmp::max;
 use crate::api::download::download_info;
 use crate::custom_crypto::{decrypt_file_name, decryptor_from_key};
 use crate::data_obj::enums::{FileItemType, ReceivingTaskClearType, ReceivingTaskState};
@@ -25,6 +26,8 @@ lazy_static! {
         Mutex::new(None);
     static ref RECEIVE_LIMIT_TIME_WIDTH: Mutex<i64> = Mutex::new(60);
     static ref RECEIVE_LIMIT_TIME_FILE: Mutex<i64> = Mutex::new(3);
+    static ref RECEIVE_LIMIT_TIME_WIDTH_START: Mutex<i64> = Mutex::new(0);
+    static ref RECEIVE_LIMIT_TIME_FILE_COUNT: Mutex<i64> = Mutex::new(0);
 }
 
 pub async fn register_receiving_task(
@@ -244,8 +247,8 @@ pub(crate) async fn receiving_job() {
             Ok(value) => value,
             Err(err) => {
                 println!("load receive_limit_time_width failed: {}", err);
-                return
-            },
+                return;
+            }
         };
         drop(lock);
         let mut lock = RECEIVE_LIMIT_TIME_FILE.lock().await;
@@ -253,8 +256,8 @@ pub(crate) async fn receiving_job() {
             Ok(value) => value,
             Err(err) => {
                 println!("load receive_limit_time_file failed: {}", err);
-                return
-            },
+                return;
+            }
         };
         drop(lock);
         let space_info = if let Ok(space_info) = ram_space_info().await {
@@ -352,6 +355,9 @@ pub(crate) async fn receiving_job() {
         loop {
             let task = first_init_receiving_tasks().await;
             if let Some(mut task) = task {
+                if need_continue_receive().await {
+                    continue;
+                }
                 task.task_state = ReceivingTaskState::Receiving;
                 if let Err(err) = set_receiving_task_by_id(&task).await {
                     println!("设置任务状态失败 : {}", err);
@@ -374,11 +380,47 @@ pub(crate) async fn receiving_job() {
                     }
                     let _ = notify_received(task).await;
                 }
+                download_count_up().await;
             } else {
                 break;
             }
         }
     }
+}
+
+pub(crate) async fn need_continue_receive() -> bool {
+    let width_guard = RECEIVE_LIMIT_TIME_WIDTH.lock().await;
+    let width = *width_guard;
+    drop(width_guard);
+    let file_guard = RECEIVE_LIMIT_TIME_FILE.lock().await;
+    let file = *file_guard;
+    drop(file_guard);
+    let now = chrono::Utc::now().timestamp();
+    let mut current_guard = RECEIVE_LIMIT_TIME_WIDTH_START.lock().await;
+    let mut count_guard = RECEIVE_LIMIT_TIME_FILE_COUNT.lock().await;
+    if *current_guard < now - width {
+        *current_guard = now;
+        *count_guard = 0;
+        drop(count_guard);
+        drop(current_guard);
+        false
+    } else if *count_guard < file {
+        drop(count_guard);
+        drop(current_guard);
+        false
+    } else {
+        let sleep_time = max(width - (now - *current_guard), 1);
+        drop(count_guard);
+        drop(current_guard);
+        tokio::time::sleep(tokio::time::Duration::from_secs(sleep_time as u64)).await;
+        true
+    }
+}
+
+async fn download_count_up() {
+    let mut count = RECEIVE_LIMIT_TIME_FILE_COUNT.lock().await;
+    *count += 1;
+    drop(count);
 }
 
 async fn take_file_name(
