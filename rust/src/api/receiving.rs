@@ -626,7 +626,7 @@ async fn down_to_file_with_password(
         if n == 0 {
             let item = decryptor
                 .decrypt_last(&buffer[..position])
-                .map_err(|e|  anyhow::anyhow!("解密时出错(3): {}", e))?;
+                .map_err(|e| anyhow::anyhow!("解密时出错(3): {}", e))?;
             file.write_all(&item).await?;
             file.flush().await?;
             file.shutdown().await?;
