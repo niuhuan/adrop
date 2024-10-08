@@ -227,6 +227,23 @@ class _ReceiveFileState extends State<ReceiveFile> {
                         }
                       }
                       final result = await OpenFile.open(task.filePath);
+                      // I/flutter (32066): result ResultType.noAppToOpen No APP found to open this file。
+                      // D/EGL_emulation(32066): app_time_stats: avg=129.62ms min=3.85ms max=4479.01ms count=36
+                      // I/flutter (32066): result ResultType.done done
+                      // print("result ${result.type} ${result.message}")
+                      // // .done is OK;
+                      if ("${result.type}".endsWith(".noAppToOpen")) {
+                        defaultToast(context, "没有找到打开此文件的应用");
+                      } else if ("${result.type}".endsWith(".fileNotFound")) {
+                        defaultToast(context, "文件未找到");
+                      } else if ("${result.type}".endsWith(".noAppToOpen")) {
+                        defaultToast(context, "没有找到打开此文件的应用");
+                      } else if ("${result.type}"
+                          .endsWith(".permissionDenied")) {
+                        defaultToast(context, "权限不足");
+                      } else if ("${result.type}".endsWith(".error")) {
+                        defaultToast(context, "打开文件时出错");
+                      }
                     },
                     icon: const Icon(Icons.play_arrow),
                   ),

@@ -79,7 +79,7 @@ class ContentError extends StatelessWidget {
                     ),
                     Text('(点击刷新)', style: TextStyle(fontSize: tipSize)),
                     Container(height: min / 15),
-                    Text('$error', style: TextStyle(fontSize: infoSize)),
+                    SelectableText('$error', style: TextStyle(fontSize: infoSize)),
                     Expanded(child: Container()),
                   ],
                 ),
