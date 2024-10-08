@@ -179,9 +179,11 @@ class MainActivity : FlutterActivity() {
         WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON.and(window.attributes.flags) > 0
 
     private fun setKeepScreenOn(value: Boolean) =
-        if (value)
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        else
-            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        uiThreadHandler.post {
+            if (value)
+                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            else
+                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
 
 }
