@@ -31,8 +31,27 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
           if (Platform.isIOS || Platform.isAndroid)
             keepScreenUpOnReceivingSwitchListTile(),
           const DownloadToSetting(),
-          receiveLimitTimeWidthListTile(),
-          receiveLimitTimeFileListTile(),
+          Text.rich(TextSpan(children: [
+            TextSpan(
+              text: "限流",
+            ),
+            TextSpan(
+              text: ":",
+            ),
+            receiveLimitTimeWidthEditSpan(setState,context),
+            TextSpan(
+              text: "秒内",
+            ),
+            TextSpan(
+              text: "最多接收",
+            ),
+            receiveLimitTimeFileEditSpan(setState,context),
+            TextSpan(
+              text: "个文件"
+                  ""
+                  "",
+            ),
+          ])),
         ],
       ),
     );

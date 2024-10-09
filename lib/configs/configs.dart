@@ -1,4 +1,5 @@
 import 'package:adrop/configs/screen_keep_on.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../src/rust/api/property.dart' as rustProperty;
@@ -214,9 +215,112 @@ Widget receiveLimitTimeWidthListTile() {
   );
 }
 
+TextSpan receiveLimitTimeWidthEditSpan(
+  void Function(VoidCallback fn) setState,
+  BuildContext context,
+) {
+  return TextSpan(
+    text: '${receiveLimitTimeWidth.value}',
+    style: const TextStyle(
+      color: Colors.blue,
+      decoration: TextDecoration.underline,
+      decorationColor: Colors.blue,
+      fontSize: 20,
+    ),
+    recognizer: TapGestureRecognizer()
+      ..onTap = () async {
+        int? input = await inputInt(
+          context: context,
+          title: '设置接收限流时间',
+          hint: '请输入秒数',
+          value: receiveLimitTimeWidth.value,
+          max: 3600,
+          min: 1,
+        );
+        if (input != null) {
+          await receiveLimitTimeWidth.setValue(input);
+        }
+        setState(() {});
+      },
+  );
+}
+
 Widget receiveLimitTimeFileListTile() {
   return ListTile(
     title: const Text('x个文件'),
     trailing: Text('${receiveLimitTimeFile.value}'),
+  );
+}
+
+TextSpan receiveLimitTimeFileEditSpan(
+  void Function(VoidCallback fn) setState,
+  BuildContext context,
+) {
+  return TextSpan(
+    text: '${receiveLimitTimeFile.value}',
+    style: const TextStyle(
+      color: Colors.blue,
+      decoration: TextDecoration.underline,
+      decorationColor: Colors.blue,
+      fontSize: 20,
+    ),
+    recognizer: TapGestureRecognizer()
+      ..onTap = () async {
+        int? input = await inputInt(
+          context: context,
+          title: '设置接收限流文件数',
+          hint: '请输入文件数',
+          value: receiveLimitTimeFile.value,
+          max: 1000,
+          min: 1,
+        );
+        if (input != null) {
+          await receiveLimitTimeFile.setValue(input);
+        }
+        setState(() {});
+      },
+  );
+}
+
+final _controller = TextEditingController();
+
+Future<int?> inputInt({
+  required BuildContext context,
+  required String title,
+  required String hint,
+  required int value,
+  required int max,
+  required int min,
+}) async {
+  _controller.text = value.toString();
+  return showDialog<int>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text("$title ($min ~ $max)"),
+        content: TextField(
+          controller: _controller,
+          decoration: InputDecoration(hintText: hint),
+          keyboardType: TextInputType.number,
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              int? value = int.tryParse(_controller.text.trim());
+              if (value != null && value >= min && value <= max) {
+                Navigator.of(context).pop(value);
+              }
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      );
+    },
   );
 }
