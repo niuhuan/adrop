@@ -174,10 +174,10 @@ Widget zipOnSendRenameSwitchListTile() {
 Widget saveToGallerySwitchListTile() {
   return _propertySwitchListTile(
     saveToGallery,
-    '下载成功后将媒体保存到相册',
+    '下载成功后将图片保存到相册',
     Icons.add_photo_alternate_rounded,
     Icons.add_photo_alternate_outlined,
-    subtitle: const Text("目前仅支持图片, 且会重新编码为PNG"),
+    subtitle: const Text("目前仅支持图片"),
   );
 }
 
@@ -225,7 +225,8 @@ TextSpan receiveLimitTimeWidthEditSpan(
       color: Colors.blue,
       decoration: TextDecoration.underline,
       decorationColor: Colors.blue,
-      fontSize: 20,
+      fontSize: 25,
+      fontWeight: FontWeight.bold,
     ),
     recognizer: TapGestureRecognizer()
       ..onTap = () async {
@@ -262,7 +263,8 @@ TextSpan receiveLimitTimeFileEditSpan(
       color: Colors.blue,
       decoration: TextDecoration.underline,
       decorationColor: Colors.blue,
-      fontSize: 20,
+      fontSize: 25,
+      fontWeight: FontWeight.bold,
     ),
     recognizer: TapGestureRecognizer()
       ..onTap = () async {

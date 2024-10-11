@@ -64,7 +64,8 @@ class _ReceiveFileState extends State<ReceiveFile> {
       if (lower.endsWith(".jpg") ||
           lower.endsWith(".png") ||
           lower.endsWith(".jpeg") ||
-          lower.endsWith(".bpm")) {
+          lower.endsWith(".bpm") ||
+          lower.endsWith(".heic")) {
         if (saveToGallery.value) {
           await cross.saveImageToGallery(task.filePath);
           if (deleteAfterSaveToGallery.value) {

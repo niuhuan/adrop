@@ -31,27 +31,54 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
           if (Platform.isIOS || Platform.isAndroid)
             keepScreenUpOnReceivingSwitchListTile(),
           const DownloadToSetting(),
-          Text.rich(TextSpan(children: [
-            TextSpan(
-              text: "限流",
+          Padding(
+            padding: const EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 8,
+              bottom: 8,
             ),
-            TextSpan(
-              text: ":",
-            ),
-            receiveLimitTimeWidthEditSpan(setState,context),
-            TextSpan(
-              text: "秒内",
-            ),
-            TextSpan(
-              text: "最多接收",
-            ),
-            receiveLimitTimeFileEditSpan(setState,context),
-            TextSpan(
-              text: "个文件"
-                  ""
-                  "",
-            ),
-          ])),
+            child: Text.rich(TextSpan(children: [
+              const WidgetSpan(
+                child: Icon(
+                  Icons.speed,
+                  size: 24,
+                ),
+              ),
+              const TextSpan(
+                text: " 限流",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              const TextSpan(
+                text: "  ",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              receiveLimitTimeWidthEditSpan(setState, context),
+              const TextSpan(
+                text: " 秒内, ",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              const TextSpan(
+                text: "最多接收 ",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              receiveLimitTimeFileEditSpan(setState, context),
+              const TextSpan(
+                text: " 个文件",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            ])),
+          ),
         ],
       ),
     );
