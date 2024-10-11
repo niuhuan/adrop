@@ -90,6 +90,7 @@ class IntConfig extends Config<int> {
 final zipOnSend = BoolConfig._('zip_on_send', false);
 final zipOnSendRename = BoolConfig._('zip_on_send_rename', false);
 final saveToGallery = BoolConfig._('save_to_gallery', false);
+final saveToGalleryVideo = BoolConfig._('save_to_gallery_video', false);
 final deleteAfterSaveToGallery =
     BoolConfig._('delete_after_save_to_gallery', true);
 
@@ -121,6 +122,7 @@ initConfigs() async {
   await zipOnSend._init();
   await zipOnSendRename._init();
   await saveToGallery._init();
+  await saveToGalleryVideo._init();
   await deleteAfterSaveToGallery._init();
   await keepScreenUpOnSending._init();
   await keepScreenUpOnReceiving._init();
@@ -177,7 +179,15 @@ Widget saveToGallerySwitchListTile() {
     '下载成功后将图片保存到相册',
     Icons.add_photo_alternate_rounded,
     Icons.add_photo_alternate_outlined,
-    subtitle: const Text("目前仅支持图片"),
+  );
+}
+
+Widget saveToGalleryVideoSwitchListTile() {
+  return _propertySwitchListTile(
+    saveToGalleryVideo,
+    '下载成功后将视频保存到相册',
+    Icons.video_camera_back_rounded,
+    Icons.video_camera_back_outlined,
   );
 }
 

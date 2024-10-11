@@ -53,71 +53,75 @@ import UIKit
                           return
                       }
                       //
+                      var collOpt :PHAssetCollection?
                       PHPhotoLibrary.shared().performChanges({
-                              // 创建图片创建请求
-                              let creationRequest = PHAssetChangeRequest.creationRequestForAsset(from: uiImage)
-                              
-                              // 请求相册
-                              let fetchOptions = PHFetchOptions()
-                              fetchOptions.predicate = NSPredicate(format: "title = %@", AppDelegate.albumName)
-                              let collection = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions)
-                              
-                              if let assetCollection = collection.firstObject {
-                                  if let albumChangeRequest = PHAssetCollectionChangeRequest(for: assetCollection) {
-                                      let placeholder = creationRequest.placeholderForCreatedAsset
-                                      let fastEnumeration = NSArray(object: placeholder!)
-                                      albumChangeRequest.addAssets(fastEnumeration)
-                                  }
-                              } else {
-                                  // 如果相册不存在，创建新的相册
-                                  var albumPlaceholder: PHObjectPlaceholder?
-                                  PHPhotoLibrary.shared().performChanges({
-                                      let createAlbumRequest = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: AppDelegate.albumName)
-                                      albumPlaceholder = createAlbumRequest.placeholderForCreatedAssetCollection
-                                  }) { success, error in
-                                      if success {
-                                          let collectionFetchResult = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumPlaceholder!.localIdentifier], options: nil)
-                                          let album = collectionFetchResult.firstObject
-                                          PHPhotoLibrary.shared().performChanges({
-                                              if let albumChangeRequest = PHAssetCollectionChangeRequest(for: album!) {
-                                                  let placeholder = creationRequest.placeholderForCreatedAsset
-                                                  let fastEnumeration = NSArray(object: placeholder!)
-                                                  albumChangeRequest.addAssets(fastEnumeration)
-                                              }
-                                          }, completionHandler: nil)
-                                      }
-                                  }
-                              }
-                          }, completionHandler: { success, error in
-                              if success {
-                                  result("OK")
-                              } else {
-                                  result(FlutterError(code: "", message: "Error saving image : \(String(describing: error))", details: ""))
-                              }
-                          })
+                          collOpt = self.fetchAssetCollectionForAlbum(albumName: AppDelegate.albumName)
+                          if nil == collOpt {
+                              collOpt = self.createAssetCollectionForAlbum(albumName: AppDelegate.albumName)
+                          }
+                          if (collOpt == nil) {
+                              result(FlutterError(code: "", message: "Error collOpt", details: ""))
+                              return
+                          }
+                          if let albumChangeRequest = PHAssetCollectionChangeRequest(for: collOpt!) {
+                                   let creationRequest = PHAssetChangeRequest.creationRequestForAsset(from: uiImage)
+                                   let placeholder = creationRequest.placeholderForCreatedAsset
+                                   let fastEnumeration = NSArray(object: placeholder!)
+                                   albumChangeRequest.addAssets(fastEnumeration)
+                                   result("OK")
+                          } else {
+                              result(FlutterError(code: "", message: "no request", details: ""))
+                          }
+                      }, completionHandler: { success, error in
+                          if !success {
+                              result(FlutterError(code: "", message: "Error PHAssetCollection : \(String(describing: error))", details: ""))
+                          }
+                      })
                   }else{
                       result(FlutterError(code: "", message: "params error", details: ""))
                   }
               }
               else if call.method == "saveVideoToGallery"{
                   if let args = call.arguments as? String{
+                      
+                      
                       PHPhotoLibrary.requestAuthorization { status in
                           // Return if unauthorized
                           guard status == .authorized else {
                               result(FlutterError(code: "", message: "Error saving video: unauthorized access", details: ""))
                               return
                           }
-
-                          PHPhotoLibrary.shared().performChanges({
-                              PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: NSURL(fileURLWithPath: args) as URL)
-                          }) { success, error in
-                              if success {
-                                  result("OK")
-                              } else {
-                                  result(FlutterError(code: "", message: "saving error", details: "Error saving video: \(String(describing: error))"))
-                              }
-                          }
                       }
+                      
+                      
+                      //
+                      var collOpt :PHAssetCollection?
+                      PHPhotoLibrary.shared().performChanges({
+                          collOpt = self.fetchAssetCollectionForAlbum(albumName: AppDelegate.albumName)
+                          if nil == collOpt {
+                              collOpt = self.createAssetCollectionForAlbum(albumName: AppDelegate.albumName)
+                          }
+                          if (collOpt == nil) {
+                              result(FlutterError(code: "", message: "Error collOpt", details: ""))
+                              return
+                          }
+                          if let albumChangeRequest = PHAssetCollectionChangeRequest(for: collOpt!) {
+                                  if let assetChangeRequest = PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: NSURL(fileURLWithPath: args) as URL) {
+                                      let placeholder = assetChangeRequest.placeholderForCreatedAsset
+                                      let _ = albumChangeRequest.addAssets(NSArray(object: placeholder!))
+                                      result("OK")
+                                  } else {
+                                      result(FlutterError(code: "", message: "no load video", details: ""))
+                                  }
+                          } else {
+                              result(FlutterError(code: "", message: "no request", details: ""))
+                          }
+                      }, completionHandler: { success, error in
+                          if !success {
+                              result(FlutterError(code: "", message: "Error PHAssetCollection : \(String(describing: error))", details: ""))
+                          }
+                      })
+                    
                   }else{
                       result(FlutterError(code: "", message: "params error", details: ""))
                   }
@@ -142,4 +146,25 @@ import UIKit
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
+    
+    
+    // 辅助函数，用于获取相册
+    func fetchAssetCollectionForAlbum(albumName: String) -> PHAssetCollection? {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.predicate = NSPredicate(format: "title = %@", albumName)
+        let collection = PHAssetCollection.fetchAssetCollections(with: .album, subtype: .any, options: fetchOptions)
+        return collection.firstObject
+    }
+    
+    func createAssetCollectionForAlbum(albumName: String) -> PHAssetCollection? {
+        let createAlbumRequest = PHAssetCollectionChangeRequest.creationRequestForAssetCollection(withTitle: albumName)
+        let albumPlaceholder = createAlbumRequest.placeholderForCreatedAssetCollection
+        let collectionFetchResult = PHAssetCollection.fetchAssetCollections(withLocalIdentifiers: [albumPlaceholder.localIdentifier], options: nil)
+        return collectionFetchResult.firstObject
+    }
+    
+    enum ADropError: Error {
+        case loadMedia
+    }
+
 }

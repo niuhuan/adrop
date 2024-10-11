@@ -77,6 +77,22 @@ class _ReceiveFileState extends State<ReceiveFile> {
           }
         }
       }
+      if (lower.endsWith(".mp4") ||
+          lower.endsWith(".3gp") ||
+          lower.endsWith(".mkv") ||
+          lower.endsWith(".rmvb") ||
+          lower.endsWith(".mov")) {
+        if (saveToGalleryVideo.value) {
+          await cross.saveVideoToGallery(task.filePath);
+          if (deleteAfterSaveToGallery.value) {
+            await File(task.filePath).delete();
+            await receivingTaskSetRemoved(
+              taskId: task.taskId,
+              reason: 1,
+            );
+          }
+        }
+      }
     }
   }
 

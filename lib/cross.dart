@@ -32,6 +32,13 @@ class Cross {
     throw "没有适配的平台";
   }
 
+  Future saveVideoToGallery(String path) async {
+    if (Platform.isIOS) {
+      return await _channel.invokeMethod("saveVideoToGallery", path);
+    }
+    throw "没有适配的平台";
+  }
+
   Future<int> androidGetVersion() async {
     if (Platform.isAndroid) {
       return await _channel.invokeMethod("androidGetVersion");

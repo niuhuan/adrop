@@ -25,11 +25,13 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
           if (Platform.isWindows || Platform.isLinux || Platform.isMacOS)
             launchAtStartupSwitchListTile(),
           if (Platform.isIOS || Platform.isAndroid)
-            saveToGallerySwitchListTile(),
-          if (Platform.isIOS || Platform.isAndroid)
-            deleteAfterSaveToGallerySwitchListTile(),
-          if (Platform.isIOS || Platform.isAndroid)
             keepScreenUpOnReceivingSwitchListTile(),
+          if (Platform.isIOS)
+            saveToGallerySwitchListTile(),
+          if (Platform.isIOS)
+            saveToGalleryVideoSwitchListTile(),
+          if (Platform.isIOS)
+            deleteAfterSaveToGallerySwitchListTile(),
           const DownloadToSetting(),
           Padding(
             padding: const EdgeInsets.only(
