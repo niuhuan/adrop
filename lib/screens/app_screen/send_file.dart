@@ -439,10 +439,14 @@ class _SendFileState extends State<SendFile> {
       padding: const EdgeInsets.all(10),
       child: SizedBox(
         width: double.maxFinite,
-        child: Wrap(
-          runSpacing: 10,
-          spacing: 10,
-          alignment: WrapAlignment.start,
+        child: GridView(
+          // runSpacing: 10,
+          // spacing: 10,
+          // alignment: WrapAlignment.start,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: (windowWidth ~/ 180), //横轴三个子widget
+              childAspectRatio: 1.0 //宽高比为1时，子widget
+              ),
           children: [
             for (var device in devices)
               _dropToDevice(
