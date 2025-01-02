@@ -1,8 +1,8 @@
-use std::cmp::max;
 use crate::api::download::download_info;
 use crate::custom_crypto::{decrypt_file_name, decryptor_from_key};
 use crate::data_obj::enums::{FileItemType, ReceivingTaskClearType, ReceivingTaskState};
 use crate::data_obj::ReceivingTask;
+use crate::database::properties::property::load_int_default_property;
 use crate::define::{get_alipan_client, ram_space_info};
 use crate::frb_generated::StreamSink;
 use crate::utils::join_paths;
@@ -12,18 +12,17 @@ use async_recursion::async_recursion;
 use base64::Engine;
 use flutter_rust_bridge::for_generated::futures::TryStreamExt;
 use lazy_static::lazy_static;
+use std::cmp::max;
 use std::ops::{Deref, DerefMut};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::sync::Mutex;
 use tokio_util::io::StreamReader;
-use crate::database::properties::property::load_int_default_property;
 
 lazy_static! {
     static ref RECEIVING_TASKS: Mutex::<Vec<ReceivingTask>> = Mutex::new(Vec::new());
     static ref RECEIVING_CALL_BACKS: Mutex<Option<StreamSink<Vec<ReceivingTask>>>> =
         Mutex::new(None);
-    static ref RECEIVED_CALL_BACKS: Mutex<Option<StreamSink<ReceivingTask>>> =
-        Mutex::new(None);
+    static ref RECEIVED_CALL_BACKS: Mutex<Option<StreamSink<ReceivingTask>>> = Mutex::new(None);
     static ref RECEIVE_LIMIT_TIME_WIDTH: Mutex<i64> = Mutex::new(60);
     static ref RECEIVE_LIMIT_TIME_FILE: Mutex<i64> = Mutex::new(3);
     static ref RECEIVE_LIMIT_TIME_WIDTH_START: Mutex<i64> = Mutex::new(0);
@@ -46,9 +45,7 @@ pub async fn unregister_receiving_task() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub async fn register_received(
-    listener: StreamSink<ReceivingTask>,
-) -> anyhow::Result<()> {
+pub async fn register_received(listener: StreamSink<ReceivingTask>) -> anyhow::Result<()> {
     let mut rcb = RECEIVED_CALL_BACKS.lock().await;
     *rcb = Some(listener);
     drop(rcb);
@@ -105,7 +102,8 @@ pub async fn clear_receiving_tasks(clear_types: Vec<ReceivingTaskClearType>) -> 
                             }
                         }
                         if let Ok((_name, path, _tmp_path)) =
-                            take_file_name(download_info.download_to.as_str(), x.file_name.as_str()).await
+                            take_file_name(download_info.download_to.as_str(), x.file_name.as_str())
+                                .await
                         {
                             x.file_path = path;
                         };
@@ -241,9 +239,16 @@ async fn set_receiving_task_by_id(task: &ReceivingTask) -> anyhow::Result<()> {
 
 pub(crate) async fn receiving_job() {
     loop {
-        tokio::time::sleep(tokio::time::Duration::from_secs(15)).await;
+        let receive_sync_period = match load_int_default_property("receive_sync_period", 100).await {
+            Ok(value) => value,
+            Err(err) => {
+                println!("load receive_sync_period failed: {}", err);
+                return;
+            }
+        };
+        tokio::time::sleep(tokio::time::Duration::from_secs(receive_sync_period as u64)).await;
         let mut lock = RECEIVE_LIMIT_TIME_WIDTH.lock().await;
-        *lock = match load_int_default_property("receive_limit_time_width", 60).await {
+        *lock = match load_int_default_property("receive_limit_time_width", 100).await {
             Ok(value) => value,
             Err(err) => {
                 println!("load receive_limit_time_width failed: {}", err);
@@ -252,7 +257,7 @@ pub(crate) async fn receiving_job() {
         };
         drop(lock);
         let mut lock = RECEIVE_LIMIT_TIME_FILE.lock().await;
-        *lock = match load_int_default_property("receive_limit_time_file", 3).await {
+        *lock = match load_int_default_property("receive_limit_time_file", 1).await {
             Ok(value) => value,
             Err(err) => {
                 println!("load receive_limit_time_file failed: {}", err);
@@ -284,7 +289,7 @@ pub(crate) async fn receiving_job() {
             space_info.drive_id.as_str(),
             space_info.this_device_folder_file_id.as_str(),
         )
-            .await
+        .await
         {
             list_files
         } else {
@@ -533,12 +538,21 @@ async fn download_file(
 ) -> anyhow::Result<()> {
     println!("download file: {}", file_path);
     let client = get_alipan_client();
-    let url = get_download_url(client, cloud_file.drive_id.as_str(), cloud_file.file_id.as_str()).await?;
+    let url = get_download_url(
+        client,
+        cloud_file.drive_id.as_str(),
+        cloud_file.file_id.as_str(),
+    )
+    .await?;
     down_to_file_with_password(url, file_path, password).await?;
     Ok(())
 }
 
-async fn get_download_url(client: &AdriveClient, drive_id: &str, file_id: &str) -> anyhow::Result<String> {
+async fn get_download_url(
+    client: &AdriveClient,
+    drive_id: &str,
+    file_id: &str,
+) -> anyhow::Result<String> {
     loop {
         let response = client
             .adrive_open_file_get_download_url()
@@ -551,19 +565,17 @@ async fn get_download_url(client: &AdriveClient, drive_id: &str, file_id: &str) 
             Ok(response) => {
                 return Ok(response.url);
             }
-            Err(err) => {
-                match err.inner {
-                    ErrorInfo::ServerError(err) => {
-                        if err.code.eq("TooManyRequests") {
-                            tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
-                            continue;
-                        }
-                    }
-                    err => {
-                        return Err(anyhow::anyhow!("获取下载链接失败: {}", err));
+            Err(err) => match err.inner {
+                ErrorInfo::ServerError(err) => {
+                    if err.code.eq("TooManyRequests") {
+                        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+                        continue;
                     }
                 }
-            }
+                err => {
+                    return Err(anyhow::anyhow!("获取下载链接失败: {}", err));
+                }
+            },
         }
     }
 }

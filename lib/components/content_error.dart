@@ -35,6 +35,10 @@ class ContentError extends StatelessWidget {
         iconData = Icons.highlight_off;
         message = "资源未审核或不可用";
         break;
+      case ERROR_TYPE_TOKEN:
+        iconData = Icons.highlight_off;
+        message = "Token 过期或不可用\n请在设置中重新登录";
+        break;
       default:
         iconData = Icons.highlight_off;
         message = "啊哦, 被玩坏了";

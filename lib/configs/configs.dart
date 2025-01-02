@@ -111,11 +111,15 @@ final keepScreenUpOnReceiving = BoolConfig._(
 
 final receiveLimitTimeWidth = IntConfig._(
   'receive_limit_time_width',
-  60,
+  100,
 );
 final receiveLimitTimeFile = IntConfig._(
   'receive_limit_time_file',
-  3,
+  1,
+);
+final receiveSyncPeriod = IntConfig._(
+  'receive_sync_period',
+  100,
 );
 
 initConfigs() async {
@@ -128,6 +132,7 @@ initConfigs() async {
   await keepScreenUpOnReceiving._init();
   await receiveLimitTimeWidth._init();
   await receiveLimitTimeFile._init();
+  await receiveSyncPeriod._init();
 }
 
 Widget _propertySwitchListTile(
@@ -288,6 +293,44 @@ TextSpan receiveLimitTimeFileEditSpan(
         );
         if (input != null) {
           await receiveLimitTimeFile.setValue(input);
+        }
+        setState(() {});
+      },
+  );
+}
+
+Widget receiveSyncPeriodListTile() {
+  return ListTile(
+    title: const Text('x秒检测一次'),
+    trailing: Text('${receiveSyncPeriod.value}'),
+  );
+}
+
+TextSpan receiveSyncPeriodEditSpan(
+    void Function(VoidCallback fn) setState,
+    BuildContext context,
+    ) {
+  return TextSpan(
+    text: '${receiveSyncPeriod.value}',
+    style: const TextStyle(
+      color: Colors.blue,
+      decoration: TextDecoration.underline,
+      decorationColor: Colors.blue,
+      fontSize: 25,
+      fontWeight: FontWeight.bold,
+    ),
+    recognizer: TapGestureRecognizer()
+      ..onTap = () async {
+        int? input = await inputInt(
+          context: context,
+          title: '设置x秒检测一次文件接收',
+          hint: '请输入秒数',
+          value: receiveSyncPeriod.value,
+          max: 1000,
+          min: 1,
+        );
+        if (input != null) {
+          await receiveSyncPeriod.setValue(input);
         }
         setState(() {});
       },

@@ -13,7 +13,7 @@ dependencies:
   cupertino_icons: ^1.0.6
   rust_lib_adrop:
     path: rust_builder
-  flutter_rust_bridge: 2.4.0
+  flutter_rust_bridge: 2.6.0
   url_launcher: ^6.3.0
   flutter_inappwebview: ^6.0.0
   flutter_styled_toast: ^2.2.1

@@ -2,6 +2,7 @@ const ERROR_TYPE_NETWORK = "NETWORK_ERROR";
 const ERROR_TYPE_PERMISSION = "PERMISSION_ERROR";
 const ERROR_TYPE_TIME = "TIME_ERROR";
 const ERROR_TYPE_UNDER_REVIEW = "UNDER_VIEW_ERROR";
+const ERROR_TYPE_TOKEN = "TOKEN_ERROR";
 
 // 错误的类型, 方便照展示和谐的提示
 String errorType(String error) {
@@ -26,6 +27,9 @@ String errorType(String error) {
   }
   if (error.contains("under review")) {
     return ERROR_TYPE_UNDER_REVIEW;
+  }
+  if (error.contains("RefreshToken")) {
+    return ERROR_TYPE_TOKEN;
   }
   return "";
 }

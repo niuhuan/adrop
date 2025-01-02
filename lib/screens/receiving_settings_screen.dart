@@ -79,6 +79,14 @@ class _ReceivingSettingsScreenState extends State<ReceivingSettingsScreen> {
                   fontSize: 20,
                 ),
               ),
+              const TextSpan(text:"。 "),
+              receiveSyncPeriodEditSpan(setState, context),
+              const TextSpan(
+                text: " 秒检测一次文件接收",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
             ])),
           ),
         ],

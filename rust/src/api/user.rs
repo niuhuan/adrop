@@ -17,6 +17,11 @@ pub async fn login_info() -> anyhow::Result<LoginInfo> {
     Ok(set())
 }
 
+pub async fn clear_login_info() -> anyhow::Result<()> {
+    clear().await?;
+    Ok(())
+}
+
 fn unset() -> LoginInfo {
     LoginInfo{
         state: LoginState::Unset,
